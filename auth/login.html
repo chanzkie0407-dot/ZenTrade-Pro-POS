@@ -5,111 +5,164 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZenTrade Pro POS - Login</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui; }
-    body { background: #1e3a5f; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .login-card { background: white; border-radius: 12px; padding: 32px; width: 100%; max-width: 420px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { 
+      background: linear-gradient(135deg, #1e3a5f 0%, #2c3e50 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-card {
+      background: white;
+      border-radius: 12px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
     .logo { text-align: center; margin-bottom: 8px; }
-    .logo svg { width: 40px; height: 40px; color: #3b82f6; }
-    h1 { text-align: center; font-size: 22px; color: #1a1a1a; margin-bottom: 4px; }
+    .logo svg { width: 48px; height: 48px; color: #3b82f6; }
+    h1 { text-align: center; font-size: 22px; color: #1e293b; margin-bottom: 4px; }
     .subtitle { text-align: center; color: #6b7280; margin-bottom: 24px; font-size: 14px; }
     .role-tabs { display: flex; gap: 10px; margin-bottom: 24px; }
-    .role-tab { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; text-align: center; font-weight: 600; transition: all 0.2s; font-size: 13px; }
+    .role-tab { 
+      flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; 
+      border-radius: 6px; cursor: pointer; text-align: center; font-weight: 600;
+      transition: all 0.2s;
+    }
     .role-tab.active { background: #3b82f6; color: white; border-color: #3b82f6; }
     .input-group { margin-bottom: 16px; }
-    input { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 15px; }
-    button { width: 100%; padding: 13px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; }
-    button:hover { background: #2563eb; }
-    .error { color: #dc2626; margin-top: 14px; text-align: center; font-size: 14px; display: none; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; color: #374151; }
+    input { 
+      width: 100%; padding: 12px 14px; border: 2px solid #d1d5db; 
+      border-radius: 6px; font-size: 15px; transition: border 0.2s;
+    }
+    input:focus { outline: none; border-color: #3b82f6; }
+    button {
+      width: 100%; padding: 14px; background: #2563eb; color: white;
+      border: none; border-radius: 6px; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    button:hover { background: #1d4ed8; }
+    .error { 
+      color: #dc2626; margin-top: 14px; text-align: center; font-size: 14px;
+      display: block;
+    }
     .note { color: #666; font-size: 12px; margin-top: 10px; text-align: center; }
   </style>
 </head>
 <body>
   <div class="login-card">
     <div class="logo">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="9" cy="21" r="1"></circle>
-        <circle cx="20" cy="21" r="1"></circle>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>
     </div>
     <h1>ZenTrade Pro POS</h1>
     <p class="subtitle">Sign in to your account</p>
 
     <div class="role-tabs">
-      <button class="role-tab active" data-role="admin" onclick="selectRole('admin')">Admin</button>
-      <button class="role-tab" data-role="cashier" onclick="selectRole('cashier')">Cashier</button>
-      <button class="role-tab" data-role="sp" onclick="selectRole('sp')">SP</button>
+      <button class="role-tab" data-role="admin">Admin</button>
+      <button class="role-tab active" data-role="cashier">Cashier</button>
+      <button class="role-tab" data-role="sp">SP</button>
     </div>
 
-    <div class="input-group">
-      <input type="text" id="username" placeholder="Username" autocomplete="username">
-    </div>
-    <div class="input-group">
-      <input type="password" id="password" placeholder="Password" autocomplete="off">
-    </div>
+    <form id="loginForm" onsubmit="attemptLogin(event)">
+      <input type="hidden" id="selectedRole" value="cashier">
+      
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="Enter username" required autocomplete="username">
+      </div>
 
-    <button onclick="handleLogin()">🔒 SIGN IN</button>
-    <div class="error" id="errorMsg"></div>
-    <p class="note" id="hintNote"></p>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="4-digit password" required maxlength="4" autocomplete="current-password">
+      </div>
+
+      <button type="submit">🔒 SIGN IN</button>
+      
+      <p class="error" id="errorMsg"></p>
+      <p class="note" id="noteTxt">Credentials created by Admin</p>
+    </form>
   </div>
 
-  <script>
-    let selectedRole = 'admin';
+<script>
+// Role tab switching
+document.querySelectorAll('.role-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('selectedRole').value = tab.dataset.role;
+    document.getElementById('errorMsg').textContent = '';
+  });
+});
 
-    function selectRole(role) {
-      selectedRole = role;
-      document.querySelectorAll('.role-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.role === role);
-      });
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-      document.getElementById('errorMsg').style.display = 'none';
-      
-      const note = document.getElementById('hintNote');
-      if (role === 'admin') note.textContent = '';
-      else if (role === 'sp') note.textContent = '';
-      else note.textContent = 'Credentials created by Admin';
+function attemptLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const role = document.getElementById('selectedRole').value;
+  const errorEl = document.getElementById('errorMsg');
+
+  errorEl.textContent = '';
+
+  // ===== ADMIN LOGIN =====
+  if (role === 'admin') {
+    const adminUser = localStorage.getItem('adminUser') || 'Admin';
+    const adminPass = localStorage.getItem('adminPass') || '1234';
+    
+    if (username === adminUser && password === adminPass) {
+      sessionStorage.setItem('userRole', 'admin');
+      sessionStorage.setItem('username', adminUser);
+      window.location.href = '/pages/admin/dashboard.html';
+      return;
+    } else {
+      errorEl.textContent = '❌ Invalid admin credentials';
+      return;
     }
+  }
 
-    function handleLogin() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      const errorMsg = document.getElementById('errorMsg');
+  // ===== CASHIER LOGIN — MATCHES YOUR ADMIN CODE =====
+  if (role === 'cashier') {
+    const cashiers = JSON.parse(localStorage.getItem('cashiers') || '[]');
+    
+    // ✅ EXACT MATCH with how your admin saves cashiers
+    const found = cashiers.find(c => 
+      c.user === username &&    // FIRST NAME exactly
+      c.pass === password &&     // 4-digit plain text
+      c.active === true
+    );
 
-      const validUsers = {
-        admin:   { user: 'Admin',  pass: '8888' },
-        sp:      { user: 'sp',     pass: '19970407chan' },
-        cashier: { checkLocal: true }
-      };
-
-      sessionStorage.removeItem('passwordHint');
-      
-      if (selectedRole === 'cashier') {
-        // Cashier — check list from admin
-        const cashiers = JSON.parse(localStorage.getItem('cashiers') || '[]');
-        const found = cashiers.find(c => c.name === username && c.password === password);
-        if (found) {
-          sessionStorage.setItem('userRole', 'cashier');
-          sessionStorage.setItem('username', username);
-          sessionStorage.setItem('cashierName', `${username} ${found.lname || ''}`);
-          window.location.href = '../pages/cashier/dashboard.html';
-        } else {
-          errorMsg.textContent = "❌ Invalid credentials — created by Admin only";
-          errorMsg.style.display = 'block';
-        }
-        return;
-      }
-
-      const creds = validUsers[selectedRole];
-      if (creds && username === creds.user && password === creds.pass) {
-        sessionStorage.setItem('userRole', selectedRole);
-        sessionStorage.setItem('username', username);
-        window.location.href = `../pages/${selectedRole}/dashboard.html`;
-      } else {
-        errorMsg.textContent = "❌ Invalid username or password";
-        errorMsg.style.display = 'block';
-      }
+    if (found) {
+      sessionStorage.setItem('userRole', 'cashier');
+      sessionStorage.setItem('username', found.user);
+      sessionStorage.setItem('cashierFullName', found.lname ? `${found.user} ${found.lname}` : found.user);
+      window.location.href = '/pages/cashier/dashboard.html';
+      return;
+    } else {
+      errorEl.textContent = '❌ Invalid credentials — created by Admin only';
+      return;
     }
-  </script>
+  }
+
+  // ===== SERVICE PROVIDER LOGIN =====
+  if (role === 'sp') {
+    const spAuth = JSON.parse(localStorage.getItem('spAuth') || '{}');
+    
+    if (spAuth.username === username && spAuth.password === password) {
+      sessionStorage.setItem('userRole', 'sp');
+      sessionStorage.setItem('username', username);
+      window.location.href = '/pages/sp/dashboard.html';
+      return;
+    } else {
+      errorEl.textContent = '❌ Invalid Service Provider credentials';
+      return;
+    }
+  }
+}
+</script>
 </body>
 </html>

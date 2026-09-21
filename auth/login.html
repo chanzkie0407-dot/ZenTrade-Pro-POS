@@ -9,7 +9,7 @@
     body { background: #1e3a5f; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
     .login-card { background: white; border-radius: 12px; padding: 32px; width: 100%; max-width: 420px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
     .logo { text-align: center; margin-bottom: 8px; }
-    .logo svg { width: 40px; height: 40px; }
+    .logo svg { width: 40px; height: 40px; color: #3b82f6; }
     h1 { text-align: center; font-size: 22px; color: #1a1a1a; margin-bottom: 4px; }
     .subtitle { text-align: center; color: #6b7280; margin-bottom: 24px; font-size: 14px; }
     .role-tabs { display: flex; gap: 10px; margin-bottom: 24px; }
@@ -25,7 +25,7 @@
 <body>
   <div class="login-card">
     <div class="logo">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="9" cy="21" r="1"></circle>
         <circle cx="20" cy="21" r="1"></circle>
         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
@@ -35,7 +35,7 @@
     <p class="subtitle">Sign in to your account</p>
 
     <div class="role-tabs">
-      <button class="role-tab active" data-role="admin" onclick="selectRole('admin')">Admin</button>
+      <button class="role-tab" data-role="admin" onclick="selectRole('admin')">Admin</button>
       <button class="role-tab" data-role="cashier" onclick="selectRole('cashier')">Cashier</button>
       <button class="role-tab" data-role="sp" onclick="selectRole('sp')">SP</button>
     </div>
@@ -51,79 +51,39 @@
     <div class="error" id="errorMsg"></div>
   </div>
 
-  <script type="module">
-    // ===== FIREBASE CONFIG =====
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAxuB4gacmVIf3U4Ic5TsOxSHCaynR0vvhw",
-      authDomain: "bpos-pos.firebaseapp.com",
-      projectId: "bpos-pos",
-      storageBucket: "bpos-pos.firebasestorage.app",
-      messagingSenderId: "1024558399693",
-      appId: "1:1024558399693:web:13412d95960d8be732a984"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // ===== ROLE SELECTION =====
+  <script>
     let selectedRole = 'admin';
-    window.selectRole = function(role) {
+
+    function selectRole(role) {
       selectedRole = role;
       document.querySelectorAll('.role-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.role === role);
       });
-    };
+    }
 
-    // ===== LOGIN HANDLER =====
-    window.handleLogin = async function() {
+    function handleLogin() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
       const errorMsg = document.getElementById('errorMsg');
 
-      // Default credentials — CHANGE AFTER FIRST LOGIN
-      const validCreds = {
-        sp: { username: 'sp', password: '19970407chan' },
-        admin: { username: 'Admin', password: 'SET_YOUR_ADMIN_PASS_HERE' }
+      // ✅ ETO ANG GUSTO MO — EKSAKTO!
+      const validUsers = {
+        admin:   { user: 'Admin',  pass: '8888' },
+        sp:      { user: 'sp',     pass: '19970407chan' },
+        cashier: { user: 'Admin',  pass: '8888' }
       };
 
-      // 1. Local validation first
-      const creds = validCreds[selectedRole];
-      if (!creds || username !== creds.username || password !== creds.password) {
-        errorMsg.textContent = "❌ Invalid username or password";
-        errorMsg.style.display = 'block';
-        return;
-      }
-
-      try {
-        // 2. Try Firebase Auth
-        await signInWithEmailAndPassword(auth, `${username}@bpos-pos.local`, password);
-        
-        // 3. Success — store session
+      const creds = validUsers[selectedRole];
+      
+      if (creds && username === creds.user && password === creds.pass) {
         sessionStorage.setItem('userRole', selectedRole);
         sessionStorage.setItem('username', username);
-        sessionStorage.setItem('loginTime', Date.now());
-
-        // 4. Redirect
         window.location.href = `../pages/${selectedRole}/dashboard.html`;
-
-      } catch (err) {
-        console.log('Firebase auth skipped — using local mode:', err.code);
-        
-        // Fallback: Allow login even before Firebase account is created
-        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
-          sessionStorage.setItem('userRole', selectedRole);
-          sessionStorage.setItem('username', username);
-          sessionStorage.setItem('localMode', 'true');
-          window.location.href = `../pages/${selectedRole}/dashboard.html`;
-        } else {
-          errorMsg.textContent = "❌ Connection error: " + err.message;
-          errorMsg.style.display = 'block';
-        }
+      } else {
+        errorMsg.textContent = "❌ Invalid username or password";
+        errorMsg.style.display = 'block';
       }
-    };
+    }
   </script>
 </body>
 </html>

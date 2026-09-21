@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Service Provider — BPOS System</title>
+  <!-- Firebase SDK v9+ (modular) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
     :root {
@@ -35,7 +39,7 @@
     .btn-danger { background: var(--red); color: white; }
     .btn-warning { background: var(--yellow); color: #1f2937; }
     
-    /* ===== BROADCAST POPUP — NEW ===== */
+    /* ===== BROADCAST POPUP ===== */
     .popup-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
@@ -49,6 +53,7 @@
       from { transform: translateY(20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .popup-icon { font-size: 32px; margin-bottom: 12px; }
     .popup-title { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 12px; }
     .popup-msg { font-size: 15px; line-height: 1.5; color: #374151; margin-bottom: 20px; white-space: pre-wrap; }
@@ -65,11 +70,12 @@
       display: flex; align-items: center; gap: 4px;
     }
     .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: #eff6ff; }
+    
     /* ===== MAIN CONTENT ===== */
     .content { padding: 24px; max-width: 1200px; margin: 0 auto; }
     .page { display: none; animation: fadeIn 0.3s; }
     .page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+    
     /* ===== CARDS & FORMS ===== */
     .card {
       background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px;
@@ -88,10 +94,12 @@
     .badge-active { background: #dcfce7; color: #166534; }
     .badge-expired { background: #fee2e2; color: #991b1b; }
     .badge-trial { background: #fef3c7; color: #92400e; }
+    
     /* ===== TABLES ===== */
     table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 12px; }
     th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: var(--light); font-weight: 600; color: var(--navy); }
+    
     /* ===== BROADCAST SYSTEM ===== */
     .broadcast-box { border: 2px solid var(--yellow); border-radius: 10px; padding: 16px; background: #fffbeb; margin-bottom: 16px; }
     .broadcast-history { margin-top: 20px; }
@@ -100,6 +108,7 @@
       border-radius: 6px; margin-bottom: 10px; 
     }
     .broadcast-time { font-size: 11px; color: #92400e; margin-top: 4px; }
+    
     /* ===== ADMIN PM CHAT ===== */
     .chat-box { border: 1px solid var(--border); border-radius: 10px; height: 400px; display: flex; flex-direction: column; margin-top: 16px; }
     .chat-msgs { flex: 1; overflow-y: auto; padding: 16px; background: var(--light); }
@@ -113,17 +122,18 @@
   </style>
 </head>
 <body>
-<!-- ===== BROADCAST POPUP CONTAINER — NEW ===== -->
+<!-- ===== BROADCAST POPUP CONTAINER ===== -->
 <div id="broadcastPopupContainer"></div>
 
 <!-- ===== TOPBAR ===== -->
 <div class="topbar">
   <h1>🛡️ BPOS — Service Provider</h1>
   <div>
-    <span>SP</span>
+    <span id="userRoleBadge">SP</span>
     <button class="btn btn-danger btn-sm" onclick="logout()">🚪 LOG OUT</button>
   </div>
 </div>
+
 <!-- ===== TABS ===== -->
 <div class="tabs-bar">
   <button class="tab-btn active" data-page="subscriptions">💳 Subscriptions</button>
@@ -132,6 +142,7 @@
   <button class="tab-btn" data-page="adminpass">🔑 Reset Admin Password</button>
   <button class="tab-btn" data-page="sppass">🔐 Change SP Password</button>
 </div>
+
 <!-- ===== MAIN CONTENT ===== -->
 <div class="content">
   <!-- ═══════════════ SUBSCRIPTIONS ═══════════════ -->
@@ -182,7 +193,7 @@
       <h3>Current Subscription Status</h3>
       <div id="subStatus"></div>
       <table style="margin-top:20px;">
-        <thead><tr><th>Status</th><th>Plan</th><th>Expiry Date</th><th>Days Remaining</th></tr></thead>
+        <thead><tr><th>Status</th><th>Plan</th><th>Expiry Date</th><th>Remarks</th></tr></thead>
         <tbody id="subHistory"></tbody>
       </table>
     </div>
@@ -204,7 +215,6 @@
         </div>
         <button class="btn btn-warning" onclick="sendBroadcast()">📢 Send to All Users & Devices</button>
       </div>
-
       <div class="broadcast-history">
         <h4 style="margin-bottom:12px;">Recent Announcements</h4>
         <div id="broadcastList"></div>
@@ -216,7 +226,7 @@
   <div id="page-adminchat" class="page">
     <div class="card">
       <h3>💬 Direct Message — SP ↔ Admin</h3>
-      <p class="note-text" style="margin-bottom:16px;">Private messaging with Cashier has been disabled. Use Broadcast tab for system-wide announcements.</p>
+      <p class="note-text" style="margin-bottom:16px;">Private messaging with Cashier disabled. Use Broadcast tab for system-wide announcements.</p>
       
       <div class="chat-box">
         <div class="chat-msgs" id="chatMessages"></div>
@@ -278,8 +288,21 @@
   </div>
 </div>
 
-<script src="../../js/sync.js"></script>
 <script>
+// ===== FIREBASE INIT =====
+const firebaseConfig = {
+  apiKey: "AIzaSyAxuB4gacmWIf3U4Ic5TsOxSHCaynR0vhw",
+  authDomain: "bpos-pos.firebaseapp.com",
+  projectId: "bpos-pos",
+  storageBucket: "bpos-pos.firebasestorage.app",
+  messagingSenderId: "1024558399693",
+  appId: "1:1024558399693:web:13412d95960d8be732a984",
+  measurementId: "G-BY03FZEN6E"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 // ===== AUTO LOGOUT TIMER — 10 MINUTES =====
 let inactivityTimer;
 function resetTimer() {
@@ -293,167 +316,43 @@ function resetTimer() {
 ['mousedown','keydown','touchstart','click','scroll'].forEach(evt => {
   document.addEventListener(evt, resetTimer);
 });
-resetTimer();
 
-// ===== DATA HELPERS =====
-function getSubscription() { return JSON.parse(localStorage.getItem('subscription') || '{}'); }
-function saveSubscription(d) { localStorage.setItem('subscription', JSON.stringify(d)); }
-function getAdminUser() { return localStorage.getItem('adminUser') || 'Admin'; }
-function saveAdminUser(d) { localStorage.setItem('adminUser', d); }
-function getAdminPass() { return localStorage.getItem('adminPass') || '8888'; }
-function saveAdminPass(d) { localStorage.setItem('adminPass', d); }
-function getSPPass() { return localStorage.getItem('spPass') || '19970407chan'; }
-function saveSPPass(d) { localStorage.setItem('spPass', d); }
-function getAdminChat() { return JSON.parse(localStorage.getItem('adminChat') || '[]'); }
-function saveAdminChat(d) { localStorage.setItem('adminChat', JSON.stringify(d)); }
-function getLogs() { return JSON.parse(localStorage.getItem('spLogs') || '[]'); }
-function saveLogs(d) { localStorage.setItem('spLogs', JSON.stringify(d)); }
+// ===== AUTH & ROLE CHECK =====
+const SP_PASS_DEFAULT = '19970407chan';
+let spPassword = localStorage.getItem('spPass') || SP_PASS_DEFAULT;
 
-// ===== BROADCAST — CROSS-DEVICE SYNC + POPUP =====
-let lastSeenBroadcastTime = null; // Track to avoid duplicate popups
-
-function getBroadcasts() { 
-  if (typeof getSharedData === 'function') {
-    return getSharedData('broadcasts') || [];
+async function checkAuth() {
+  const role = sessionStorage.getItem('userRole');
+  const authenticated = sessionStorage.getItem('spAuthenticated');
+  
+  if (role !== 'sp' || authenticated !== 'true') {
+    window.location.href = '/auth/login.html';
+    return false;
   }
-  return JSON.parse(localStorage.getItem('broadcasts') || '[]'); 
-}
-function saveBroadcasts(d) { 
-  if (typeof saveSharedData === 'function') {
-    saveSharedData('broadcasts', d);
-    return;
-  }
-  localStorage.setItem('broadcasts', JSON.stringify(d)); 
+  return true;
 }
 
-// SHOW POPUP — NEW (not shown to sender SP)
-function showBroadcastPopup(broadcast) {
-  // Don't show popup to sender (SP) — as requested babe ✅
-  if (broadcast.senderRole === 'sp') return;
-  
-  const container = document.getElementById('broadcastPopupContainer');
-  container.innerHTML = `
-    <div class="popup-overlay" id="broadcastPopup">
-      <div class="popup-box">
-        <div class="popup-icon">📢</div>
-        <div class="popup-title">NEW ANNOUNCEMENT</div>
-        <div class="popup-msg">${broadcast.message}</div>
-        <div class="popup-time">From: ${broadcast.sender || 'Service Provider'}<br>
-        Sent: ${new Date(broadcast.time).toLocaleString()}</div>
-        <button class="btn btn-primary" style="width:100%;" onclick="closeBroadcastPopup()">✅ OK, Got it</button>
-      </div>
-    </div>
-  `;
+// ===== FIRESTORE SYNC HELPERS =====
+async function getDoc(ref) {
+  const snap = await ref.get();
+  return snap.exists ? snap.data() : null;
+}
+async function setDoc(ref, data) {
+  await ref.set(data, { merge: true });
 }
 
-function closeBroadcastPopup() {
-  document.getElementById('broadcastPopupContainer').innerHTML = '';
-}
+// ===== SUBSCRIPTION =====
+const subRef = db.collection('system').doc('subscription');
+let unsubscribeSub = null;
 
-function sendBroadcast() {
-  const msg = document.getElementById('broadcastMsg').value.trim();
-  if (!msg) return alert('Please type a message first babe 😊');
-  
-  const broadcasts = getBroadcasts();
-  const newBroadcast = {
-    message: msg,
-    sender: 'Service Provider',
-    senderRole: 'sp',
-    time: new Date().toISOString(),
-    readBy: []
-  };
-  broadcasts.unshift(newBroadcast);
-  
-  saveBroadcasts(broadcasts);
-  lastSeenBroadcastTime = newBroadcast.time; // SP sees this as "read"
-  
-  if (typeof triggerSync === 'function') triggerSync('broadcasts');
-  
-  alert('✅ Broadcast sent! Pop-up will appear to Admin & Cashier devices immediately.');
-  document.getElementById('broadcastMsg').value = '';
-  renderBroadcasts();
-}
-
-function renderBroadcasts() {
-  const list = document.getElementById('broadcastList');
-  const broadcasts = getBroadcasts().slice(0, 5);
-  if (!broadcasts.length) {
-    list.innerHTML = '<p style="color:var(--gray);font-size:13px;">No announcements sent yet</p>';
-    return;
-  }
-  list.innerHTML = broadcasts.map(b => `
-    <div class="broadcast-item">
-      <div style="white-space:pre-wrap;">${b.message}</div>
-      <div class="broadcast-time">📢 Sent: ${new Date(b.time).toLocaleString()}</div>
-    </div>
-  `).join('');
-}
-
-// Check for new broadcasts and trigger popup (for Admin/Cashier side)
-function checkNewBroadcastForPopup() {
-  const broadcasts = getBroadcasts();
-  if (!broadcasts.length) return;
-  
-  const latest = broadcasts[0];
-  // Skip if sent by SP (sender) or already seen
-  if (latest.senderRole === 'sp') return;
-  if (lastSeenBroadcastTime === latest.time) return;
-  
-  lastSeenBroadcastTime = latest.time;
-  showBroadcastPopup(latest);
-}
-
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    renderBroadcasts();
-    checkNewBroadcastForPopup();
-  }
-});
-
-if (typeof onSyncUpdate === 'function') {
-  onSyncUpdate('broadcasts', () => {
-    renderBroadcasts();
-    checkNewBroadcastForPopup();
-  });
-}
-
-// ===== ADMIN PM FUNCTIONS =====
-function sendAdminMsg() {
-  const text = document.getElementById('chatText').value.trim();
-  if (!text) return;
-  
-  const chat = getAdminChat();
-  chat.push({
-    sender: 'SP',
-    text: text,
-    time: new Date().toISOString()
-  });
-  saveAdminChat(chat);
-  
-  document.getElementById('chatText').value = '';
-  renderAdminChat();
-}
-function renderAdminChat() {
-  const msgs = getAdminChat();
-  const container = document.getElementById('chatMessages');
-  container.innerHTML = msgs.map(m => `
-    <div class="msg ${m.sender === 'SP' ? 'me' : 'other'}">
-      <div>${m.text}</div>
-      <div class="msg-time">${new Date(m.time).toLocaleTimeString()}</div>
-    </div>
-  `).join('');
-  container.scrollTop = container.scrollHeight;
-}
-
-// ===== SUBSCRIPTION & RENEWAL =====
-function processRenewal() {
+async function processRenewal() {
   const planVal = document.getElementById('renewPlan').value;
   const remarks = document.getElementById('subRemarks').value.trim();
   const [price, days] = planVal.split('-').map(v => parseInt(v));
   
   if (!price || !days) return alert('Select valid plan babe');
   
-  const sub = getSubscription();
+  const sub = (await getDoc(subRef)) || {};
   const now = new Date();
   
   let newExpiry;
@@ -464,30 +363,31 @@ function processRenewal() {
   }
   newExpiry.setDate(newExpiry.getDate() + days);
   
-  sub.expiryDate = newExpiry.toISOString();
-  sub.lastPlan = `${price} - ${days} days`;
-  sub.lastRenewed = now.toISOString();
-  sub.remarks = remarks || '—';
-  sub.isTrial = false;
+  const update = {
+    expiryDate: newExpiry.toISOString(),
+    lastPlan: `${price} - ${days} days`,
+    lastRenewed: now.toISOString(),
+    remarks: remarks || '—',
+    isTrial: false,
+    updatedAt: now.toISOString()
+  };
   
-  saveSubscription(sub);
+  await setDoc(subRef, update);
   
-  const logs = getLogs();
-  logs.unshift({
+  // Log history
+  const logRef = db.collection('subscriptionLogs');
+  await logRef.add({
+    ...update,
     action: 'Renewal',
-    plan: `${price} - ${days} days`,
-    expiry: newExpiry.toLocaleString(),
-    remarks,
-    time: now.toLocaleString()
+    time: now.toISOString()
   });
-  saveLogs(logs);
   
   alert(`✅ Subscription Updated!\nNew Expiry: ${newExpiry.toLocaleDateString()}`);
   document.getElementById('subRemarks').value = '';
-  renderSubStatus();
 }
-function renderSubStatus() {
-  const sub = getSubscription();
+
+async function renderSubStatus() {
+  const sub = (await getDoc(subRef)) || {};
   const now = new Date();
   let status, expiry, daysLeft;
   
@@ -518,17 +418,94 @@ function renderSubStatus() {
       ${sub.remarks ? `<p style="margin-top:4px;"><strong>Remarks:</strong> ${sub.remarks}</p>` : ''}
     </div>`;
   
-  document.getElementById('subHistory').innerHTML = getLogs().map(l => `
-    <tr>
-      <td><span class="badge badge-active">Updated</span></td>
-      <td>${l.plan}</td>
-      <td>${l.expiry}</td>
-      <td>${l.remarks || '—'}</td>
-    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">No renewal history yet</td></tr>';
+  // Load logs
+  const logsSnap = await db.collection('subscriptionLogs').orderBy('time', 'desc').limit(10).get();
+  const logs = logsSnap.docs.map(d => d.data());
+  
+  document.getElementById('subHistory').innerHTML = logs.length 
+    ? logs.map(l => `
+        <tr>
+          <td><span class="badge badge-active">Updated</span></td>
+          <td>${l.lastPlan || '—'}</td>
+          <td>${new Date(l.expiryDate).toLocaleString()}</td>
+          <td>${l.remarks || '—'}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">No renewal history yet</td></tr>';
+}
+
+// ===== BROADCAST =====
+const broadcastRef = db.collection('broadcasts');
+let lastBroadcastTime = null;
+
+async function sendBroadcast() {
+  const msg = document.getElementById('broadcastMsg').value.trim();
+  if (!msg) return alert('Please type a message first babe 😊');
+  
+  const newBroadcast = {
+    message: msg,
+    sender: 'Service Provider',
+    senderRole: 'sp',
+    time: new Date().toISOString()
+  };
+  
+  await broadcastRef.add(newBroadcast);
+  lastBroadcastTime = newBroadcast.time;
+  
+  alert('✅ Broadcast sent! Pop-up will appear to Admin & Cashier devices immediately.');
+  document.getElementById('broadcastMsg').value = '';
+}
+
+async function renderBroadcasts() {
+  const snap = await broadcastRef.orderBy('time', 'desc').limit(5).get();
+  const list = snap.docs.map(d => d.data());
+  
+  const container = document.getElementById('broadcastList');
+  if (!list.length) {
+    container.innerHTML = '<p style="color:var(--gray);font-size:13px;">No announcements sent yet</p>';
+    return;
+  }
+  container.innerHTML = list.map(b => `
+    <div class="broadcast-item">
+      <div style="white-space:pre-wrap;">${b.message}</div>
+      <div class="broadcast-time">📢 Sent: ${new Date(b.time).toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+
+// ===== ADMIN PM CHAT =====
+const chatRef = db.collection('adminChat');
+
+async function sendAdminMsg() {
+  const text = document.getElementById('chatText').value.trim();
+  if (!text) return;
+  
+  await chatRef.add({
+    sender: 'SP',
+    text: text,
+    time: new Date().toISOString()
+  });
+  
+  document.getElementById('chatText').value = '';
+}
+
+async function renderAdminChat() {
+  const snap = await chatRef.orderBy('time', 'asc').limit(100).get();
+  const msgs = snap.docs.map(d => d.data());
+  
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = msgs.map(m => `
+    <div class="msg ${m.sender === 'SP' ? 'me' : 'other'}">
+      <div>${m.text}</div>
+      <div class="msg-time">${new Date(m.time).toLocaleTimeString()}</div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
 }
 
 // ===== ADMIN PASSWORD MANAGEMENT =====
-function changeAdminPassword() {
+const adminCredRef = db.collection('credentials').doc('admin');
+
+async function changeAdminPassword() {
   const newUser = document.getElementById('newAdminUser').value.trim();
   const newPass = document.getElementById('newAdminPass').value.trim();
   const confirmPass = document.getElementById('confirmAdminPass').value.trim();
@@ -536,19 +513,22 @@ function changeAdminPassword() {
   if (!newPass) return alert('Enter new password babe');
   if (newPass !== confirmPass) return alert('Passwords do not match babe!');
   
-  const oldUser = getAdminUser();
+  const current = (await getDoc(adminCredRef)) || { username: 'Admin' };
+  const oldUser = current.username;
   
-  if (newUser) saveAdminUser(newUser);
-  saveAdminPass(newPass);
+  await setDoc(adminCredRef, {
+    username: newUser || oldUser,
+    password: newPass,
+    updatedAt: new Date().toISOString()
+  });
   
-  const logs = JSON.parse(localStorage.getItem('adminPassChangeLog') || '[]');
-  logs.unshift({
+  // Log
+  await db.collection('adminPasswordLogs').add({
     oldUser,
     newUser: newUser || oldUser,
     changedBy: 'Service Provider',
-    time: new Date().toLocaleString()
+    time: new Date().toISOString()
   });
-  localStorage.setItem('adminPassChangeLog', JSON.stringify(logs));
   
   alert('✅ Admin credentials updated successfully babe');
   document.getElementById('newAdminUser').value = '';
@@ -556,30 +536,35 @@ function changeAdminPassword() {
   document.getElementById('confirmAdminPass').value = '';
   renderAdminPassLog();
 }
-function renderAdminPassLog() {
-  const logs = JSON.parse(localStorage.getItem('adminPassChangeLog') || '[]');
+
+async function renderAdminPassLog() {
+  const snap = await db.collection('adminPasswordLogs').orderBy('time', 'desc').limit(10).get();
+  const logs = snap.docs.map(d => d.data());
+  
   document.getElementById('adminPassLog').innerHTML = logs.length 
     ? logs.map(l => `
         <tr>
           <td>${l.oldUser}</td>
           <td>${l.newUser}</td>
           <td>${l.changedBy}</td>
-          <td>${l.time}</td>
+          <td>${new Date(l.time).toLocaleString()}</td>
         </tr>`).join('')
     : '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">No changes yet</td></tr>';
 }
 
 // ===== SP PASSWORD MANAGEMENT =====
-function changeSPPassword() {
+async function changeSPPassword() {
   const current = document.getElementById('spCurrentPass').value.trim();
   const newPass = document.getElementById('spNewPass').value.trim();
   const confirmPass = document.getElementById('spConfirmPass').value.trim();
   
-  if (current !== getSPPass()) return alert('Current password is incorrect babe!');
+  if (current !== spPassword) return alert('Current password is incorrect babe!');
   if (!newPass) return alert('Enter new password babe');
   if (newPass !== confirmPass) return alert('Passwords do not match babe!');
   
-  saveSPPass(newPass);
+  spPassword = newPass;
+  localStorage.setItem('spPass', newPass);
+  
   alert('✅ SP password updated successfully babe');
   document.getElementById('spCurrentPass').value = '';
   document.getElementById('spNewPass').value = '';
@@ -594,35 +579,63 @@ function logout() {
   }
 }
 
-// ===== INIT =====
-document.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem('userRole') !== 'sp') {
-    window.location.href = '/auth/login.html';
-    return;
-  }
-  
+// ===== TAB SWITCHING =====
+function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById('page-' + btn.dataset.page).classList.add('active');
       
-      if (btn.dataset.page === 'subscriptions') renderSubStatus();
-      if (btn.dataset.page === 'adminpass') renderAdminPassLog();
-      if (btn.dataset.page === 'broadcast') renderBroadcasts();
-      if (btn.dataset.page === 'adminchat') renderAdminChat();
+      switch(btn.dataset.page) {
+        case 'subscriptions': await renderSubStatus(); break;
+        case 'adminpass': await renderAdminPassLog(); break;
+        case 'broadcast': await renderBroadcasts(); break;
+        case 'adminchat': await renderAdminChat(); break;
+      }
     });
   });
   
-  renderSubStatus();
-  renderAdminPassLog();
-  renderBroadcasts();
-  renderAdminChat();
-  
-  document.getElementById('chatText').addEventListener('keydown', e => {
-    if (e.key === 'Enter') sendAdminMsg();
+  document.getElementById('chatText').addEventListener('keydown', async e => {
+    if (e.key === 'Enter') { e.preventDefault(); await sendAdminMsg(); }
   });
+}
+
+// ===== REAL-TIME LISTENERS =====
+function setupRealtimeListeners() {
+  // Subscription sync
+  subRef.onSnapshot(() => { renderSubStatus(); });
+  
+  // Broadcast sync
+  broadcastRef.orderBy('time', 'desc').limit(1).onSnapshot(snap => {
+    snap.docChanges().forEach(change => {
+      if (change.type === 'added') {
+        const data = change.doc.data();
+        renderBroadcasts();
+      }
+    });
+  });
+  
+  // Admin chat sync
+  chatRef.orderBy('time', 'asc').onSnapshot(() => {
+    if (document.querySelector('[data-page="adminchat"]').classList.contains('active')) {
+      renderAdminChat();
+    }
+  });
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', async () => {
+  resetTimer();
+  if (!(await checkAuth())) return;
+  setupTabs();
+  setupRealtimeListeners();
+  
+  await renderSubStatus();
+  await renderAdminPassLog();
+  await renderBroadcasts();
+  await renderAdminChat();
 });
 </script>
 </body>

@@ -141,7 +141,6 @@
         </table>
       </div>
     </div>
-
     <!-- ═══════════════ CASHIERS PAGE ═══════════════ -->
     <div id="page-cashiers" class="page hidden">
       <div class="card">
@@ -169,7 +168,6 @@
         </table>
       </div>
     </div>
-
     <!-- ═══════════════ PRODUCTS PAGE ═══════════════ -->
     <div id="page-products" class="page hidden">
       <div class="card">
@@ -199,7 +197,6 @@
         </table>
       </div>
     </div>
-
     <!-- ═══════════════ BROADCAST / ANNOUNCEMENTS ═══════════════ -->
     <div id="page-broadcast" class="page hidden">
       <div class="card">
@@ -223,7 +220,6 @@
         <div id="broadcastHistoryList"></div>
       </div>
     </div>
-
     <!-- ═══════════════ VOID REQUESTS ═══════════════ -->
     <div id="page-voids" class="page hidden">
       <div class="card">
@@ -242,7 +238,6 @@
         </table>
       </div>
     </div>
-
     <!-- ═══════════════ STOCK COUNT REQUESTS ═══════════════ -->
     <div id="page-count" class="page hidden">
       <div class="card">
@@ -275,7 +270,6 @@
         </table>
       </div>
     </div>
-
     <!-- ═══════════════ CHAT MODULE ═══════════════ -->
     <div id="page-chat" class="page hidden">
       <div class="card">
@@ -295,7 +289,6 @@
         </div>
       </div>
     </div>
-
     <!-- ═══════════════ PLACEHOLDER PAGES ═══════════════ -->
     <div id="page-stock" class="page hidden">
       <div class="card"><h3>Stock Management</h3><p>Page content retained — fully synced with Firebase</p></div>
@@ -308,32 +301,37 @@
     </div>
   </main>
 </div>
-
 <!-- FIREBASE SDK — SAME VERSION AS CASHIER -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
 <script>
 // ==================================================
-// FIREBASE CONFIG — PASTE YOURS HERE (SAME AS CASHIER)
+// ✅ FIREBASE CONFIG — YOUR PROJECT
 // ==================================================
-const FIREBASE_CONFIG = null; 
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAxuB4gacmWIf3U4Ic5TsOxSHCaynR0vhw",
+  authDomain: "bpos-pos.firebaseapp.com",
+  projectId: "bpos-pos",
+  storageBucket: "bpos-pos.firebasestorage.app",
+  messagingSenderId: "1024558399693",
+  appId: "1:1024558399693:web:13412d95960d8be732a984",
+  measurementId: "G-BY03FZEN6E"
+};
+
 let db = null;
 let firebaseInitialized = false;
 let unsubscribeBroadcast = null;
 let unsubscribeVoids = null;
 let unsubscribeCounts = null;
 let unsubscribeChat = null;
-
 // ===== GLOBALS =====
 let activeChatPeer = null;
-
 // ==================================================
 // FIREBASE INIT & REALTIME LISTENERS
 // ==================================================
 function initFirebase() {
-  if (!FIREBASE_CONFIG) {
+  if (!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) {
     console.log('⚠️ Firebase config not set — running in Local Mode');
     updateSyncStatus(false);
     return;
@@ -350,15 +348,12 @@ function initFirebase() {
     updateSyncStatus(false);
   }
 }
-
 function updateSyncStatus(online) {
   document.getElementById('syncBadge').textContent = online ? '● Online' : 'Local Mode';
   document.getElementById('syncBadge').className = 'sync-status ' + (online ? 'sync-online' : 'sync-offline');
 }
-
 function setupRealtimeListeners() {
   if (!db) return;
-
   // BROADCAST LISTENER
   unsubscribeBroadcast = db.collection('system').doc('broadcast').onSnapshot(doc => {
     const data = doc.data();
@@ -373,7 +368,6 @@ function setupRealtimeListeners() {
       renderBroadcastHistory();
     }
   });
-
   // VOID REQUESTS LISTENER
   unsubscribeVoids = db.collection('voidRequests').onSnapshot(snapshot => {
     snapshot.docChanges().forEach(change => {
@@ -381,7 +375,6 @@ function setupRealtimeListeners() {
     });
     renderVoidRequests();
   });
-
   // STOCK COUNT LISTENER
   unsubscribeCounts = db.collection('countRequests').onSnapshot(snapshot => {
     snapshot.docChanges().forEach(change => {
@@ -389,7 +382,6 @@ function setupRealtimeListeners() {
     });
     renderCountRequests();
   });
-
   // CHAT LISTENER
   unsubscribeChat = db.collection('chats').onSnapshot(snapshot => {
     snapshot.docChanges().forEach(change => {
@@ -401,17 +393,14 @@ function setupRealtimeListeners() {
     if (activeChatPeer) renderChatMsgs();
   });
 }
-
 function showDot(id) { const d = document.getElementById(id); if(d) d.classList.remove('hidden'); }
 function hideDot(id) { const d = document.getElementById(id); if(d) d.classList.add('hidden'); }
-
 // ==================================================
 // DATA HELPERS (Local + Firebase Hybrid)
 // ==================================================
 function genId() {
   return Date.now() + Math.random().toString(36).substr(2, 9);
 }
-
 function getStores() { 
   let s = JSON.parse(localStorage.getItem('stores') || '[]');
   return s.map(x => ({
@@ -425,28 +414,23 @@ function saveStores(d) {
   localStorage.setItem('stores', JSON.stringify(d)); 
   if (db) d.forEach(s => db.collection('stores').doc(s.id).set(s));
 }
-
 function getProducts() { return JSON.parse(localStorage.getItem('products') || '[]'); }
 function saveProducts(d) { 
   localStorage.setItem('products', JSON.stringify(d)); 
   if (db) d.forEach(p => db.collection('products').doc(String(p.id)).set(p));
 }
-
 function getUsers() { return JSON.parse(localStorage.getItem('bpox_users') || '[]'); }
 function saveUsers(d) { localStorage.setItem('bpox_users', JSON.stringify(d)); }
-
 function getVoids() { return JSON.parse(localStorage.getItem('voidRequests') || '[]'); }
 function saveVoids(d) { 
   localStorage.setItem('voidRequests', JSON.stringify(d)); 
   if (db) d.forEach(v => db.collection('voidRequests').doc(v.id).set(v));
 }
-
 function getCountReqs() { return JSON.parse(localStorage.getItem('countRequests') || '[]'); }
 function saveCountReqs(d) { 
   localStorage.setItem('countRequests', JSON.stringify(d)); 
   if (db) d.forEach(c => db.collection('countRequests').doc(c.id).set(c));
 }
-
 function getChats() { return JSON.parse(localStorage.getItem('chats') || '{}'); }
 function saveChats(d) { 
   localStorage.setItem('chats', JSON.stringify(d)); 
@@ -456,7 +440,6 @@ function saveChats(d) {
     });
   }
 }
-
 // ==================================================
 // PAGE NAVIGATION
 // ==================================================
@@ -474,7 +457,6 @@ function showPage(id) {
   if (id === 'count') { hideDot('countDot'); loadCountStoreOptions(); renderCountRequests(); }
   if (id === 'chat') { hideDot('chatDot'); loadChatCashierOptions(); }
 }
-
 // ==================================================
 // STORES
 // ==================================================
@@ -509,7 +491,6 @@ function addStore() {
   renderStores();
   alert('✅ Store added successfully!');
 }
-
 function renderStores() {
   const stores = getStores();
   document.getElementById('storeCount').textContent = stores.length;
@@ -525,7 +506,6 @@ function renderStores() {
     </tr>
   `).join('');
 }
-
 function deleteStore(id) {
   if(confirm('⚠️ Are you sure you want to DELETE this store? This action cannot be undone!')) {
     const updated = getStores().filter(x => String(x.id) !== String(id));
@@ -534,7 +514,6 @@ function deleteStore(id) {
     alert('✅ Store deleted successfully!');
   }
 }
-
 // ==================================================
 // CASHIERS
 // ==================================================
@@ -543,7 +522,6 @@ function loadCashierStoreOptions() {
   sel.innerHTML = '<option value="">— Assign Store —</option>';
   getStores().forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
 }
-
 function addCashier() {
   const name = document.getElementById('new-cashier-name').value.trim();
   const uname = document.getElementById('new-cashier-username').value.trim();
@@ -574,7 +552,6 @@ function addCashier() {
   renderCashiersList();
   alert('✅ Cashier added successfully!');
 }
-
 function renderCashiersList() {
   const users = getUsers().filter(u => u.role === 'cashier');
   const stores = getStores();
@@ -593,13 +570,11 @@ function renderCashiersList() {
     `;
   }).join('');
 }
-
 function removeCashier(username) {
   if (!confirm('Remove this cashier?')) return;
   saveUsers(getUsers().filter(u => u.username !== username));
   renderCashiersList();
 }
-
 // ==================================================
 // PRODUCTS
 // ==================================================
@@ -608,7 +583,6 @@ function loadProductStoreOptions() {
   sel.innerHTML = '<option value="">— Select Store —</option>';
   getStores().forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
 }
-
 function addProduct() {
   const name = document.getElementById('prod-name').value.trim();
   const barcode = document.getElementById('prod-barcode').value.trim();
@@ -642,7 +616,6 @@ function addProduct() {
   renderProductsList();
   alert('✅ Product added successfully!');
 }
-
 function renderProductsList() {
   const prods = getProducts();
   const stores = getStores();
@@ -662,13 +635,11 @@ function renderProductsList() {
     `;
   }).join('');
 }
-
 function deleteProduct(id) {
   if (!confirm('Delete this product?')) return;
   saveProducts(getProducts().filter(p => p.id !== id));
   renderProductsList();
 }
-
 // ==================================================
 // BROADCAST / ANNOUNCEMENTS
 // ==================================================
@@ -701,11 +672,9 @@ function sendBroadcast() {
   document.getElementById('broadcastMsg').value = '';
   renderBroadcastHistory();
 }
-
 function getBroadcastHistory() {
   return JSON.parse(localStorage.getItem('broadcastHistory') || '[]');
 }
-
 function renderBroadcastHistory() {
   const current = JSON.parse(localStorage.getItem('spBroadcast') || '{}');
   const history = getBroadcastHistory();
@@ -732,7 +701,6 @@ function renderBroadcastHistory() {
     </div>
   `).join('');
 }
-
 // ==================================================
 // VOID REQUESTS
 // ==================================================
@@ -755,7 +723,6 @@ function renderVoidRequests() {
       </tr>
     `).join('');
 }
-
 function approveVoid(id) {
   const voids = getVoids();
   const idx = voids.findIndex(v => v.id === id);
@@ -767,7 +734,6 @@ function approveVoid(id) {
     renderVoidRequests();
   }
 }
-
 function rejectVoid(id) {
   const reason = prompt('Reason for rejection:');
   if (reason === null) return;
@@ -782,7 +748,6 @@ function rejectVoid(id) {
     renderVoidRequests();
   }
 }
-
 // ==================================================
 // STOCK COUNT REQUESTS
 // ==================================================
@@ -791,7 +756,6 @@ function loadCountStoreOptions() {
   sel.innerHTML = '<option value="">— Select Store —</option>';
   getStores().forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
 }
-
 function sendCountRequest() {
   const storeId = document.getElementById('countStore').value;
   const instruction = document.getElementById('countInstruction').value.trim();
@@ -811,7 +775,6 @@ function sendCountRequest() {
   document.getElementById('countInstruction').value = '';
   renderCountRequests();
 }
-
 function renderCountRequests() {
   const reqs = getCountReqs();
   const stores = getStores();
@@ -834,7 +797,6 @@ function renderCountRequests() {
         `;
       }).join('');
 }
-
 // ==================================================
 // CHAT
 // ==================================================
@@ -845,13 +807,11 @@ function loadChatCashierOptions() {
     sel.innerHTML += `<option value="${c.username}">${c.fullName} (@${c.username})</option>`;
   });
 }
-
 function switchChat() {
   activeChatPeer = document.getElementById('chatCashier').value;
   document.getElementById('chatDisplay').style.display = activeChatPeer ? 'flex' : 'none';
   renderChatMsgs();
 }
-
 function renderChatMsgs() {
   if (!activeChatPeer) return;
   const key = ['Admin', activeChatPeer].sort().join('_');
@@ -865,7 +825,6 @@ function renderChatMsgs() {
   `).join('');
   document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 }
-
 function sendChatMsg() {
   if (!activeChatPeer) return alert('Select cashier first');
   const text = document.getElementById('chatText').value.trim();
@@ -885,7 +844,6 @@ function sendChatMsg() {
   document.getElementById('chatText').value = '';
   renderChatMsgs();
 }
-
 // ==================================================
 // LOGOUT & INIT
 // ==================================================
@@ -898,7 +856,6 @@ function logout() {
   sessionStorage.clear();
   window.location.href = '/auth/login.html';
 }
-
 document.addEventListener('DOMContentLoaded', () => {
   initFirebase();
   

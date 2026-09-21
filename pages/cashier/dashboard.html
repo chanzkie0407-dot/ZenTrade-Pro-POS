@@ -151,7 +151,6 @@
 <div id="storeHint" class="store-empty-hint" style="padding: 0 20px; display: none;">
   ⚠️ No stores found — Please add stores first from Admin page
 </div>
-
 <!-- ===== TABS ===== -->
 <div class="tabs-bar">
   <button class="tab-btn active" data-page="sales">🛒 Sales<span class="notification-dot" id="dot-sales"></span><span class="notification-dot" id="dot-broadcast" style="right:-4px;"></span></button>
@@ -165,7 +164,6 @@
   <button class="tab-btn" data-page="broadcasts">📢 Announcements<span class="notification-dot" id="dot-broadcast-history"></span></button>
   <button class="tab-btn" data-page="close">🔒 Close Shift</button>
 </div>
-
 <!-- ===== MAIN CONTENT ===== -->
 <div class="content">
   <!-- SALES PAGE -->
@@ -253,7 +251,6 @@
       </div>
     </div>
   </div>
-
   <!-- RECENT TRANSACTIONS -->
   <div id="page-recent" class="page">
     <div class="card">
@@ -264,7 +261,6 @@
       </table>
     </div>
   </div>
-
   <!-- CASH IN/OUT -->
   <div id="page-cashio" class="page">
     <div class="card">
@@ -299,7 +295,6 @@
       </table>
     </div>
   </div>
-
   <!-- VOID REQUEST -->
   <div id="page-void" class="page">
     <div class="card">
@@ -321,7 +316,6 @@
       <button class="btn btn-warning" onclick="submitVoid()">📤 Send Void Request to Admin</button>
     </div>
   </div>
-
   <!-- MY VOID REQUESTS -->
   <div id="page-myvoids" class="page">
     <div class="card">
@@ -332,7 +326,6 @@
       </table>
     </div>
   </div>
-
   <!-- PRODUCT OUT -->
   <div id="page-prodout" class="page">
     <div class="card">
@@ -359,7 +352,6 @@
       </table>
     </div>
   </div>
-
   <!-- STOCK COUNT -->
   <div id="page-count" class="page">
     <div class="card">
@@ -371,7 +363,6 @@
       </div>
     </div>
   </div>
-
   <!-- CHAT -->
   <div id="page-chat" class="page">
     <div class="card">
@@ -392,7 +383,6 @@
       </div>
     </div>
   </div>
-
   <!-- BROADCAST HISTORY -->
   <div id="page-broadcasts" class="page">
     <div class="card">
@@ -402,7 +392,6 @@
       </div>
     </div>
   </div>
-
   <!-- CLOSE SHIFT -->
   <div id="page-close" class="page">
     <div class="card">
@@ -462,7 +451,6 @@
     </div>
   </div>
 </div>
-
 <!-- MODALS -->
 <div id="shiftModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center;">
   <div style="background:white;padding:30px;border-radius:12px;max-width:400px;width:90%;">
@@ -477,20 +465,24 @@
     </div>
   </div>
 </div>
-
 <!-- FIREBASE SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
 <script>
 // ==================================================
-// FIREBASE CONFIG — PASTE YOUR CONFIG HERE LATER
+// ✅ FIREBASE CONFIG — PASTE YOUR ACTUAL VALUES HERE
 // ==================================================
-const FIREBASE_CONFIG = null; 
+const FIREBASE_CONFIG = {
+  apiKey: "PASTE_YOUR_API_KEY_HERE",
+  authDomain: "PASTE_YOUR_AUTH_DOMAIN_HERE",
+  projectId: "PASTE_YOUR_PROJECT_ID_HERE",
+  storageBucket: "PASTE_YOUR_STORAGE_BUCKET_HERE",
+  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
+  appId: "PASTE_YOUR_APP_ID_HERE"
+};
 let db = null;
 let firebaseInitialized = false;
-
 // ===== GLOBAL STATE =====
 let currentStoreId = null;
 let shiftOpen = false;
@@ -498,10 +490,9 @@ let openingFloat = 0;
 let cart = [];
 let currentTicket = null;
 let lastBroadcastId = null;
-
 // ===== FIREBASE INIT =====
 function initFirebase() {
-  if (!FIREBASE_CONFIG) {
+  if (!FIREBASE_CONFIG || FIREBASE_CONFIG.apiKey === "PASTE_YOUR_API_KEY_HERE") {
     console.log('⚠️ Firebase config not set — running in Local Mode');
     updateSyncStatus(false);
     return;
@@ -539,7 +530,6 @@ function setupRealtimeListeners() {
     }
   });
 }
-
 // ===== AUTO LOGOUT TIMER — 10 MINUTES =====
 let inactivityTimer;
 function resetTimer() {
@@ -553,7 +543,6 @@ function resetTimer() {
 ['mousedown','keydown','touchstart','click','scroll'].forEach(evt => {
   document.addEventListener(evt, resetTimer);
 });
-
 // ===== AUTO-SAVE CART =====
 let saveTimeout;
 function scheduleCartSave() {
@@ -583,7 +572,6 @@ function restoreCart() {
     }
   } catch(e) { console.error('Restore failed', e); }
 }
-
 // ===== BROADCAST SYSTEM =====
 function getBroadcastHistory() {
   return JSON.parse(localStorage.getItem('broadcastHistory') || '[]');
@@ -646,7 +634,6 @@ function renderBroadcastHistory() {
     </div>
   `).join('');
 }
-
 // ===== NOTIFICATION SYSTEM =====
 function showDot(id) { const d = document.getElementById('dot-'+id); if(d)d.style.display='block'; }
 function hideDot(id) { const d = document.getElementById('dot-'+id); if(d)d.style.display='none'; }
@@ -668,7 +655,6 @@ function checkNotifications() {
   hasUpdate ? showDot('myvoids') : hideDot('myvoids');
   checkBroadcast();
 }
-
 // ===== DATA HELPERS =====
 function getStores() { 
   let s = JSON.parse(localStorage.getItem('stores') || '[]');
@@ -699,7 +685,6 @@ function getNextTicket() {
   localStorage.setItem('nextTicketNum', n+1);
   return String(n).padStart(3,'0');
 }
-
 // ===== MAIN INIT =====
 document.addEventListener('DOMContentLoaded', () => {
   initFirebase(); resetTimer();
@@ -768,7 +753,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
 // ===== STORE SELECT =====
 function selectStore(id) {
   currentStoreId = id;
@@ -783,7 +767,6 @@ function selectStore(id) {
     document.getElementById('salesReady').classList.add('hidden');
   }
 }
-
 // ===== SHIFT =====
 function openShiftModal() { if (!currentStoreId) return alert('Select store first!'); document.getElementById('shiftModal').style.display='flex'; }
 function closeShiftModal() { document.getElementById('shiftModal').style.display='none'; }
@@ -800,7 +783,6 @@ function confirmStartShift() {
   closeShiftModal();
   alert('✅ Shift started! Ready to sell.');
 }
-
 // ===== PRODUCTS =====
 function renderProducts(filter='') {
   if (!currentStoreId) return;
@@ -827,7 +809,6 @@ function renderProducts(filter='') {
   `).join('');
 }
 function filterProducts(val) { renderProducts(val); }
-
 // ===== CART =====
 function addToCart(productId) {
   if (!shiftOpen) return alert('⚠️ Start shift first!');
@@ -841,6 +822,8 @@ function addToCart(productId) {
     if (existing.qty >= product.qty) return alert('Not enough stock available');
     existing.qty += 1;
   } else {
+    cart.push({ id: product.id, name: product.name, price: parseFloat(product.price), qty: 1, storeId: product.storeId });
+      } else {
     cart.push({ id: product.id, name: product.name, price: parseFloat(product.price), qty: 1, storeId: product.storeId });
   }
   updateCartDisplay(); scheduleCartSave();
@@ -870,9 +853,8 @@ function changeQty(productId, delta) {
   item.qty += delta;
   if (item.qty <= 0) cart = cart.filter(i => i.id !== productId);
   else if (prod && item.qty > prod.qty) { item.qty = prod.qty; alert(`Only ${prod.qty} available`); }
-  updateCart
-  Display(); scheduleCartSave(); }
-
+  updateCartDisplay(); scheduleCartSave();
+}
 function recalculate() {
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
   const discount = document.getElementById('applyDiscount').checked ? subtotal * 0.05 : 0;
@@ -884,19 +866,16 @@ function recalculate() {
   
   computeChange();
 }
-
 function togglePaymentFields() {
   const method = document.getElementById('payMethod').value;
   document.getElementById('cashFields').style.display = method === 'gcash' ? 'none' : 'block';
 }
-
 function computeChange() {
   const grandTotal = parseFloat(document.getElementById('grandTotal').textContent.replace(/[₱,]/g, '')) || 0;
   const cashGiven = parseFloat(document.getElementById('cashGiven').value) || 0;
   const change = cashGiven - grandTotal;
   document.getElementById('change').textContent = `₱${Math.max(0, change).toFixed(2)}`;
 }
-
 function clearCart() {
   if (!confirm('Clear all items in cart?')) return;
   cart = [];
@@ -904,7 +883,6 @@ function clearCart() {
   updateCartDisplay();
   localStorage.removeItem('cartAutoSave');
 }
-
 function holdCurrentSale() {
   if (!cart.length) return alert('Cart is empty!');
   const held = getHeldSales();
@@ -924,7 +902,6 @@ function holdCurrentSale() {
   currentTicket = getNextTicket();
   document.getElementById('ticketNo').textContent = currentTicket;
 }
-
 function renderHeldSales() {
   const list = getHeldSales().filter(h => String(h.storeId) === String(currentStoreId));
   const area = document.getElementById('heldSection');
@@ -944,7 +921,6 @@ function renderHeldSales() {
     </div>
   `).join('');
 }
-
 function resumeHeldSale(ticketId) {
   if (cart.length && !confirm('Replace current cart with held transaction?')) return;
   const held = getHeldSales().find(h => h.id === ticketId);
@@ -958,13 +934,11 @@ function resumeHeldSale(ticketId) {
   scheduleCartSave();
   alert('✅ Transaction restored!');
 }
-
 function removeHeldSale(ticketId, confirmDel = true) {
   if (confirmDel && !confirm('Delete this held transaction?')) return;
   saveHeldSales(getHeldSales().filter(h => h.id !== ticketId));
   renderHeldSales();
 }
-
 async function finalizeSale() {
   if (!shiftOpen) return alert('⚠️ Start shift first!');
   if (!cart.length) return alert('⚠️ Cart is empty!');
@@ -1030,7 +1004,6 @@ async function finalizeSale() {
   renderProducts();
   renderRecentTx();
 }
-
 function renderRecentTx() {
   const list = getTransactions().filter(t => String(t.storeId) === String(currentStoreId)).slice(0, 10);
   document.getElementById('recentTxList').innerHTML = !list.length
@@ -1045,7 +1018,6 @@ function renderRecentTx() {
       </tr>
     `).join('');
 }
-
 // ===== CASH IN/OUT =====
 function recordCashIn() {
   const amt = parseFloat(document.getElementById('cashInAmt').value);
@@ -1065,7 +1037,6 @@ function recordCashIn() {
   document.getElementById('cashInReason').value = '';
   renderCashLogs();
 }
-
 function recordCashOut() {
   const amt = parseFloat(document.getElementById('cashOutAmt').value);
   if (!amt || amt <= 0) return alert('Enter valid amount');
@@ -1084,7 +1055,6 @@ function recordCashOut() {
   document.getElementById('cashOutReason').value = '';
   renderCashLogs();
 }
-
 function renderCashLogs() {
   const list = getCashLogs().filter(c => String(c.storeId) === String(currentStoreId));
   document.getElementById('cashLogList').innerHTML = !list.length
@@ -1098,7 +1068,6 @@ function renderCashLogs() {
       </tr>
     `).join('');
 }
-
 // ===== VOID =====
 function populateVoidTickets() {
   const txs = getTransactions().filter(t => String(t.storeId) === String(currentStoreId));
@@ -1106,7 +1075,6 @@ function populateVoidTickets() {
   document.getElementById('wrongTicket').innerHTML = `<option value="">-- Select --</option>` + opts;
   document.getElementById('correctTicket').innerHTML = `<option value="">— None / Cancelled —</option>` + opts;
 }
-
 function submitVoid() {
   const wrong = document.getElementById('wrongTicket').value;
   const correct = document.getElementById('correctTicket').value;
@@ -1133,7 +1101,6 @@ function submitVoid() {
   showDot('void');
   checkNotifications();
 }
-
 function renderMyVoidRequests() {
   const myVoids = getVoids().filter(v => v.cashier === sessionStorage.getItem('username'));
   document.getElementById('myVoidList').innerHTML = !myVoids.length
@@ -1149,14 +1116,12 @@ function renderMyVoidRequests() {
       </tr>
     `).join('');
 }
-
 // ===== PRODUCT OUT =====
 function populateProdOutSelect() {
   const prods = getProducts().filter(p => String(p.storeId) === String(currentStoreId));
   document.getElementById('prodOutSelect').innerHTML = `<option value="">-- Select Product --</option>` +
     prods.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.qty})</option>`).join('');
 }
-
 function submitProductOut() {
   const pid = document.getElementById('prodOutSelect').value;
   const qty = parseInt(document.getElementById('prodOutQty').value);
@@ -1190,7 +1155,6 @@ function submitProductOut() {
   renderProdOutLogs();
   renderProducts();
 }
-
 function renderProdOutLogs() {
   const list = getProdOutLogs().filter(l => String(l.storeId) === String(currentStoreId));
   document.getElementById('prodOutLog').innerHTML = !list.length
@@ -1204,7 +1168,6 @@ function renderProdOutLogs() {
       </tr>
     `).join('');
 }
-
 // ===== STOCK COUNT =====
 function renderCountRequest() {
   const reqs = getCountReqs().filter(r => String(r.storeId) === String(currentStoreId) && !r.submittedAt);
@@ -1226,7 +1189,6 @@ function renderCountRequest() {
   `;
   form.classList.add('hidden');
 }
-
 let activeCountReqId = null;
 function startCount(reqId) {
   activeCountReqId = reqId;
@@ -1244,7 +1206,6 @@ function startCount(reqId) {
     </div>
   `).join('');
 }
-
 function submitCount() {
   if (!activeCountReqId) return alert('No active count');
   const prods = getProducts().filter(p => String(p.storeId) === String(currentStoreId));
@@ -1270,14 +1231,12 @@ function submitCount() {
   renderCountRequest();
   checkNotifications();
 }
-
 // ===== CHAT =====
 function switchChat() {
   const peer = document.getElementById('chatPeer').value;
   document.getElementById('chatDisplay').style.display = peer ? 'flex' : 'none';
   renderChatMsgs();
 }
-
 function renderChatMsgs() {
   const peer = document.getElementById('chatPeer').value;
   if (!peer) return;
@@ -1291,7 +1250,6 @@ function renderChatMsgs() {
   `).join('');
   document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 }
-
 function sendChatMsg() {
   const peer = document.getElementById('chatPeer').value;
   const text = document.getElementById('chatText').value.trim();
@@ -1309,7 +1267,6 @@ function sendChatMsg() {
   document.getElementById('chatText').value = '';
   renderChatMsgs();
 }
-
 // ===== CLOSE SHIFT =====
 function computeTotal() {
   const d = id => parseFloat(document.getElementById(id).value) || 0;
@@ -1319,7 +1276,7 @@ function computeTotal() {
   t('t500', d('d500') * 500);
   t('t200', d('d200') * 200);
   t('t100', d('d100') * 100);
-  t('d50', d('d50') * 50);
+  t('t50', d('d50') * 50);
   t('tcoins', d('dcoins'));
   
   const total = d('d1000') * 1000 + d('d500') * 500 + d('d200') * 200 + d('d100') * 100 + d('d50') * 50 + d('dcoins');
@@ -1339,7 +1296,6 @@ function computeTotal() {
   document.getElementById('diffAmt').textContent = `₱${diff.toFixed(2)}`;
   document.getElementById('diffAmt').style.color = diff === 0 ? 'inherit' : diff > 0 ? 'green' : 'red';
 }
-
 function confirmCloseShift() {
   if (!confirm('⚠️ Final close shift and log out? This cannot be undone.')) return;
   
@@ -1366,13 +1322,12 @@ function confirmCloseShift() {
   alert('✅ Shift closed. Thank you!');
   window.location.href = '/auth/login.html';
 }
-
 function logout() {
   if (!confirm('Log out?')) return;
   sessionStorage.clear();
   localStorage.removeItem('cartAutoSave');
   window.location.href = '/auth/login.html';
 }
-  </script>
+</script>
 </body>
 </html>

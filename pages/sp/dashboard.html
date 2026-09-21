@@ -18,6 +18,12 @@
       justify-content: space-between; padding: 0 24px; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     }
     .topbar h1 { font-size: 18px; font-weight: 600; }
+    .notification-dot { 
+      display: inline-block; width: 10px; height: 10px; background: var(--red); 
+      border-radius: 50%; margin-left: 6px; animation: pulse 2s infinite; 
+    }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    .hidden { display: none !important; }
     .btn {
       padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer;
       font-weight: 600; font-size: 14px; transition: all 0.2s;
@@ -28,7 +34,6 @@
     .btn-success { background: var(--green); color: white; }
     .btn-danger { background: var(--red); color: white; }
     .btn-warning { background: var(--yellow); color: #1f2937; }
-
     /* ===== TABS ===== */
     .tabs-bar {
       background: white; margin-top: 56px; display: flex; border-bottom: 1px solid var(--border);
@@ -37,15 +42,14 @@
     .tab-btn {
       padding: 14px 20px; background: none; border: none; font-size: 14px; font-weight: 600;
       color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap;
+      display: flex; align-items: center; gap: 4px;
     }
     .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: #eff6ff; }
-
     /* ===== MAIN CONTENT ===== */
     .content { padding: 24px; max-width: 1200px; margin: 0 auto; }
     .page { display: none; animation: fadeIn 0.3s; }
     .page.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
-
     /* ===== CARDS & FORMS ===== */
     .card {
       background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px;
@@ -64,13 +68,19 @@
     .badge-active { background: #dcfce7; color: #166534; }
     .badge-expired { background: #fee2e2; color: #991b1b; }
     .badge-trial { background: #fef3c7; color: #92400e; }
-
     /* ===== TABLES ===== */
     table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 12px; }
     th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: var(--light); font-weight: 600; color: var(--navy); }
-
-    /* ===== CHAT ===== */
+    /* ===== BROADCAST SYSTEM ===== */
+    .broadcast-box { border: 2px solid var(--yellow); border-radius: 10px; padding: 16px; background: #fffbeb; margin-bottom: 16px; }
+    .broadcast-history { margin-top: 20px; }
+    .broadcast-item { 
+      padding: 12px 16px; background: #fffbeb; border-left: 4px solid var(--yellow); 
+      border-radius: 6px; margin-bottom: 10px; 
+    }
+    .broadcast-time { font-size: 11px; color: #92400e; margin-top: 4px; }
+    /* ===== ADMIN PM CHAT ===== */
     .chat-box { border: 1px solid var(--border); border-radius: 10px; height: 400px; display: flex; flex-direction: column; margin-top: 16px; }
     .chat-msgs { flex: 1; overflow-y: auto; padding: 16px; background: var(--light); }
     .msg { margin-bottom: 12px; max-width: 75%; }
@@ -79,11 +89,10 @@
     .msg-time { font-size: 10px; opacity: 0.7; margin-top: 4px; text-align: right; }
     .chat-input-row { display: flex; border-top: 1px solid var(--border); }
     .chat-input-row input { flex: 1; border: none; border-radius: 0; margin: 0; }
-    .hidden { display: none !important; }
+    .note-text { font-size: 13px; color: var(--gray); margin-top: 8px; }
   </style>
 </head>
 <body>
-
 <!-- ===== TOPBAR ===== -->
 <div class="topbar">
   <h1>🛡️ BPOS — Service Provider</h1>
@@ -96,37 +105,42 @@
 <!-- ===== TABS ===== -->
 <div class="tabs-bar">
   <button class="tab-btn active" data-page="subscriptions">💳 Subscriptions</button>
+  <button class="tab-btn" data-page="broadcast">📢 Broadcast</button>
+  <button class="tab-btn" data-page="adminchat">💬 Admin PM</button>
   <button class="tab-btn" data-page="adminpass">🔑 Reset Admin Password</button>
   <button class="tab-btn" data-page="sppass">🔐 Change SP Password</button>
-  <button class="tab-btn" data-page="chat">💬 Chat Module</button>
 </div>
 
 <!-- ===== MAIN CONTENT ===== -->
 <div class="content">
-
   <!-- ═══════════════ SUBSCRIPTIONS ═══════════════ -->
   <div id="page-subscriptions" class="page active">
     <div class="card">
       <h3>Subscription Plans</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;">
-        <div style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:0.2s;" onmouseover="this.borderColor='#2563eb'" onmouseout="this.borderColor='var(--border)'">
+        <div style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:0.2s;" 
+             onmouseover="this.style.borderColor='#2563eb'" 
+             onmouseout="this.style.borderColor='var(--border)'">
           <h4 style="font-size:18px;margin-bottom:8px;">Weekly</h4>
           <p class="price-tag">₱199</p>
           <p style="color:var(--gray);font-size:13px;">7 days access</p>
         </div>
-        <div style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:0.2s;" onmouseover="this.borderColor='#2563eb'" onmouseout="this.borderColor='var(--border)'">
+        <div style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:0.2s;" 
+             onmouseover="this.style.borderColor='#2563eb'" 
+             onmouseout="this.style.borderColor='var(--border)'">
           <h4 style="font-size:18px;margin-bottom:8px;">Bi-Weekly</h4>
           <p class="price-tag">₱325</p>
           <p style="color:var(--gray);font-size:13px;">14 days access</p>
         </div>
-        <div style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:0.2s;" onmouseover="this.borderColor='#2563eb'" onmouseout="this.borderColor='var(--border)'">
+        <div style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:0.2s;" 
+             onmouseover="this.style.borderColor='#2563eb'" 
+             onmouseout="this.style.borderColor='var(--border)'">
           <h4 style="font-size:18px;margin-bottom:8px;">Monthly</h4>
           <p class="price-tag">₱579</p>
           <p style="color:var(--gray);font-size:13px;">30 days access</p>
         </div>
       </div>
     </div>
-
     <div class="card">
       <h3>Extend / Renew Subscription</h3>
       <div class="form-group">
@@ -143,7 +157,6 @@
       </div>
       <button class="btn btn-success" onclick="processRenewal()">✅ Activate & Extend</button>
     </div>
-
     <div class="card">
       <h3>Current Subscription Status</h3>
       <div id="subStatus"></div>
@@ -151,6 +164,43 @@
         <thead><tr><th>Status</th><th>Plan</th><th>Expiry Date</th><th>Days Remaining</th></tr></thead>
         <tbody id="subHistory"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════ BROADCAST SYSTEM ═══════════════ -->
+  <div id="page-broadcast" class="page">
+    <div class="card">
+      <h3>📢 Send Broadcast Announcement</h3>
+      <p class="note-text" style="margin-bottom:16px;">Message will appear to all users (Cashier, Admin) as a system announcement. Direct PM to Cashier is disabled — use this for POS updates, reminders, and announcements.</p>
+      
+      <div class="broadcast-box">
+        <div class="form-group">
+          <label>Announcement Message</label>
+          <textarea id="broadcastMsg" rows="3" placeholder="e.g. 'Pahiram muna ng POS sandali lang ito'"></textarea>
+        </div>
+        <button class="btn btn-warning" onclick="sendBroadcast()">📢 Send to All Users</button>
+      </div>
+
+      <div class="broadcast-history">
+        <h4 style="margin-bottom:12px;">Recent Announcements</h4>
+        <div id="broadcastList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ADMIN DIRECT PM ═══════════════ -->
+  <div id="page-adminchat" class="page">
+    <div class="card">
+      <h3>💬 Direct Message — SP ↔ Admin</h3>
+      <p class="note-text" style="margin-bottom:16px;">Private messaging with Cashier has been disabled. Use Broadcast tab for system-wide announcements.</p>
+      
+      <div class="chat-box">
+        <div class="chat-msgs" id="chatMessages"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chatText" placeholder="Message to Admin...">
+          <button class="btn btn-primary" onclick="sendAdminMsg()">Send</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -202,28 +252,6 @@
       <button class="btn btn-primary" onclick="changeSPPassword()">🔄 Update My Password</button>
     </div>
   </div>
-
-  <!-- ═══════════════ CHAT MODULE ═══════════════ -->
-  <div id="page-chat" class="page">
-    <div class="card">
-      <h3>💬 Private Chat — SP Side</h3>
-      <div class="form-group">
-        <label>Chat with</label>
-        <select id="chatPeer" onchange="switchChat()">
-          <option value="">-- Select --</option>
-          <option value="Admin">👤 Admin / Owner</option>
-        </select>
-      </div>
-      <div class="chat-box" id="chatDisplay" style="display:none;">
-        <div class="chat-msgs" id="chatMessages"></div>
-        <div class="chat-input-row">
-          <input type="text" id="chatText" placeholder="Type message...">
-          <button class="btn btn-primary" onclick="sendChatMsg()">Send</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
 
 <script>
@@ -251,10 +279,75 @@ function getAdminPass() { return localStorage.getItem('adminPass') || '8888'; }
 function saveAdminPass(d) { localStorage.setItem('adminPass', d); }
 function getSPPass() { return localStorage.getItem('spPass') || '19970407chan'; }
 function saveSPPass(d) { localStorage.setItem('spPass', d); }
-function getChats() { return JSON.parse(localStorage.getItem('chats') || '{}'); }
-function saveChats(d) { localStorage.setItem('chats', JSON.stringify(d)); }
+function getBroadcasts() { return JSON.parse(localStorage.getItem('broadcasts') || '[]'); }
+function saveBroadcasts(d) { localStorage.setItem('broadcasts', JSON.stringify(d)); }
+function getAdminChat() { return JSON.parse(localStorage.getItem('adminChat') || '[]'); }
+function saveAdminChat(d) { localStorage.setItem('adminChat', JSON.stringify(d)); }
 function getLogs() { return JSON.parse(localStorage.getItem('spLogs') || '[]'); }
 function saveLogs(d) { localStorage.setItem('spLogs', JSON.stringify(d)); }
+
+// ===== BROADCAST FUNCTIONS =====
+function sendBroadcast() {
+  const msg = document.getElementById('broadcastMsg').value.trim();
+  if (!msg) return alert('Please type a message first babe 😊');
+  
+  const broadcasts = getBroadcasts();
+  broadcasts.unshift({
+    message: msg,
+    sender: 'Service Provider',
+    time: new Date().toISOString(),
+    readBy: []
+  });
+  saveBroadcasts(broadcasts);
+  
+  alert('✅ Broadcast sent! All users will see this announcement.');
+  document.getElementById('broadcastMsg').value = '';
+  renderBroadcasts();
+}
+
+function renderBroadcasts() {
+  const list = document.getElementById('broadcastList');
+  const broadcasts = getBroadcasts().slice(0, 5); // Show last 5
+  if (!broadcasts.length) {
+    list.innerHTML = '<p style="color:var(--gray);font-size:13px;">No announcements sent yet</p>';
+    return;
+  }
+  list.innerHTML = broadcasts.map(b => `
+    <div class="broadcast-item">
+      <div style="white-space:pre-wrap;">${b.message}</div>
+      <div class="broadcast-time">📢 Sent: ${new Date(b.time).toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+
+// ===== ADMIN PM FUNCTIONS =====
+function sendAdminMsg() {
+  const text = document.getElementById('chatText').value.trim();
+  if (!text) return;
+  
+  const chat = getAdminChat();
+  chat.push({
+    sender: 'SP',
+    text: text,
+    time: new Date().toISOString()
+  });
+  saveAdminChat(chat);
+  
+  document.getElementById('chatText').value = '';
+  renderAdminChat();
+}
+
+function renderAdminChat() {
+  const msgs = getAdminChat();
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = msgs.map(m => `
+    <div class="msg ${m.sender === 'SP' ? 'me' : 'other'}">
+      <div>${m.text}</div>
+      <div class="msg-time">${new Date(m.time).toLocaleTimeString()}</div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -262,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = '/auth/login.html';
     return;
   }
-
+  
   // Tab switching
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -273,11 +366,20 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (btn.dataset.page === 'subscriptions') renderSubStatus();
       if (btn.dataset.page === 'adminpass') renderAdminPassLog();
+      if (btn.dataset.page === 'broadcast') renderBroadcasts();
+      if (btn.dataset.page === 'adminchat') renderAdminChat();
     });
   });
-
+  
   renderSubStatus();
   renderAdminPassLog();
+  renderBroadcasts();
+  renderAdminChat();
+  
+  // Enter key send for admin chat
+  document.getElementById('chatText').addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendAdminMsg();
+  });
 });
 
 // ===== SUBSCRIPTION & RENEWAL =====
@@ -286,12 +388,11 @@ function processRenewal() {
   const remarks = document.getElementById('subRemarks').value.trim();
   const [price, days] = planVal.split('-').map(v => parseInt(v));
   
-  if (!price || !days) return alert('Select valid plan');
+  if (!price || !days) return alert('Select valid plan babe');
   
   const sub = getSubscription();
   const now = new Date();
   
-  // Calculate new expiry
   let newExpiry;
   if (sub.expiryDate && new Date(sub.expiryDate) > now) {
     newExpiry = new Date(sub.expiryDate);
@@ -300,7 +401,6 @@ function processRenewal() {
   }
   newExpiry.setDate(newExpiry.getDate() + days);
   
-  // Update subscription
   sub.expiryDate = newExpiry.toISOString();
   sub.lastPlan = `${price} - ${days} days`;
   sub.lastRenewed = now.toISOString();
@@ -309,7 +409,6 @@ function processRenewal() {
   
   saveSubscription(sub);
   
-  // Log the renewal
   const logs = getLogs();
   logs.unshift({
     action: 'Renewal',
@@ -332,16 +431,15 @@ function renderSubStatus() {
   
   if (sub.expiryDate) {
     expiry = new Date(sub.expiryDate);
-    daysLeft = Math.ceil((expiry - now) / (86400000));
+    daysLeft = Math.ceil((expiry - now) / 86400000);
     status = daysLeft > 0 
       ? `<span class="badge badge-active">ACTIVE</span>` 
       : `<span class="badge badge-expired">EXPIRED</span>`;
   } else {
-    // Trial mode
     const trialStart = sub.trialStart ? new Date(sub.trialStart) : now;
     expiry = new Date(trialStart);
     expiry.setDate(expiry.getDate() + 7);
-    daysLeft = Math.ceil((expiry - now) / (86400000));
+    daysLeft = Math.ceil((expiry - now) / 86400000);
     status = daysLeft > 0 
       ? `<span class="badge badge-trial">FREE TRIAL</span>` 
       : `<span class="badge badge-expired">TRIAL ENDED</span>`;
@@ -373,28 +471,26 @@ function changeAdminPassword() {
   const newPass = document.getElementById('newAdminPass').value.trim();
   const confirmPass = document.getElementById('confirmAdminPass').value.trim();
   
-  if (!newPass) return alert('Enter new password');
-  if (newPass !== confirmPass) return alert('Passwords do not match!');
+  if (!newPass) return alert('Enter new password babe');
+  if (newPass !== confirmPass) return alert('Passwords do not match babe!');
   
   const oldUser = getAdminUser();
-  const oldPass = getAdminPass();
   
   if (newUser) saveAdminUser(newUser);
   saveAdminPass(newPass);
   
-  // Log the change
   const logs = JSON.parse(localStorage.getItem('adminPassChangeLog') || '[]');
   logs.unshift({
     oldUser,
     newUser: newUser || oldUser,
-    oldPass,
-    newPass,
+    oldPass: '***hidden***',
+    newPass: '***updated***',
     changedBy: 'Service Provider',
     time: new Date().toLocaleString()
   });
   localStorage.setItem('adminPassChangeLog', JSON.stringify(logs));
   
-  alert('✅ Admin credentials updated successfully');
+  alert('✅ Admin credentials updated successfully babe');
   document.getElementById('newAdminUser').value = '';
   document.getElementById('newAdminPass').value = '';
   document.getElementById('confirmAdminPass').value = '';
@@ -420,53 +516,15 @@ function changeSPPassword() {
   const newPass = document.getElementById('spNewPass').value.trim();
   const confirmPass = document.getElementById('spConfirmPass').value.trim();
   
-  if (current !== getSPPass()) return alert('Current password is incorrect!');
-  if (!newPass) return alert('Enter new password');
-  if (newPass !== confirmPass) return alert('Passwords do not match!');
+  if (current !== getSPPass()) return alert('Current password is incorrect babe!');
+  if (!newPass) return alert('Enter new password babe');
+  if (newPass !== confirmPass) return alert('Passwords do not match babe!');
   
   saveSPPass(newPass);
-  alert('✅ SP password updated successfully');
+  alert('✅ SP password updated successfully babe');
   document.getElementById('spCurrentPass').value = '';
   document.getElementById('spNewPass').value = '';
   document.getElementById('spConfirmPass').value = '';
-}
-
-// ===== CHAT =====
-let chatWith = null;
-function switchChat() {
-  chatWith = document.getElementById('chatPeer').value;
-  const display = document.getElementById('chatDisplay');
-  if (!chatWith) { display.style.display = 'none'; return; }
-  display.style.display = 'flex';
-  renderChatMsgs();
-}
-function renderChatMsgs() {
-  if (!chatWith) return;
-  const allChats = getChats();
-  const key = ['SP', chatWith].sort().join('_');
-  const msgs = allChats[key] || [];
-  document.getElementById('chatMessages').innerHTML = msgs.map(m => `
-    <div class="msg ${m.sender === 'SP' ? 'me' : 'other'}">
-      <div>${m.text}</div>
-      <div class="msg-time">${new Date(m.time).toLocaleTimeString()}</div>
-    </div>`).join('');
-  document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-}
-function sendChatMsg() {
-  if (!chatWith) return alert('Select who to chat with first');
-  const text = document.getElementById('chatText').value.trim();
-  if (!text) return;
-  const allChats = getChats();
-  const key = ['SP', chatWith].sort().join('_');
-  if (!allChats[key]) allChats[key] = [];
-  allChats[key].push({
-    sender: 'SP',
-    text,
-    time: new Date().toISOString()
-  });
-  saveChats(allChats);
-  document.getElementById('chatText').value = '';
-  renderChatMsgs();
 }
 
 // ===== LOGOUT =====
@@ -477,6 +535,6 @@ function logout() {
   }
 }
 </script>
-  <script src="../../js/sync.js"></script>
+<script src="../../js/sync.js"></script>
 </body>
 </html>

@@ -11,33 +11,23 @@
       --success: #27ae60;
       --danger: #e74c3c;
       --warning: #f39c12;
-      --info: #9b59b6;
-      --light: #ecf0f1;
       --dark: #2c3e50;
-      --yellow: #f1c40f;
+      --light: #f8f9fa;
     }
-    body { background: #f8f9fa; min-height: 100vh; }
-
-    /* HEADER */
+    body { background: var(--light); min-height: 100vh; }
     header {
       background: linear-gradient(90deg, var(--dark), #34495e);
-      color: white; padding: 12px 25px;
+      color: white; padding: 15px 25px;
       display: flex; justify-content: space-between; align-items: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
     .logo { font-size: 20px; font-weight: bold; }
-    .header-right { display: flex; gap: 15px; align-items: center; }
-    .store-select select {
-      padding: 8px 12px; border-radius: 6px; border: none; font-size: 15px;
-    }
-    .user-name { font-weight: 600; }
+    .user-info { display: flex; gap: 15px; align-items: center; }
     .logout-btn {
       background: var(--danger); color: white; border: none; padding: 8px 16px;
       border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s;
     }
     .logout-btn:hover { background: #c0392b; }
-
-    /* TABS */
     .tabs { display: flex; background: white; border-bottom: 2px solid #ddd; flex-wrap: wrap; }
     .tab {
       padding: 14px 20px; cursor: pointer; border-bottom: 3px solid transparent;
@@ -45,87 +35,54 @@
     }
     .tab:hover { background: #f0f0f0; }
     .tab.active { border-bottom-color: var(--primary); color: var(--primary); background: #f0f7ff; }
-    .tab-content { padding: 20px; max-width: 1400px; margin: 0 auto; display: none; }
+    .tab-content { padding: 20px; max-width: 1200px; margin: 0 auto; display: none; }
     .tab-content.active { display: block; }
-
-    /* GRID BUTTONS — POS STYLE */
-    .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin: 20px 0; }
-    .pos-btn {
-      padding: 20px; border: none; border-radius: 10px; font-size: 16px; font-weight: 700;
-      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; color: white;
-    }
-    .pos-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    .pos-btn:active { transform: scale(0.98); }
-    .pos-btn.blue { background: var(--primary); }
-    .pos-btn.green { background: var(--success); }
-    .pos-btn.yellow { background: var(--warning); color: #333; }
-    .pos-btn.red { background: var(--danger); }
-    .pos-btn.purple { background: var(--info); }
-    .pos-btn.gray { background: #95a5a6; }
-
-    /* CARD & FORM */
+    h2 { color: var(--dark); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
     .card {
       background: white; padding: 25px; border-radius: 12px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px;
     }
-    h2 { color: var(--dark); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-    input, select, textarea {
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width:768px) { .grid-2 { grid-template-columns: 1fr; } }
+    input, select, button {
       width: 100%; padding: 12px 15px; margin: 6px 0; border: 2px solid #eee;
-      border-radius: 8px; font-size: 15px; transition: border 0.2s;
+      border-radius: 8px; font-size: 15px;
     }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
-    button.small { padding: 10px 18px; border-radius: 6px; font-size: 14px; margin: 5px; }
-
-    /* POS SALE LAYOUT */
-    .pos-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
-    @media(max-width:900px) { .pos-layout { grid-template-columns: 1fr; } }
-
-    .product-search { display: flex; gap: 10px; margin-bottom: 15px; }
-    .product-search input { flex: 1; margin: 0; }
-
-    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; }
-    .product-item {
-      background: white; border: 2px solid #eee; border-radius: 8px; padding: 12px;
-      text-align: center; cursor: pointer; transition: all 0.2s;
+    button {
+      background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600;
+      transition: background 0.2s;
     }
-    .product-item:hover { border-color: var(--primary); background: #f0f7ff; }
-    .product-item .name { font-weight: 600; font-size: 13px; margin-bottom: 5px; }
-    .product-item .price { color: var(--success); font-weight: 700; font-size: 15px; }
-
-    /* CART */
-    .cart { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    button:hover { background: #2980b9; }
+    button.small { width: auto; padding: 10px 18px; margin: 5px; }
+    button.success { background: var(--success); }
+    button.success:hover { background: #219653; }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #c0392b; }
+    button.warning { background: var(--warning); }
+    button.warning:hover { background: #e67e22; }
     .cart-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 0; border-bottom: 1px solid #eee;
+      padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 8px;
     }
-    .cart-item .qty-control { display: flex; gap: 8px; align-items: center; }
-    .cart-item button { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: none; background: #ddd; cursor: pointer; font-weight: bold; }
-    .cart-total { font-size: 26px; font-weight: bold; text-align: right; padding: 15px 0; color: var(--dark); }
-
-    /* PAYMENT MODAL */
+    .cart-item:last-child { border-bottom: none; }
+    .ticket-badge {
+      display: inline-block; background: var(--primary); color: white;
+      padding: 6px 14px; border-radius: 20px; font-weight: bold; margin-left: 10px;
+    }
+    .total-row {
+      font-size: 22px; font-weight: bold; text-align: right; padding: 15px;
+      background: #f0f7ff; border-radius: 8px; margin-top: 10px;
+    }
     .modal-bg {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none;
-      align-items: center; justify-content: center; z-index: 1000;
+      align-items: center; justify-content: center; z-index: 1000; padding: 20px;
     }
-    .modal { background: white; padding: 30px; border-radius: 14px; max-width: 450px; width: 90%; }
-    .modal h3 { margin-bottom: 20px; text-align: center; }
-    .pay-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
-    .pay-btns button { padding: 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
-    .cash { background: var(--success); color: white; }
-    .gcash { background: var(--primary); color: white; }
-    .split { background: var(--warning); color: #333; }
-
-    /* TRANSACTIONS */
-    .tx-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-    .tx-item .amount { font-weight: 700; color: var(--success); }
-
-    /* DENOMINATION TABLE */
-    .denom-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
-    .denom-row label { width: 80px; font-weight: 600; }
-    .denom-row input { flex: 1; margin: 0; }
-    .denom-row .subtotal { width: 120px; text-align: right; font-weight: 700; }
-
-    /* CHAT */
+    .modal {
+      background: white; padding: 30px; border-radius: 14px; max-width: 500px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal h3 { margin-bottom: 20px; color: var(--dark); }
+    .hidden { display: none !important; }
     .chat-box { border: 1px solid #ddd; border-radius: 10px; height: 400px; display: flex; flex-direction: column; background: white; }
     .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; background: #fafafa; }
     .chat-input { display: flex; border-top: 1px solid #ddd; }
@@ -133,205 +90,134 @@
     .msg { margin: 8px 0; padding: 10px 14px; border-radius: 18px; max-width: 70%; }
     .msg.me { background: var(--primary); color: white; margin-left: auto; }
     .msg.other { background: #e9ecef; color: #333; margin-right: auto; }
-
-    .hidden { display: none !important; }
+    .success-msg { color: var(--success); font-weight: bold; margin: 10px 0; }
+    .ticket-select-option {
+      padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;
+    }
+    .ticket-select-option:hover { background: #f0f7ff; }
   </style>
 </head>
 <body>
 
 <header>
   <div class="logo">ZenTrade Pro POS — Cashier</div>
-  <div class="header-right">
-    <div class="store-select">
-      <select id="storeSelect" onchange="switchStore()">
-        <option value="">-- Select Store --</option>
-      </select>
-    </div>
-    <span class="user-name" id="cashierName"></span>
+  <div class="user-info">
+    <span id="userNameDisplay"></span>
     <button class="logout-btn" onclick="logout()">LOG OUT</button>
   </div>
 </header>
 
 <div class="tabs">
-  <div class="tab active" data-tab="shift">Start Shift</div>
-  <div class="tab" data-tab="sales">Sales / POS</div>
-  <div class="tab" data-tab="transactions">Recent Transactions</div>
-  <div class="tab" data-tab="requests">Requests</div>
-  <div class="tab" data-tab="cashflow">Cash In / Out</div>
-  <div class="tab" data-tab="count">Stock Count</div>
+  <div class="tab active" data-tab="pos">POS</div>
+  <div class="tab" data-tab="history">History</div>
+  <div class="tab" data-tab="void">Request Void</div>
+  <div class="tab" data-tab="stock">Stock Count</div>
   <div class="tab" data-tab="chat">Chat</div>
-  <div class="tab" data-tab="endshift">End Shift</div>
 </div>
 
-<!-- START SHIFT -->
-<div class="tab-content active" id="tab-shift">
-  <h2>Start Your Shift</h2>
-  <div class="card">
-    <label>Enter Opening Cash Float</label>
-    <input type="number" id="cashFloat" placeholder="0.00" step="0.01">
-    <button class="pos-btn green" onclick="startShift()">START SHIFT</button>
-  </div>
-</div>
-
-<!-- SALES / POS -->
-<div class="tab-content" id="tab-sales">
-  <h2>Point of Sale</h2>
-  <div class="pos-layout">
-    <div>
-      <div class="product-search">
-        <input type="text" id="prodSearch" placeholder="Search product or scan barcode..." oninput="filterProducts()">
+<!-- POS TAB -->
+<div class="tab-content active" id="tab-pos">
+  <h2>Point of Sale <span class="ticket-badge" id="nextTicketDisplay">Loading...</span></h2>
+  
+  <div class="grid-2">
+    <div class="card">
+      <h3>Add to Cart</h3>
+      <select id="posStore" onchange="loadProductsForPOS()">
+        <option value="">-- Select Store --</option>
+      </select>
+      <input type="text" id="barcodeInput" placeholder="Scan Barcode or Type Here..." onkeypress="if(event.key==='Enter')findProduct()">
+      <button onclick="findProduct()">🔍 FIND PRODUCT</button>
+      
+      <div id="productResult" class="hidden" style="margin-top:15px;">
+        <p><strong>Product:</strong> <span id="prodName"></span></p>
+        <p><strong>Price:</strong> ₱<span id="prodPrice"></span></p>
+        <p><strong>Available Qty:</strong> <span id="prodStock"></span></p>
+        <input type="number" id="addQty" placeholder="Quantity" min="1" value="1">
+        <button class="success" onclick="addToCart()">ADD TO CART</button>
       </div>
-      <div class="product-grid" id="productGrid"></div>
     </div>
-    <div class="cart">
-      <h3>Current Sale</h3>
+
+    <div class="card">
+      <h3>Cart</h3>
       <div id="cartList"></div>
-      <div class="cart-total">TOTAL: ₱<span id="grandTotal">0.00</span></div>
-      <div style="display:flex;gap:10px;margin-top:15px;">
-        <button class="pos-btn yellow" style="flex:1;" onclick="applyDiscount()">Discount</button>
-        <button class="pos-btn green" style="flex:1;" onclick="openPayment()">PAY</button>
-        <button class="pos-btn red" style="flex:1;" onclick="clearCart()">Clear</button>
+      <div class="total-row">Total: ₱<span id="grandTotal">0.00</span></div>
+      
+      <div style="margin-top:15px;">
+        <select id="paymentMethod">
+          <option value="Cash">Cash</option>
+          <option value="GCash">GCash</option>
+        </select>
+        <input type="number" id="cashGiven" placeholder="Cash Given" step="0.01" oninput="computeChange()">
+        <p>Change: ₱<span id="changeAmt">0.00</span></p>
+        <button class="success" onclick="completeTransaction()">✅ COMPLETE SALE</button>
+        <button class="warning small" onclick="clearCart()">CLEAR CART</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- RECENT TRANSACTIONS -->
-<div class="tab-content" id="tab-transactions">
-  <h2>Recent Transactions (Last 5 only)</h2>
-  <div id="txList"></div>
-</div>
-
-<!-- REQUESTS -->
-<div class="tab-content" id="tab-requests">
-  <h2>Send Requests to Admin</h2>
-  <div class="grid-buttons">
-    <button class="pos-btn purple" onclick="showVoidForm()">Request Void</button>
-    <button class="pos-btn blue" onclick="showProductOutForm()">Product Out / Free Issue</button>
-  </div>
-
-  <!-- VOID FORM -->
-  <div class="card hidden" id="voidForm">
-    <h3>Request Void</h3>
-    <label>Wrong Ticket / Reference #</label>
-    <input type="text" id="wrongTicket" placeholder="Enter ticket number">
-    <label>Correct Ticket # (Optional)</label>
-    <input type="text" id="correctTicket" placeholder="Leave blank if not needed">
-    <label>Reason</label>
-    <textarea id="voidReason" rows="3" placeholder="Explain why..."></textarea>
-    <button class="pos-btn green" onclick="sendVoidRequest()">SEND REQUEST</button>
-    <button class="pos-btn gray" onclick="hideForms()">Cancel</button>
-  </div>
-
-  <!-- PRODUCT OUT FORM -->
-  <div class="card hidden" id="productOutForm">
-    <h3>Product Out</h3>
-    <label>Product Name</label>
-    <input type="text" id="outProdName" placeholder="Product">
-    <label>Quantity</label>
-    <input type="number" id="outQty" min="1" value="1">
-    <label>Reason</label>
-    <textarea id="outReason" rows="3" placeholder="e.g. Transfer to another store, complimentary, etc."></textarea>
-    <button class="pos-btn green" onclick="sendProductOut()">SUBMIT</button>
-    <button class="pos-btn gray" onclick="hideForms()">Cancel</button>
-  </div>
-</div>
-
-<!-- CASH IN / OUT -->
-<div class="tab-content" id="tab-cashflow">
-  <h2>Cash In / Cash Out</h2>
-  <div class="grid-buttons">
-    <button class="pos-btn green" onclick="showCashIn()">Cash In</button>
-    <button class="pos-btn red" onclick="showCashOut()">Cash Out</button>
-  </div>
-  <div class="card hidden" id="cashInForm">
-    <h3>Cash In</h3>
-    <input type="number" id="cashInAmt" placeholder="Amount" step="0.01">
-    <input type="text" id="cashInReason" placeholder="Reason / Source">
-    <button class="pos-btn green" onclick="submitCashIn()">SUBMIT</button>
-    <button class="pos-btn gray" onclick="hideForms()">Cancel</button>
-  </div>
-  <div class="card hidden" id="cashOutForm">
-    <h3>Cash Out</h3>
-    <input type="number" id="cashOutAmt" placeholder="Amount" step="0.01">
-    <input type="text" id="cashOutReason" placeholder="Reason / Details">
-    <button class="pos-btn red" onclick="submitCashOut()">SUBMIT</button>
-    <button class="pos-btn gray" onclick="hideForms()">Cancel</button>
-  </div>
-</div>
-
-<!-- STOCK COUNT -->
-<div class="tab-content" id="tab-count">
-  <h2>Stock Count</h2>
-  <div class="card" id="countPrompt">
-    <p>Waiting for count request from Admin...</p>
-  </div>
-  <div class="card hidden" id="countForm">
-    <h3>Count Request — <span id="countProdName"></span></h3>
-    <p>Expected in System: <strong id="countExpected"></strong></p>
-    <label>Actual Quantity Counted</label>
-    <input type="number" id="countActual" min="0">
-    <button class="pos-btn green" onclick="submitCount()">SUBMIT TO ADMIN</button>
-  </div>
-</div>
-
-<!-- CHAT -->
-<div class="tab-content" id="tab-chat">
-  <h2>Private Chat</h2>
+<!-- HISTORY TAB -->
+<div class="tab-content" id="tab-history">
+  <h2>Transaction History</h2>
   <div class="card">
-    <select id="chatTarget" onchange="switchChat()">
-      <option value="">-- Select who to chat --</option>
-      <option value="admin">Admin / Owner</option>
-      <option value="sp">Service Provider</option>
+    <select id="histStore" onchange="loadHistory()">
+      <option value="">-- Select Store --</option>
     </select>
+    <input type="date" id="histDate" onchange="loadHistory()">
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<!-- VOID REQUEST TAB -->
+<div class="tab-content" id="tab-void">
+  <h2>Request Void</h2>
+  <div class="card">
+    <select id="voidStore" onchange="loadVoidTickets()">
+      <option value="">-- Select Store --</option>
+    </select>
+    
+    <div id="ticketListContainer" class="hidden" style="border:1px solid #ddd;max-height:300px;overflow-y:auto;margin:15px 0;">
+      <p style="padding:10px;background:#f5f5f5;margin:0;">Select Ticket to Void:</p>
+      <div id="ticketSelectList"></div>
+    </div>
+    
+    <p><strong>Selected Ticket:</strong> <span id="selectedTicketDisplay">None yet</span></p>
+    <input type="text" id="correctTicketNo" placeholder="Correct Ticket # (if any — optional)">
+    <input type="text" id="voidReason" placeholder="Reason for Void" required>
+    <button class="danger" onclick="submitVoidRequest()">SEND VOID REQUEST</button>
+    <p id="voidStatusMsg" class="success-msg"></p>
+  </div>
+</div>
+
+<!-- STOCK COUNT TAB -->
+<div class="tab-content" id="tab-stock">
+  <h2>Stock Count</h2>
+  <div class="card">
+    <p>Pending requests from Admin will appear here:</p>
+    <div id="pendingCountRequests"></div>
+  </div>
+</div>
+
+<!-- CHAT TAB -->
+<div class="tab-content" id="tab-chat">
+  <h2>Message Admin</h2>
+  <div class="card">
     <div class="chat-box">
-      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="chat-msgs" id="chatMessages"></div>
       <div class="chat-input">
-        <input type="text" id="chatText" placeholder="Type message..." onkeypress="if(event.key==='Enter')sendChat()">
-        <button class="pos-btn blue" style="border-radius:0; margin:0;" onclick="sendChat()">SEND</button>
+        <input type="text" id="chatText" placeholder="Type message...">
+        <button onclick="sendChat()">SEND</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- END SHIFT -->
-<div class="tab-content" id="tab-endshift">
-  <h2>End Shift / Remittance</h2>
-  <div class="card">
-    <p>Opening Float: ₱<span id="endFloat">0.00</span></p>
-    <p>Total Sales: ₱<span id="endSales">0.00</span></p>
-    <p>Cash In: ₱<span id="endIn">0.00</span></p>
-    <p>Cash Out: ₱<span id="endOut">0.00</span></p>
-    <p><strong>Should Remit: ₱<span id="endRemit">0.00</span></strong></p>
-    <hr style="margin:15px 0;">
-    <h3>Enter Denominations</h3>
-    <div class="denom-row"><label>₱1000</label><input type="number" id="d1000" min="0" oninput="calcDenom()"><span class="subtotal" id="s1000">0.00</span></div>
-    <div class="denom-row"><label>₱500</label><input type="number" id="d500" min="0" oninput="calcDenom()"><span class="subtotal" id="s500">0.00</span></div>
-    <div class="denom-row"><label>₱200</label><input type="number" id="d200" min="0" oninput="calcDenom()"><span class="subtotal" id="s200">0.00</span></div>
-    <div class="denom-row"><label>₱100</label><input type="number" id="d100" min="0" oninput="calcDenom()"><span class="subtotal" id="s100">0.00</span></div>
-    <div class="denom-row"><label>₱50</label><input type="number" id="d50" min="0" oninput="calcDenom()"><span class="subtotal" id="s50">0.00</span></div>
-    <div class="denom-row"><label>Coins</label><input type="number" id="dcoin" min="0" oninput="calcDenom()"><span class="subtotal" id="scoin">0.00</span></div>
-    <h3 style="text-align:right; margin-top:15px;">Total Counted: ₱<span id="denomTotal">0.00</span></h3>
-    <button class="pos-btn red" onclick="endShift()">FINISH & LOG OUT</button>
-  </div>
-</div>
-
-<!-- PAYMENT MODAL -->
-<div class="modal-bg" id="paymentModal">
-  <div class="modal">
-    <h3>Payment — Total: ₱<span id="payTotal">0.00</span></h3>
-    <div class="pay-btns">
-      <button class="cash" onclick="setPayMethod('Cash')">Cash</button>
-      <button class="gcash" onclick="setPayMethod('GCash')">GCash</button>
-      <button class="split" onclick="setPayMethod('Split')">Split</button>
-    </div>
-    <div id="cashInput" class="hidden">
-      <label>Amount Received</label>
-      <input type="number" id="cashReceived" step="0.01" oninput="computeChange()">
-      <p>Change: ₱<span id="change">0.00</span></p>
-    </div>
-    <button class="pos-btn green" onclick="confirmPayment()">CONFIRM</button>
-    <button class="pos-btn gray" onclick="closePayment()">Cancel</button>
+<!-- SUCCESS MODAL -->
+<div class="modal-bg" id="successModal">
+  <div class="modal" style="text-align:center;">
+    <h3>✅ SALE COMPLETED!</h3>
+    <p style="font-size:24px;font-weight:bold;color:var(--primary);margin:15px 0;">Ticket #<span id="finalTicketNo"></span></p>
+    <button class="success" onclick="closeSuccessModal()">OK</button>
   </div>
 </div>
 
@@ -358,109 +244,118 @@ if (!user || user.role !== 'cashier') {
   localStorage.clear();
   window.location.href = '../login.html';
 }
-document.getElementById('cashierName').textContent = user.name;
+document.getElementById('userNameDisplay').textContent = user.name;
 
-let currentStoreId = null;
 let cart = [];
-let shiftStarted = false;
-let cashFloat = 0;
-let payMethod = null;
-let idleTimer;
+let foundProduct = null;
+let selectedTicketToVoid = null;
 
-function resetIdleTimer() {
-  clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => {
-    alert("Auto-logout: 10 minutes idle. Please login again.");
-    logout();
-  }, 10 * 60 * 1000);
+// === HELPER: Get Next Sequential Ticket Number (3 digits: 001, 002...) ===
+async function getNextTicketNumber() {
+  const counterRef = db.collection('counters').doc('ticketNumber');
+  const result = await db.runTransaction(async (tx) => {
+    const doc = await tx.get(counterRef);
+    let next = 1;
+    if (doc.exists && doc.data().value) {
+      next = doc.data().value + 1;
+    }
+    tx.set(counterRef, { 
+      value: next, 
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+    }, { merge: true });
+    return next;
+  });
+  return String(result).padStart(3, '0'); // → 001, 002 format
 }
+
+// Preview next ticket number
+async function updateNextTicketPreview() {
+  const counterDoc = await db.collection('counters').doc('ticketNumber').get();
+  const nextVal = counterDoc.exists && counterDoc.data().value 
+    ? counterDoc.data().value + 1 
+    : 1;
+  document.getElementById('nextTicketDisplay').textContent = 'Next: ' + String(nextVal).padStart(3, '0');
+}
+
+// TAB SWITCHING
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    
+    if (tab.dataset.tab === 'history') loadHistory();
+    if (tab.dataset.tab === 'void') fillVoidStoreSelect();
+    if (tab.dataset.tab === 'stock') loadStockCountRequests();
+    if (tab.dataset.tab === 'chat') loadChatMessages();
+  });
+});
 
 function logout() {
   localStorage.clear();
   window.location.href = '../login.html';
 }
 
-document.addEventListener('mousemove', resetIdleTimer);
-document.addEventListener('keypress', resetIdleTimer);
-
-// TAB SWITCHING
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    if (!shiftStarted && tab.dataset.tab !== 'shift') {
-      return alert('Please start your shift first!');
-    }
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
-    if (tab.dataset.tab === 'sales') loadProducts();
-    if (tab.dataset.tab === 'transactions') loadTransactions();
-    if (tab.dataset.tab === 'endshift') updateEndShiftSummary();
-    if (tab.dataset.tab === 'count') checkCountRequest();
-  });
-});
-
-// STORES
-async function loadStores() {
+// === STORE SELECT ===
+async function fillStoreSelects() {
   const snap = await db.collection('stores').get();
   let opts = '<option value="">-- Select Store --</option>';
   snap.forEach(d => { opts += `<option value="${d.id}">${d.data().name}</option>`; });
-  document.getElementById('storeSelect').innerHTML = opts;
-}
-
-function switchStore() {
-  currentStoreId = document.getElementById('storeSelect').value;
-  if (shiftStarted) loadProducts();
-}
-
-// SHIFT
-function startShift() {
-  currentStoreId = document.getElementById('storeSelect').value;
-  if (!currentStoreId) return alert('Select a store first');
-  cashFloat = parseFloat(document.getElementById('cashFloat').value) || 0;
-  if (cashFloat <= 0) return alert('Enter valid opening cash float');
-  shiftStarted = true;
-  localStorage.setItem('shiftFloat', cashFloat);
-  localStorage.setItem('shiftStore', currentStoreId);
-  alert('Shift started! ✅');
-  document.querySelector('[data-tab="sales"]').click();
-}
-
-// PRODUCTS
-async function loadProducts() {
-  if (!currentStoreId) return;
-  const snap = await db.collection('products').where('storeId', '==', currentStoreId).get();
-  window.allProducts = [];
-  snap.forEach(d => {
-    window.allProducts.push({ id: d.id, ...d.data() });
+  ['posStore','histStore','voidStore'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.innerHTML = opts;
   });
-  filterProducts();
+  updateNextTicketPreview();
 }
 
-function filterProducts() {
-  const q = document.getElementById('prodSearch').value.toLowerCase();
-  const filtered = (window.allProducts || []).filter(p =>
-    p.name.toLowerCase().includes(q) || (p.barcode && p.barcode.includes(q))
-  );
-  let html = '';
-  filtered.forEach(p => {
-    html += `<div class="product-item" onclick="addToCart('${p.id}','${p.name}',${p.price},${p.qty})">
-      <div class="name">${p.name}</div>
-      <div class="price">₱${p.price.toFixed(2)}</div>
-    </div>`;
-  });
-  document.getElementById('productGrid').innerHTML = html || '<p>No products found</p>';
-}
-
-// CART
-function addToCart(id, name, price, stock) {
-  const existing = cart.find(i => i.id === id);
-  if (existing) {
-    if (existing.qty + 1 > stock) return alert('Not enough stock');
-    existing.qty++;
-  } else {
-    cart.push({ id, name, price, qty: 1, discount: 0 });
+// === PRODUCT SEARCH ===
+async function findProduct() {
+  const storeId = document.getElementById('posStore').value;
+  const barcode = document.getElementById('barcodeInput').value.trim();
+  if (!storeId || !barcode) return alert('Select store and enter barcode/product code');
+  
+  const snap = await db.collection('products')
+    .where('storeId', '==', storeId)
+    .where('barcode', '==', barcode)
+    .get();
+  
+  if (snap.empty) {
+    alert('Product not found!');
+    foundProduct = null;
+    document.getElementById('productResult').classList.add('hidden');
+    return;
   }
+  
+  const doc = snap.docs[0];
+  foundProduct = { id: doc.id, ...doc.data() };
+  document.getElementById('prodName').textContent = foundProduct.name;
+  document.getElementById('prodPrice').textContent = foundProduct.price.toFixed(2);
+  document.getElementById('prodStock').textContent = foundProduct.qty;
+  document.getElementById('productResult').classList.remove('hidden');
+}
+
+function addToCart() {
+  if (!foundProduct) return alert('Find a product first');
+  const qty = parseInt(document.getElementById('addQty').value);
+  if (!qty || qty < 1) return alert('Enter valid quantity');
+  if (qty > foundProduct.qty) return alert(`Only ${foundProduct.qty} available`);
+  
+  const existing = cart.find(i => i.barcode === foundProduct.barcode);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    cart.push({
+      id: foundProduct.id,
+      name: foundProduct.name,
+      price: foundProduct.price,
+      barcode: foundProduct.barcode,
+      qty: qty
+    });
+  }
+  
+  document.getElementById('barcodeInput').value = '';
+  document.getElementById('productResult').classList.add('hidden');
+  foundProduct = null;
   renderCart();
 }
 
@@ -468,308 +363,285 @@ function renderCart() {
   let html = '';
   let total = 0;
   cart.forEach((item, idx) => {
-    const sub = (item.price * item.qty) - item.discount;
-    total += sub;
+    const subtotal = item.price * item.qty;
+    total += subtotal;
     html += `<div class="cart-item">
-      <div><strong>${item.name}</strong><br>₱${item.price.toFixed(2)} × ${item.qty} = ₱${sub.toFixed(2)}${item.discount>0?' <small>(disc)</small>':''}</div>
-      <div class="qty-control">
-        <button onclick="chgQty(${idx},-1)">-</button>
-        <span>${item.qty}</span>
-        <button onclick="chgQty(${idx},1)">+</button>
+      <div><strong>${item.name}</strong><br>₱${item.price.toFixed(2)} × ${item.qty}</div>
+      <div>₱${subtotal.toFixed(2)}<br>
+        <button class="danger small" style="padding:4px 8px;font-size:12px;" onclick="removeItem(${idx})">✕</button>
       </div>
     </div>`;
   });
-  document.getElementById('cartList').innerHTML = html;
+  document.getElementById('cartList').innerHTML = html || '<p>Cart is empty</p>';
   document.getElementById('grandTotal').textContent = total.toFixed(2);
+  computeChange();
 }
 
-function chgQty(idx, delta) {
-  cart[idx].qty += delta;
-  if (cart[idx].qty <= 0) cart.splice(idx, 1);
-  renderCart();
-}
-
-function applyDiscount() {
-  if (!cart.length) return;
-  const disc = prompt('Enter discount amount (₱):');
-  if (disc === null) return;
-  cart[cart.length - 1].discount = parseFloat(disc) || 0;
+function removeItem(idx) {
+  cart.splice(idx, 1);
   renderCart();
 }
 
 function clearCart() {
-  if (!confirm('Clear cart?')) return;
-  cart = []; renderCart();
-}
-
-// PAYMENT
-function openPayment() {
-  if (!cart.length) return alert('Cart is empty');
-  document.getElementById('payTotal').textContent = document.getElementById('grandTotal').textContent;
-  document.getElementById('paymentModal').style.display = 'flex';
-  payMethod = null;
-  document.getElementById('cashInput').classList.add('hidden');
-}
-
-function closePayment() {
-  document.getElementById('paymentModal').style.display = 'none';
-}
-
-function setPayMethod(m) {
-  payMethod = m;
-  if (m === 'Cash') {
-    document.getElementById('cashInput').classList.remove('hidden');
-    document.getElementById('cashReceived').focus();
-  } else {
-    document.getElementById('cashInput').classList.add('hidden');
-  }
+  if (cart.length && !confirm('Clear cart?')) return;
+  cart = [];
+  renderCart();
 }
 
 function computeChange() {
-  const total = parseFloat(document.getElementById('grandTotal').textContent);
-  const received = parseFloat(document.getElementById('cashReceived').value) || 0;
-  document.getElementById('change').textContent = Math.max(0, received - total).toFixed(2);
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const given = parseFloat(document.getElementById('cashGiven').value) || 0;
+  document.getElementById('changeAmt').textContent = Math.max(0, given - total).toFixed(2);
 }
 
-async function confirmPayment() {
-  if (!payMethod) return alert('Select payment method');
-  const total = parseFloat(document.getElementById('grandTotal').textContent);
-  let received = total;
-  if (payMethod === 'Cash') {
-    received = parseFloat(document.getElementById('cashReceived').value);
-    if (received < total) return alert('Insufficient amount');
+// === COMPLETE TRANSACTION ===
+async function completeTransaction() {
+  if (!cart.length) return alert('Cart is empty');
+  const storeId = document.getElementById('posStore').value;
+  const paymentMethod = document.getElementById('paymentMethod').value;
+  const cashGiven = parseFloat(document.getElementById('cashGiven').value) || 0;
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  
+  if (paymentMethod === 'Cash' && cashGiven < total) {
+    return alert('Insufficient cash given');
   }
-
-  const batch = db.batch();
-  const txRef = db.collection('transactions').doc();
-  batch.set(txRef, {
-    storeId: currentStoreId,
+  
+  // Get sequential ticket number
+  const ticketNumber = await getNextTicketNumber();
+  
+  // Save transaction
+  await db.collection('transactions').add({
+    storeId,
+    ticketNumber,
+    items: [...cart],
+    total,
+    paymentMethod,
+    cashGiven,
+    change: cashGiven - total,
     cashierId: user.id,
     cashierName: user.name,
-    items: cart,
-    total,
-    paymentMethod: payMethod,
-    received,
-    change: payMethod==='Cash' ? received - total : 0,
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
-
+  
   // Deduct stock
+  const batch = db.batch();
   for (const item of cart) {
-    const prodRef = db.collection('products').doc(item.id);
-    batch.update(prodRef, { qty: firebase.firestore.FieldValue.increment(-item.qty) });
+    const prodSnap = await db.collection('products').doc(item.id).get();
+    if (prodSnap.exists) {
+      batch.update(db.collection('products').doc(item.id), {
+        qty: prodSnap.data().qty - item.qty
+      });
+    }
   }
   await batch.commit();
-
-  alert('Sale Complete! ✅ Ticket: ' + txRef.id.slice(0, 8));
+  
+  // Show success modal
+  document.getElementById('finalTicketNo').textContent = ticketNumber;
+  document.getElementById('successModal').style.display = 'flex';
+  
+  // Reset
   cart = [];
   renderCart();
-  closePayment();
-  loadTransactions();
+  document.getElementById('cashGiven').value = '';
+  updateNextTicketPreview();
 }
 
-// TRANSACTIONS
-async function loadTransactions() {
+function closeSuccessModal() {
+  document.getElementById('successModal').style.display = 'none';
+}
+
+// === HISTORY ===
+async function loadHistory() {
+  const storeId = document.getElementById('histStore').value;
+  const date = document.getElementById('histDate').value;
+  if (!storeId || !date) return;
+  
+  const start = new Date(date);
+  const end = new Date(date); end.setHours(23,59,59);
+  
   const snap = await db.collection('transactions')
+    .where('storeId', '==', storeId)
+    .where('timestamp', '>=', start)
+    .where('timestamp', '<=', end)
     .where('cashierId', '==', user.id)
-    .orderBy('timestamp', 'desc').limit(5).get();
-  let html = '';
+    .orderBy('timestamp', 'desc')
+    .limit(100)
+    .get();
+  
+  let html = '<table style="width:100%;border-collapse:collapse;">';
+  html += '<tr style="background:#f5f5f5;"><th style="border:1px solid #ddd;padding:8px;">Ticket #</th><th>Time</th><th>Total</th><th>Method</th></tr>';
   snap.forEach(d => {
     const t = d.data();
-    html += `<div class="tx-item">
-      <div>${new Date(t.timestamp?.toDate()).toLocaleString()}<br><small>${t.paymentMethod}</small></div>
-      <div class="amount">₱${(t.total||0).toFixed(2)}</div>
-    </div>`;
+    html += `<tr>
+      <td style="border:1px solid #ddd;padding:8px;font-weight:bold;">${t.ticketNumber}</td>
+      <td style="border:1px solid #ddd;padding:8px;">${new Date(t.timestamp?.toDate()).toLocaleTimeString()}</td>
+      <td style="border:1px solid #ddd;padding:8px;">₱${t.total.toFixed(2)}</td>
+      <td style="border:1px solid #ddd;padding:8px;">${t.paymentMethod}</td>
+    </tr>`;
   });
-  document.getElementById('txList').innerHTML = html || '<p>No transactions yet</p>';
+  html += '</table>';
+  document.getElementById('historyList').innerHTML = html;
 }
 
-// REQUESTS
-function showVoidForm() { hideForms(); document.getElementById('voidForm').classList.remove('hidden'); }
-function showProductOutForm() { hideForms(); document.getElementById('productOutForm').classList.remove('hidden'); }
-function hideForms() {
-  document.querySelectorAll('.card').forEach(c => {
-    if(c.id.endsWith('Form')) c.classList.add('hidden');
-  });
+// === VOID REQUEST ===
+async function fillVoidStoreSelect() {
+  const snap = await db.collection('stores').get();
+  let opts = '<option value="">-- Select Store --</option>';
+  snap.forEach(d => { opts += `<option value="${d.id}">${d.data().name}</option>`; });
+  document.getElementById('voidStore').innerHTML = opts;
 }
 
-async function sendVoidRequest() {
-  const wrong = document.getElementById('wrongTicket').value.trim();
-  const correct = document.getElementById('correctTicket').value.trim();
+async function loadVoidTickets() {
+  const storeId = document.getElementById('voidStore').value;
+  if (!storeId) {
+    document.getElementById('ticketListContainer').classList.add('hidden');
+    return;
+  }
+  
+  const snap = await db.collection('transactions')
+    .where('storeId', '==', storeId)
+    .where('cashierId', '==', user.id)
+    .orderBy('timestamp', 'desc')
+    .limit(30)
+    .get();
+  
+  if (snap.empty) {
+    document.getElementById('ticketSelectList').innerHTML = '<p style="padding:10px;">No transactions yet</p>';
+  } else {
+    let html = '';
+    snap.forEach(d => {
+      const t = d.data();
+      html += `<div class="ticket-select-option" onclick="pickTicket('${t.ticketNumber}')">
+        <strong>${t.ticketNumber}</strong> — ₱${t.total.toFixed(2)} — ${new Date(t.timestamp?.toDate()).toLocaleString()}
+      </div>`;
+    });
+    document.getElementById('ticketSelectList').innerHTML = html;
+  }
+  document.getElementById('ticketListContainer').classList.remove('hidden');
+}
+
+function pickTicket(ticketNo) {
+  selectedTicketToVoid = ticketNo;
+  document.getElementById('selectedTicketDisplay').textContent = ticketNo;
+}
+
+async function submitVoidRequest() {
+  const storeId = document.getElementById('voidStore').value;
   const reason = document.getElementById('voidReason').value.trim();
-  if (!wrong || !reason) return alert('Fill required fields');
+  const correctTicket = document.getElementById('correctTicketNo').value.trim() || 'N/A';
+  
+  if (!storeId || !selectedTicketToVoid || !reason) {
+    return alert('Fill all fields and select a ticket');
+  }
   
   await db.collection('voidRequests').add({
-    storeId: currentStoreId,
+    storeId,
     cashierId: user.id,
     cashierName: user.name,
-    wrongTicket: wrong,
-    correctTicket: correct || 'N/A',
+    wrongTicket: selectedTicketToVoid,
+    correctTicket: correctTicket,
     reason,
     status: 'pending',
     requestedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
-  alert('Void request sent to Admin ✅');
-  hideForms();
-}
-
-async function sendProductOut() {
-  const name = document.getElementById('outProdName').value.trim();
-  const qty = parseInt(document.getElementById('outQty').value);
-  const reason = document.getElementById('outReason').value.trim();
-  if (!name || !qty || !reason) return alert('Fill all fields');
   
-  await db.collection('productOuts').add({
-    storeId: currentStoreId,
-    cashierId: user.id,
-    cashierName: user.name,
-    productName: name,
-    qty,
-    reason,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  alert('Product Out recorded ✅');
-  hideForms();
+  document.getElementById('voidStatusMsg').textContent = '✅ Request sent! Waiting for Admin approval';
+  setTimeout(() => {
+    document.getElementById('voidStatusMsg').textContent = '';
+    selectedTicketToVoid = null;
+    document.getElementById('selectedTicketDisplay').textContent = 'None yet';
+    document.getElementById('voidReason').value = '';
+    document.getElementById('correctTicketNo').value = '';
+  }, 3000);
 }
 
-// CASH IN / OUT
-function showCashIn() { hideForms(); document.getElementById('cashInForm').classList.remove('hidden'); }
-function showCashOut() { hideForms(); document.getElementById('cashOutForm').classList.remove('hidden'); }
-
-async function submitCashIn() {
-  const amt = parseFloat(document.getElementById('cashInAmt').value);
-  const reason = document.getElementById('cashInReason').value.trim();
-  if (!amt) return alert('Enter amount');
-  await db.collection('cashflow').add({
-    type: 'in', storeId: currentStoreId, cashierId: user.id, cashierName: user.name,
-    amount: amt, reason, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  alert('Cash In recorded ✅'); hideForms();
-}
-
-async function submitCashOut() {
-  const amt = parseFloat(document.getElementById('cashOutAmt').value);
-  const reason = document.getElementById('cashOutReason').value.trim();
-  if (!amt) return alert('Enter amount');
-  await db.collection('cashflow').add({
-    type: 'out', storeId: currentStoreId, cashierId: user.id, cashierName: user.name,
-    amount: amt, reason, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  alert('Cash Out recorded ✅'); hideForms();
-}
-
-// STOCK COUNT
-async function checkCountRequest() {
+// === STOCK COUNT ===
+async function loadStockCountRequests() {
   const snap = await db.collection('stockCountRequests')
     .where('cashierId', '==', user.id)
     .where('status', '==', 'pending')
-    .limit(1).get();
+    .orderBy('requestedAt', 'desc')
+    .get();
+  
+  let html = '';
   if (snap.empty) {
-    document.getElementById('countPrompt').classList.remove('hidden');
-    document.getElementById('countForm').classList.add('hidden');
-    return;
+    html = '<p>No pending requests</p>';
+  } else {
+    for (const doc of snap.docs) {
+      const req = doc.data();
+      const prodDoc = await db.collection('products').doc(req.productId).get();
+      const prod = prodDoc.data();
+      html += `<div class="card" style="margin:10px 0;">
+        <p><strong>Product:</strong> ${prod?.name || 'Unknown'}</p>
+        <p><strong>Barcode:</strong> ${prod?.barcode || '-'}</p>
+        <p><strong>Expected Stock:</strong> ${prod?.qty || 0}</p>
+        <input type="number" id="actual-${doc.id}" placeholder="Actual Count" min="1">
+        <button class="success" onclick="submitCount('${doc.id}')">SUBMIT COUNT</button>
+      </div>`;
+    }
   }
-  document.getElementById('countPrompt').classList.add('hidden');
-  document.getElementById('countForm').classList.remove('hidden');
-  const req = snap.docs[0];
-  window.activeCountReq = { id: req.id, ...req.data() };
-  const prod = await db.collection('products').doc(window.activeCountReq.productId).get();
-  const pdata = prod.data();
-  document.getElementById('countProdName').textContent = pdata.name;
-  document.getElementById('countExpected').textContent = pdata.qty;
-  window.activeCountReq.expectedQty = pdata.qty;
+  document.getElementById('pendingCountRequests').innerHTML = html;
 }
 
-async function submitCount() {
-  const actual = parseInt(document.getElementById('countActual').value);
-  if (isNaN(actual)) return alert('Enter actual count');
+async function submitCount(reqId) {
+  const actual = parseInt(document.getElementById(`actual-${reqId}`).value);
+  if (!actual && actual !== 0) return alert('Enter actual count');
+  
+  const reqDoc = await db.collection('stockCountRequests').doc(reqId).get();
+  const req = reqDoc.data();
+  const prodDoc = await db.collection('products').doc(req.productId).get();
+  const expected = prodDoc.data().qty;
+  
+  await db.collection('stockCountRequests').doc(reqId).update({ status: 'completed' });
   await db.collection('stockCountResponses').add({
-    ...window.activeCountReq,
+    ...req,
+    expectedQty: expected,
     actualQty: actual,
+    difference: actual - expected,
     submittedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
-  await db.collection('stockCountRequests').doc(window.activeCountReq.id).update({ status: 'completed' });
-  alert('Count submitted to Admin ✅');
-  checkCountRequest();
+  
+  alert('Submitted! ✅');
+  loadStockCountRequests();
 }
 
-// CHAT
-let currentChatPartner = null;
-function switchChat() {
-  currentChatPartner = document.getElementById('chatTarget').value;
-  if (!currentChatPartner) { document.getElementById('chatMsgs').innerHTML = ''; return; }
-  loadChatMessages();
+// === CHAT ===
+function getChatId() {
+  return ['admin', 'cashier_' + (user.id || 'cashier_id')].sort().join('_');
 }
 
 async function loadChatMessages() {
-  if (!currentChatPartner) return;
-  const chatId = ['cashier', user.id, currentChatPartner].sort().join('_');
+  const chatId = getChatId();
   const snap = await db.collection('chats').doc(chatId).collection('messages').orderBy('sentAt').limit(50).get();
   let html = '';
   snap.forEach(d => {
     const m = d.data();
-    html += `<div class="msg ${m.senderId === user.id ? 'me' : 'other'}">${m.text}</div>`;
+    html += `<div class="msg ${m.senderRole === 'cashier' ? 'me' : 'other'}">${m.text}</div>`;
   });
-  document.getElementById('chatMsgs').innerHTML = html;
-  document.getElementById('chatMsgs').scrollTop = document.getElementById('chatMsgs').scrollHeight;
+  document.getElementById('chatMessages').innerHTML = html;
+  document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 }
 
 async function sendChat() {
-  if (!currentChatPartner) return alert('Select chat partner first');
   const text = document.getElementById('chatText').value.trim();
   if (!text) return;
-  const chatId = ['cashier', user.id, currentChatPartner].sort().join('_');
+  const chatId = getChatId();
   await db.collection('chats').doc(chatId).collection('messages').add({
-    senderId: user.id, senderName: user.name, text, sentAt: firebase.firestore.FieldValue.serverTimestamp()
+    senderRole: 'cashier',
+    senderName: user.name,
+    text,
+    sentAt: firebase.firestore.FieldValue.serverTimestamp()
   });
   document.getElementById('chatText').value = '';
   loadChatMessages();
 }
 
-// END SHIFT
-async function updateEndShiftSummary() {
-  document.getElementById('endFloat').textContent = cashFloat.toFixed(2);
-  const [txs, cfIn, cfOut] = await Promise.all([
-    db.collection('transactions').where('cashierId','==',user.id).where('storeId','==',currentStoreId).get(),
-    db.collection('cashflow').where('type','==','in').where('cashierId','==',user.id).where('storeId','==',currentStoreId).get(),
-    db.collection('cashflow').where('type','==','out').where('cashierId','==',user.id).where('storeId','==',currentStoreId).get()
-  ]);
-  const salesTotal = txs.docs.reduce((s,d)=>s+(d.data().total||0),0);
-  const inTotal = cfIn.docs.reduce((s,d)=>s+(d.data().amount||0),0);
-  const outTotal = cfOut.docs.reduce((s,d)=>s+(d.data().amount||0),0);
-  document.getElementById('endSales').textContent = salesTotal.toFixed(2);
-  document.getElementById('endIn').textContent = inTotal.toFixed(2);
-  document.getElementById('endOut').textContent = outTotal.toFixed(2);
-  document.getElementById('endRemit').textContent = (cashFloat + salesTotal + inTotal - outTotal).toFixed(2);
-}
-
-function calcDenom() {
-  const d = [1000,500,200,100,50];
-  let total = 0;
-  d.forEach(v => {
-    const qty = parseInt(document.getElementById('d'+v).value)||0;
-    const sub = qty * v;
-    document.getElementById('s'+v).textContent = sub.toFixed(2);
-    total += sub;
-  });
-  const coins = parseFloat(document.getElementById('dcoin').value)||0;
-  document.getElementById('scoin').textContent = coins.toFixed(2);
-  total += coins;
-  document.getElementById('denomTotal').textContent = total.toFixed(2);
-}
-
-async function endShift() {
-  if (!confirm('Finalize shift and log out?')) return;
-  // Save remittance record here if needed
-  shiftStarted = false;
-  localStorage.removeItem('shiftFloat');
-  localStorage.removeItem('shiftStore');
-  logout();
-}
+document.getElementById('chatText').addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendChat();
+});
 
 // INIT
-loadStores();
-resetIdleTimer();
+fillStoreSelects();
 </script>
 </body>
 </html>

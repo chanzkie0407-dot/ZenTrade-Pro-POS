@@ -6,58 +6,94 @@
   <title>Admin Dashboard — ZenTrade Pro POS</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-    body { background: #f0f4f8; min-height: 100vh; }
+    :root {
+      --primary: #3498db;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --dark: #2c3e50;
+      --light: #f8f9fa;
+    }
+    body { background: var(--light); min-height: 100vh; }
     header {
-      background: #2c3e50; color: white; padding: 15px 25px;
+      background: linear-gradient(90deg, var(--dark), #34495e);
+      color: white; padding: 15px 25px;
       display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
     .logo { font-size: 20px; font-weight: bold; }
     .user-info { display: flex; gap: 15px; align-items: center; }
     .logout-btn {
-      background: #e74c3c; color: white; border: none; padding: 8px 15px;
-      border-radius: 6px; cursor: pointer; font-weight: 600;
+      background: var(--danger); color: white; border: none; padding: 8px 16px;
+      border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s;
     }
-    .tabs {
-      display: flex; background: white; border-bottom: 2px solid #ddd; flex-wrap: wrap;
-    }
+    .logout-btn:hover { background: #c0392b; }
+    .tabs { display: flex; background: white; border-bottom: 2px solid #ddd; flex-wrap: wrap; }
     .tab {
-      padding: 14px 22px; cursor: pointer; border-bottom: 3px solid transparent;
-      font-weight: 500; color: #555; transition: all 0.2s;
+      padding: 14px 20px; cursor: pointer; border-bottom: 3px solid transparent;
+      font-weight: 600; color: #555; transition: all 0.2s;
     }
-    .tab:hover { background: #f8f9fa; }
-    .tab.active { border-bottom-color: #3498db; color: #3498db; font-weight: 600; }
-    .tab-content { padding: 25px; max-width: 1200px; margin: 0 auto; display: none; }
+    .tab:hover { background: #f0f0f0; }
+    .tab.active { border-bottom-color: var(--primary); color: var(--primary); background: #f0f7ff; }
+    .tab-content { padding: 20px; max-width: 1300px; margin: 0 auto; display: none; }
     .tab-content.active { display: block; }
-    h2 { color: #2c3e50; margin-bottom: 20px; }
+    h2 { color: var(--dark); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
     .card {
-      background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
+      background: white; padding: 25px; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px;
     }
-    input, button, select, label {
-      padding: 10px 14px; margin: 5px; border: 2px solid #eee; border-radius: 6px; font-size: 15px;
+    input, select, textarea, button {
+      width: 100%; padding: 12px 15px; margin: 6px 0; border: 2px solid #eee;
+      border-radius: 8px; font-size: 15px;
     }
     button {
-      background: #3498db; color: white; border: none; cursor: pointer; font-weight: 600;
+      background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600;
+      transition: background 0.2s;
     }
     button:hover { background: #2980b9; }
-    button.danger { background: #e74c3c; }
-    button.success { background: #27ae60; }
-    button.warning { background: #f39c12; }
+    button.small { width: auto; padding: 10px 18px; margin: 5px; }
+    button.success { background: var(--success); }
+    button.success:hover { background: #219653; }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #c0392b; }
+    button.warning { background: var(--warning); }
+    button.warning:hover { background: #e67e22; }
+    button.ghost { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+    button.ghost:hover { background: var(--primary); color: white; }
     .list-item {
-      padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 8px;
+      padding: 14px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;
+      align-items: flex-start; flex-wrap: wrap; gap: 10px;
     }
-    .status-pending { color: #f39c12; font-weight: bold; }
-    .status-approved { color: #27ae60; font-weight: bold; }
-    .status-rejected { color: #e74c3c; font-weight: bold; }
-    .chat-container { border: 1px solid #ddd; border-radius: 8px; height: 400px; display: flex; flex-direction: column; }
-    .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #fafafa; }
+    .ticket-link {
+      color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: 600;
+    }
+    .ticket-link:hover { color: #2980b9; }
+    .status-pending { color: var(--warning); font-weight: bold; }
+    .status-approved { color: var(--success); font-weight: bold; }
+    .status-rejected { color: var(--danger); font-weight: bold; }
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none;
+      align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+    }
+    .modal {
+      background: white; padding: 30px; border-radius: 14px; max-width: 600px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal h3 { margin-bottom: 20px; color: var(--dark); }
+    .tx-detail { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0; }
+    .tx-detail h4 { margin-bottom: 10px; color: var(--primary); }
+    .tx-item-line { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #ddd; }
+    .hidden { display: none !important; }
+    .chat-box { border: 1px solid #ddd; border-radius: 10px; height: 450px; display: flex; flex-direction: column; background: white; }
+    .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; background: #fafafa; }
     .chat-input { display: flex; border-top: 1px solid #ddd; }
     .chat-input input { flex: 1; margin: 0; border: none; border-radius: 0; }
-    .msg { margin: 8px 0; padding: 8px 12px; border-radius: 16px; max-width: 70%; }
-    .msg.me { background: #3498db; color: white; margin-left: auto; }
+    .msg { margin: 8px 0; padding: 10px 14px; border-radius: 18px; max-width: 70%; }
+    .msg.me { background: var(--primary); color: white; margin-left: auto; }
     .msg.other { background: #e9ecef; color: #333; margin-right: auto; }
-    .hidden { display: none !important; }
+    .note { color: #666; font-size: 13px; margin-top: 5px; }
+    .limit-note { color: var(--warning); font-weight: 600; margin: 10px 0; }
+    .auto-note { color: #27ae60; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -87,13 +123,14 @@
   <h2>Manage Stores</h2>
   <div class="card">
     <h3>Add New Store</h3>
+    <p class="limit-note">Maximum 5 stores allowed. Contact Service Provider to increase limit.</p>
     <input type="text" id="storeNo" placeholder="Store No / Code (optional)">
     <input type="text" id="storeName" placeholder="Store Name" required>
     <input type="text" id="storeLoc" placeholder="Location (optional)">
     <button onclick="addStore()">ADD STORE</button>
   </div>
   <div class="card">
-    <h3>Stores List</h3>
+    <h3>Stores List (<span id="storeCount">0</span>/5)</h3>
     <div id="storesList"></div>
   </div>
 </div>
@@ -138,7 +175,8 @@
     <input type="text" id="prodName" placeholder="Product Name" required>
     <input type="number" id="prodQty" placeholder="Quantity" min="1" required>
     <input type="number" id="prodPrice" placeholder="Price" step="0.01" required>
-    <input type="text" id="prodBarcode" placeholder="Barcode / SKU (optional)">
+    <input type="text" id="prodBarcode" placeholder="Barcode / SKU — leave blank to auto-generate">
+    <p class="auto-note">✅ Auto-generate: 0000001, 0000002... if left blank</p>
     <button onclick="addProduct()">ADD PRODUCT</button>
   </div>
   <div class="card">
@@ -202,13 +240,22 @@
     <select id="chatTarget" onchange="switchChat()">
       <option value="">-- Select who to chat with --</option>
     </select>
-    <div class="chat-container" id="chatBox">
-      <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-box">
+      <div class="chat-msgs" id="chatMessages"></div>
       <div class="chat-input">
         <input type="text" id="chatText" placeholder="Type message...">
         <button onclick="sendChat()">SEND</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- TRANSACTION DETAIL MODAL -->
+<div class="modal-bg" id="txModal">
+  <div class="modal">
+    <h3>Transaction Details</h3>
+    <div id="txDetailContent"></div>
+    <button class="ghost" onclick="closeTxModal()">CLOSE</button>
   </div>
 </div>
 
@@ -238,6 +285,22 @@ if (!user || user.role !== 'admin') {
 document.getElementById('userNameDisplay').textContent = user.name;
 
 let currentChatWith = null;
+const MAX_STORES = 5;
+
+// === HELPER: Get Next Sequential Number with Counter ===
+async function getNextSequence(counterName, padLength) {
+  const counterRef = db.collection('counters').doc(counterName);
+  const result = await db.runTransaction(async (tx) => {
+    const doc = await tx.get(counterRef);
+    let next = 1;
+    if (doc.exists && doc.data().value) {
+      next = doc.data().value + 1;
+    }
+    tx.set(counterRef, { value: next, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    return next;
+  });
+  return String(result).padStart(padLength, '0');
+}
 
 // TAB SWITCHING
 document.querySelectorAll('.tab').forEach(tab => {
@@ -263,6 +326,10 @@ function logout() {
 
 // STORES
 async function addStore() {
+  const countSnap = await db.collection('stores').get();
+  if (countSnap.size >= MAX_STORES) {
+    return alert(`Maximum ${MAX_STORES} stores reached. Please contact Service Provider to increase limit.`);
+  }
   const no = document.getElementById('storeNo').value.trim() || ('STORE-' + Date.now());
   const name = document.getElementById('storeName').value.trim();
   const loc = document.getElementById('storeLoc').value.trim();
@@ -280,6 +347,7 @@ async function addStore() {
 
 async function loadStores() {
   const snap = await db.collection('stores').orderBy('createdAt', 'desc').get();
+  document.getElementById('storeCount').textContent = snap.size;
   let html = '';
   snap.forEach(doc => {
     const s = doc.data();
@@ -310,7 +378,7 @@ async function loadCashiers() {
   let html = '';
   snap.forEach(doc => {
     const c = doc.data();
-    html += `<div class="list-item"><div><strong>${c.name} ${c.lname || ''}</strong><br><small>Password: ${c.password}</small></div></div>`;
+    html += `<div class="list-item"><div><strong>${c.name} ${c.lname || ''}</strong><br><small>Created: ${new Date(c.createdAt?.toDate()).toLocaleString()}</small></div></div>`;
   });
   document.getElementById('cashiersList').innerHTML = html || '<p>No cashiers added yet</p>';
 }
@@ -318,28 +386,36 @@ async function loadCashiers() {
 // FILL SELECT OPTIONS
 async function fillStoreSelects() {
   const snap = await db.collection('stores').get();
-  const opts = '<option value="">-- Select Store --</option>';
-  let options = opts;
+  let options = '<option value="">-- Select Store --</option>';
   snap.forEach(d => { options += `<option value="${d.id}">${d.data().name}</option>`; });
   ['salesStore','prodStore','stockStore','sumStore','countStore'].forEach(id => {
     const el = document.getElementById(id); if(el) el.innerHTML = options;
   });
 }
 
-// PRODUCTS
+// PRODUCTS — may auto barcode
 async function addProduct() {
   const storeId = document.getElementById('prodStore').value;
   const name = document.getElementById('prodName').value.trim();
   const qty = parseInt(document.getElementById('prodQty').value);
   const price = parseFloat(document.getElementById('prodPrice').value);
-  let barcode = document.getElementById('prodBarcode').value.trim() || ('SKU-' + Date.now());
+  let barcode = document.getElementById('prodBarcode').value.trim();
+  
   if (!storeId || !name) return alert('Select store and enter product name');
+  
+  // Auto-generate barcode kung walang nilagay
+  if (!barcode) {
+    barcode = await getNextSequence('barcode', 7); // 0000001 format
+  }
   
   await db.collection('products').add({
     storeId, name, qty, price, barcode,
     addedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
+  
+  document.getElementById('prodBarcode').value = '';
   loadProducts();
+  alert(`Product added! Barcode: ${barcode}`);
 }
 
 async function loadProducts() {
@@ -347,7 +423,7 @@ async function loadProducts() {
   let html = '';
   snap.forEach(doc => {
     const p = doc.data();
-    html += `<div class="list-item"><div><strong>${p.name}</strong><br>Qty: ${p.qty} | Price: ₱${p.price.toFixed(2)} | SKU: ${p.barcode}</div></div>`;
+    html += `<div class="list-item"><div><strong>${p.name}</strong><br>Qty: ${p.qty} | Price: ₱${p.price.toFixed(2)} | Barcode: <strong>${p.barcode}</strong></div></div>`;
   });
   document.getElementById('productsList').innerHTML = html || '<p>No products added yet</p>';
 }
@@ -359,7 +435,7 @@ async function loadStocks() {
   let html = '';
   snap.forEach(doc => {
     const p = doc.data();
-    html += `<div class="list-item"><div><strong>${p.name}</strong> — Qty on hand: ${p.qty} | ₱${p.price.toFixed(2)}</div></div>`;
+    html += `<div class="list-item"><div><strong>${p.name}</strong> — Qty on hand: ${p.qty} | ₱${p.price.toFixed(2)} | Barcode: ${p.barcode}</div></div>`;
   });
   document.getElementById('stocksResult').innerHTML = html || '<p>No products in this store</p>';
 }
@@ -396,31 +472,94 @@ async function loadSales() {
   `;
 }
 
+// VIEW TRANSACTION DETAIL
+async function showTxDetail(ticketId) {
+  const snap = await db.collection('transactions').where('ticketNumber', '==', ticketId).get();
+  if (snap.empty) {
+    // Fallback: check by doc ID
+    const docRef = await db.collection('transactions').doc(ticketId).get();
+    if (!docRef.exists) {
+      document.getElementById('txDetailContent').innerHTML = '<p class="note">Transaction not found — may have been removed or voided.</p>';
+      document.getElementById('txModal').style.display = 'flex';
+      return;
+    }
+    const t = docRef.data();
+    renderTxDetail(t, ticketId);
+  } else {
+    const t = snap.docs[0].data();
+    renderTxDetail(t, ticketId);
+  }
+  document.getElementById('txModal').style.display = 'flex';
+}
+
+function renderTxDetail(t, displayId) {
+  let itemsHtml = '';
+  (t.items || []).forEach(it => {
+    itemsHtml += `<div class="tx-item-line">
+      <span>${it.name} × ${it.qty}</span>
+      <span>₱${((it.price||0) * it.qty).toFixed(2)}</span>
+    </div>`;
+  });
+  document.getElementById('txDetailContent').innerHTML = `
+    <div class="tx-detail">
+      <h4>Ticket No: ${t.ticketNumber || displayId}</h4>
+      <p><strong>Date:</strong> ${new Date(t.timestamp?.toDate()).toLocaleString()}</p>
+      <p><strong>Cashier:</strong> ${t.cashierName || 'Unknown'}</p>
+      <p><strong>Payment:</strong> ${t.paymentMethod || 'N/A'}</p>
+      <p><strong>Total:</strong> ₱${(t.total||0).toFixed(2)}</p>
+      <hr style="margin:10px 0;">
+      <p><strong>Items:</strong></p>
+      ${itemsHtml || '<p>No items recorded</p>'}
+    </div>
+  `;
+}
+
+function closeTxModal() {
+  document.getElementById('txModal').style.display = 'none';
+}
+
 // VOID REQUESTS
 async function loadVoidRequests() {
-  const snap = await db.collection('voidRequests').where('status', '==', 'pending').get();
+  const snap = await db.collection('voidRequests').where('status', '==', 'pending').orderBy('requestedAt', 'desc').get();
   let html = '';
   snap.forEach(doc => {
     const r = doc.data();
     html += `<div class="card">
       <p><strong>Cashier:</strong> ${r.cashierName}</p>
       <p><strong>Reason:</strong> ${r.reason}</p>
-      <p><strong>Wrong Ticket #:</strong> ${r.wrongTicket || 'N/A'}</p>
-      <p><strong>Correct Ticket #:</strong> ${r.correctTicket || 'N/A'}</p>
+      <p><strong>Wrong Ticket #:</strong> 
+        <span class="ticket-link" onclick="showTxDetail('${r.wrongTicket}')">${r.wrongTicket}</span>
+      </p>
+      <p><strong>Correct Ticket #:</strong> 
+        ${r.correctTicket && r.correctTicket !== 'N/A' 
+          ? `<span class="ticket-link" onclick="showTxDetail('${r.correctTicket}')">${r.correctTicket}</span>` 
+          : 'Not provided / Not needed'}
+      </p>
       <p class="status-pending">Status: Waiting for approval</p>
-      <button class="success" onclick="approveVoid('${doc.id}')">APPROVE</button>
-      <button class="danger" onclick="rejectVoid('${doc.id}')">REJECT</button>
+      <button class="success small" onclick="approveVoid('${doc.id}')">APPROVE VOID</button>
+      <button class="danger small" onclick="rejectVoid('${doc.id}')">REJECT</button>
     </div>`;
   });
   document.getElementById('voidsList').innerHTML = html || '<p>No pending requests</p>';
 }
 
-async function approveVoid(id) {
-  await db.collection('voidRequests').doc(id).update({ status: 'approved' });
+async function approveVoid(reqId) {
+  if (!confirm('Approve this void request?')) return;
+  await db.collection('voidRequests').doc(reqId).update({ 
+    status: 'approved',
+    approvedBy: user.name,
+    approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
   loadVoidRequests();
 }
-async function rejectVoid(id) {
-  await db.collection('voidRequests').doc(id).update({ status: 'rejected' });
+
+async function rejectVoid(reqId) {
+  if (!confirm('Reject this void request?')) return;
+  await db.collection('voidRequests').doc(reqId).update({ 
+    status: 'rejected',
+    rejectedBy: user.name,
+    rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
   loadVoidRequests();
 }
 
@@ -430,10 +569,15 @@ async function loadSummary() {
   if (!storeId) return;
   const snap = await db.collection('transactions').where('storeId', '==', storeId).orderBy('timestamp', 'desc').limit(50).get();
   let html = '<table style="width:100%;border-collapse:collapse;">';
-  html += '<tr style="background:#f5f5f5;"><th style="border:1px solid #ddd;padding:8px;">Date</th><th>Total</th><th>Method</th></tr>';
+  html += '<tr style="background:#f5f5f5;"><th style="border:1px solid #ddd;padding:8px;">Date</th><th>Ticket No</th><th>Total</th><th>Method</th></tr>';
   snap.forEach(d => {
     const t = d.data();
-    html += `<tr><td style="border:1px solid #ddd;padding:8px;">${new Date(t.timestamp?.toDate()).toLocaleString()}</td><td>₱${(t.total||0).toFixed(2)}</td><td>${t.paymentMethod}</td></tr>`;
+    html += `<tr>
+      <td style="border:1px solid #ddd;padding:8px;">${new Date(t.timestamp?.toDate()).toLocaleString()}</td>
+      <td style="border:1px solid #ddd;padding:8px;"><span class="ticket-link" onclick="showTxDetail('${t.ticketNumber || d.id}')">${t.ticketNumber || d.id.slice(0,8)}</span></td>
+      <td style="border:1px solid #ddd;padding:8px;">₱${(t.total||0).toFixed(2)}</td>
+      <td style="border:1px solid #ddd;padding:8px;">${t.paymentMethod}</td>
+    </tr>`;
   });
   html += '</table>';
   document.getElementById('summaryResult').innerHTML = html;
@@ -458,7 +602,7 @@ async function loadCountTab() {
   let pHtml = '';
   prods.forEach(d => {
     const p = d.data();
-    pHtml += `<label style="display:block;"><input type="checkbox" class="count-prod" value="${d.id}"> ${p.name} (Store: ${p.storeId})</label>`;
+    pHtml += `<label style="display:block;"><input type="checkbox" class="count-prod" value="${d.id}"> ${p.name} (Barcode: ${p.barcode})</label>`;
   });
   document.getElementById('countProdList').innerHTML = pHtml;
   
@@ -479,12 +623,12 @@ async function sendCountRequest() {
   
   for(const pid of selected) {
     await db.collection('stockCountRequests').add({
-      storeId, cashierId, productId: pid,
+      storeId, cashierId, productId: pid, status: 'pending',
       requestedBy: user.name,
       requestedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   }
-  alert('Request sent!');
+  alert('Request sent! ✅');
 }
 
 // CHAT
@@ -494,7 +638,7 @@ async function loadChatTargets() {
     db.collection('users').where('role','==','sp').get()
   ]);
   let opts = '<option value="">-- Select --</option>';
-  cashiers.forEach(d => opts += `<option value="user-${d.id}">Cashier: ${d.data().name}</option>`);
+  cashiers.forEach(d => opts += `<option value="cashier-${d.id}">Cashier: ${d.data().name}</option>`);
   sps.forEach(d => opts += `<option value="sp-${d.id}">Service Provider</option>`);
   document.getElementById('chatTarget').innerHTML = opts;
 }
@@ -507,12 +651,12 @@ function switchChat() {
 
 async function loadMessages() {
   if (!currentChatWith) return;
-  const chatId = [user.role, user.name, currentChatWith].sort().join('_');
-  const snap = await db.collection('chats').doc(chatId).collection('messages').orderBy('sentAt').get();
+  const chatId = ['admin', user.id || 'admin_id', currentChatWith].sort().join('_');
+  const snap = await db.collection('chats').doc(chatId).collection('messages').orderBy('sentAt').limit(50).get();
   let html = '';
   snap.forEach(d => {
     const m = d.data();
-    html += `<div class="msg ${m.sender === 'admin' ? 'me' : 'other'}">${m.text}</div>`;
+    html += `<div class="msg ${m.senderRole === 'admin' ? 'me' : 'other'}">${m.text}</div>`;
   });
   document.getElementById('chatMessages').innerHTML = html;
   document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
@@ -522,9 +666,10 @@ async function sendChat() {
   if (!currentChatWith) return alert('Select chat partner first');
   const text = document.getElementById('chatText').value.trim();
   if (!text) return;
-  const chatId = [user.role, user.name, currentChatWith].sort().join('_');
+  const chatId = ['admin', user.id || 'admin_id', currentChatWith].sort().join('_');
   await db.collection('chats').doc(chatId).collection('messages').add({
-    sender: 'admin', text, sentAt: firebase.firestore.FieldValue.serverTimestamp()
+    senderRole: 'admin', senderName: user.name, text,
+    sentAt: firebase.firestore.FieldValue.serverTimestamp()
   });
   document.getElementById('chatText').value = '';
   loadMessages();

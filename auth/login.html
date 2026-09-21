@@ -3,117 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZenTrade Pro POS — Login</title>
+  <title>Login — ZenTrade Pro POS</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    :root {
+      --primary: #3498db;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --dark: #2c3e50;
+      --light: #f8f9fa;
+    }
     body {
-      background: linear-gradient(135deg, #2c3e50, #3498db);
+      background: linear-gradient(135deg, var(--dark), #34495e);
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
       padding: 20px;
     }
-    .login-box {
-      background: white;
-      padding: 40px 30px;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-      width: 100%; max-width: 400px;
+    .login-card {
+      background: white; padding: 40px 30px; border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      width: 100%; max-width: 420px;
     }
-    .login-box h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 10px;
-      font-size: 24px;
+    .logo { text-align: center; margin-bottom: 30px; }
+    .logo h1 { color: var(--dark); font-size: 24px; }
+    .logo p { color: #888; font-size: 14px; margin-top: 5px; }
+    .role-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+    .role-btn {
+      flex: 1; padding: 12px; border: 2px solid #ddd; background: white;
+      border-radius: 8px; cursor: pointer; font-weight: 600; color: #666;
+      transition: all 0.2s;
     }
-    .login-box p.subtitle {
-      text-align: center;
-      color: #7f8c8d;
-      margin-bottom: 30px;
-      font-size: 14px;
+    .role-btn.active {
+      border-color: var(--primary); background: #f0f7ff;
+      color: var(--primary);
     }
-    .logo {
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      color: #3498db;
-      margin-bottom: 5px;
+    input, button {
+      width: 100%; padding: 14px 16px; margin: 8px 0;
+      border: 2px solid #eee; border-radius: 8px; font-size: 16px;
     }
-    label {
-      display: block;
-      margin: 15px 0 5px;
-      color: #34495e;
-      font-weight: 500;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #ecf0f1;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s;
-    }
-    input:focus, select:focus {
-      outline: none;
-      border-color: #3498db;
-    }
+    input:focus { outline: none; border-color: var(--primary); }
     button {
-      background: #3498db;
-      color: white;
-      border: none;
-      margin-top: 25px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.3s;
+      background: var(--primary); color: white; border: none;
+      font-weight: 600; cursor: pointer; transition: background 0.2s;
+      margin-top: 10px;
     }
     button:hover { background: #2980b9; }
-    .error {
-      color: #e74c3c;
-      margin-top: 15px;
-      text-align: center;
-      display: none;
-    }
-    .info {
-      margin-top: 20px;
-      font-size: 12px;
-      color: #95a5a6;
-      text-align: center;
-    }
+    .error-msg { color: var(--danger); margin-top: 10px; font-weight: 600; display: none; }
+    .note { margin-top: 20px; font-size: 13px; color: #888; text-align: center; line-height: 1.5; }
   </style>
 </head>
 <body>
-
-<div class="login-box">
-  <div class="logo">ZenTrade Pro</div>
-  <h1>System Login</h1>
-  <p class="subtitle">Business & POS Management System</p>
-
-  <label for="role">Select Role</label>
-  <select id="role">
-    <option value="">-- Choose your role --</option>
-    <option value="admin">Admin / Owner</option>
-    <option value="cashier">Cashier</option>
-    <option value="sp">Service Provider</option>
-  </select>
-
-  <label for="name">Full Name</label>
-  <input type="text" id="name" placeholder="Enter your name">
-
-  <label for="password">Password</label>
-  <input type="password" id="password" placeholder="Enter your password" autocomplete="off">
-
-  <button onclick="loginUser()">LOG IN</button>
-  <div class="error" id="errorMsg"></div>
-  <div class="info">
-    Default Admin: 8888<br>
-    Default SP: 19970407chan
+<div class="login-card">
+  <div class="logo">
+    <h1>🛒 ZenTrade Pro POS</h1>
+    <p>Sign in to your account</p>
   </div>
+
+  <div class="role-selector">
+    <button class="role-btn active" data-role="admin" onclick="selectRole('admin')">Admin</button>
+    <button class="role-btn" data-role="cashier" onclick="selectRole('cashier')">Cashier</button>
+    <button class="role-btn" data-role="sp" onclick="selectRole('sp')">SP</button>
+  </div>
+
+  <input type="text" id="userName" placeholder="Username / Name" required>
+  <input type="password" id="userPass" placeholder="Password" required onkeypress="if(event.key==='Enter')doLogin()">
+
+  <button onclick="doLogin()">🔐 SIGN IN</button>
+  <p id="errorMsg" class="error-msg"></p>
+
+  <p class="note">
+    Default SP Password: 19970407chan<br>
+    Admin & Cashier accounts created by Admin / SP
+  </p>
 </div>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyAxuB4gacmWIf3U4Ic5TsOxSHCaynR0vhw",
@@ -124,99 +90,97 @@ const firebaseConfig = {
   appId: "1:1024558399693:web:13412d95960d8be732a984",
   measurementId: "G-BY03FZEN6E"
 };
-
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
 const db = firebase.firestore();
 
-const DEFAULT_PASS = {
-  admin: "8888",
-  sp: "19970407chan"
-};
+let selectedRole = 'admin';
 
-let idleTimer;
-
-function resetIdleTimer() {
-  clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => {
-    alert("Auto-logout: 10 minutes idle. Please login again.");
-    logoutUser();
-  }, 10 * 60 * 1000); // 10 mins
+function selectRole(role) {
+  selectedRole = role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-role="${role}"]`).classList.add('active');
+  document.getElementById('errorMsg').style.display = 'none';
 }
 
-function logoutUser() {
-  localStorage.clear();
-  window.location.reload();
-}
-
-document.addEventListener('mousemove', resetIdleTimer);
-document.addEventListener('keypress', resetIdleTimer);
-
-async function loginUser() {
-  const role = document.getElementById('role').value;
-  const name = document.getElementById('name').value.trim();
-  const password = document.getElementById('password').value;
-  const errorMsg = document.getElementById('errorMsg');
-
-  errorMsg.style.display = 'none';
-
-  if (!role || !name || !password) {
-    errorMsg.textContent = 'Please fill in all fields.';
-    errorMsg.style.display = 'block';
+async function doLogin() {
+  const name = document.getElementById('userName').value.trim();
+  const pass = document.getElementById('userPass').value.trim();
+  const errorEl = document.getElementById('errorMsg');
+  
+  if (!name || !pass) {
+    errorEl.textContent = '⚠️ Enter username and password';
+    errorEl.style.display = 'block';
     return;
   }
 
   try {
-    let userData = null;
-
-    if (role === 'admin' && password === DEFAULT_PASS.admin) {
-      userData = { role: 'admin', name: name };
-    } else if (role === 'sp' && password === DEFAULT_PASS.sp) {
-      userData = { role: 'sp', name: name };
+    let query;
+    if (selectedRole === 'sp') {
+      // SP login — check name + password
+      query = db.collection('users')
+        .where('role', '==', 'sp')
+        .where('name', '==', name);
     } else {
-      const snap = await db.collection('users')
-        .where('name', '==', name)
-        .where('role', '==', role)
-        .get();
-      
-      if (!snap.empty) {
-        snap.forEach(doc => {
-          const data = doc.data();
-          if (data.password === password) {
-            userData = { id: doc.id, ...data };
-          }
-        });
-      }
+      // Admin / Cashier login
+      query = db.collection('users')
+        .where('role', '==', selectedRole)
+        .where('name', '==', name);
     }
 
-    if (!userData) {
-      errorMsg.textContent = 'Invalid name or password.';
-      errorMsg.style.display = 'block';
+    const snap = await query.get();
+
+    if (snap.empty) {
+      errorEl.textContent = '⚠️ Account not found';
+      errorEl.style.display = 'block';
       return;
     }
 
-    localStorage.setItem('user', JSON.stringify(userData));
+    let foundUser = null;
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      if (data.password === pass) {
+        foundUser = { id: doc.id, ...data };
+        break;
+      }
+    }
 
-    if (userData.role === 'admin') {
-      window.location.href = '../pages/admin/dashboard.html';
-    } else if (userData.role === 'cashier') {
-      window.location.href = '../pages/cashier/dashboard.html';
-    } else if (userData.role === 'sp') {
-      window.location.href = '../pages/sp/dashboard.html';
+    if (!foundUser) {
+      errorEl.textContent = '⚠️ Incorrect password';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    // ✅ Success — Save session
+    localStorage.setItem('user', JSON.stringify(foundUser));
+
+    // ⏱️ Auto-create Free Trial kung bagong Admin
+    if (selectedRole === 'admin' && !foundUser.plan) {
+      await db.collection('users').doc(foundUser.id).update({
+        plan: 'trial',
+        subscriptionStart: firebase.firestore.FieldValue.serverTimestamp(),
+        maxStores: 5,
+        maxCashiers: 0 // unlimited
+      });
+    }
+
+    // 🚀 Redirect based on role
+    switch (foundUser.role) {
+      case 'admin':
+        window.location.href = 'pages/admin/dashboard.html';
+        break;
+      case 'cashier':
+        window.location.href = 'pages/cashier/dashboard.html';
+        break;
+      case 'sp':
+        window.location.href = 'pages/sp/dashboard.html';
+        break;
     }
 
   } catch (err) {
-    errorMsg.textContent = 'System error: ' + err.message;
-    errorMsg.style.display = 'block';
+    errorEl.textContent = '❌ Connection error: ' + err.message;
+    errorEl.style.display = 'block';
   }
 }
-
-document.getElementById('password').addEventListener('keypress', e => {
-  if (e.key === 'Enter') loginUser();
-});
-
-resetIdleTimer();
 </script>
-
 </body>
 </html>

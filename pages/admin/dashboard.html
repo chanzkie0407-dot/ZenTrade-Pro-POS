@@ -1,1 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — ZenTrade Pro POS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f0f4f8; min-height: 100vh; }
+    header {
+      background: #2c3e50; color: white; padding: 15px 25px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo { font-size: 20px; font-weight: bold; }
+    .user-info { display: flex; gap: 15px; align-items: center; }
+    .logout-btn {
+      background: #e74c3c; color: white; border: none; padding: 8px 15px;
+      border-radius: 6px; cursor: pointer; font-weight: 600;
+    }
+    .tabs {
+      display: flex; background: white; border-bottom: 2px solid #ddd; flex-wrap: wrap;
+    }
+    .tab {
+      padding: 14px 22px; cursor: pointer; border-bottom: 3px solid transparent;
+      font-weight: 500; color: #555; transition: all 0.2s;
+    }
+    .tab:hover { background: #f8f9fa; }
+    .tab.active { border-bottom-color: #3498db; color: #3498db; font-weight: 600; }
+    .tab-content { padding: 25px; max-width: 1200px; margin: 0 auto; display: none; }
+    .tab-content.active { display: block; }
+    h2 { color: #2c3e50; margin-bottom: 20px; }
+    .card {
+      background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    input, button, select, label {
+      padding: 10px 14px; margin: 5px; border: 2px solid #eee; border-radius: 6px; font-size: 15px;
+    }
+    button {
+      background: #3498db; color: white; border: none; cursor: pointer; font-weight: 600;
+    }
+    button:hover { background: #2980b9; }
+    button.danger { background: #e74c3c; }
+    button.success { background: #27ae60; }
+    button.warning { background: #f39c12; }
+    .list-item {
+      padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;
+    }
+    .status-pending { color: #f39c12; font-weight: bold; }
+    .status-approved { color: #27ae60; font-weight: bold; }
+    .status-rejected { color: #e74c3c; font-weight: bold; }
+    .chat-container { border: 1px solid #ddd; border-radius: 8px; height: 400px; display: flex; flex-direction: column; }
+    .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #fafafa; }
+    .chat-input { display: flex; border-top: 1px solid #ddd; }
+    .chat-input input { flex: 1; margin: 0; border: none; border-radius: 0; }
+    .msg { margin: 8px 0; padding: 8px 12px; border-radius: 16px; max-width: 70%; }
+    .msg.me { background: #3498db; color: white; margin-left: auto; }
+    .msg.other { background: #e9ecef; color: #333; margin-right: auto; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
 
+<header>
+  <div class="logo">ZenTrade Pro POS — Admin / Owner</div>
+  <div class="user-info">
+    <span id="userNameDisplay"></span>
+    <button class="logout-btn" onclick="logout()">LOG OUT</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="stores">Stores</div>
+  <div class="tab" data-tab="cashiers">Cashiers</div>
+  <div class="tab" data-tab="sales">Sales Overview</div>
+  <div class="tab" data-tab="products">Products</div>
+  <div class="tab" data-tab="stocks">Stocks Overview</div>
+  <div class="tab" data-tab="voids">Void Requests</div>
+  <div class="tab" data-tab="summary">Transaction Summary</div>
+  <div class="tab" data-tab="count">Stock Count</div>
+  <div class="tab" data-tab="chat">Chat</div>
+</div>
+
+<!-- STORES TAB -->
+<div class="tab-content active" id="tab-stores">
+  <h2>Manage Stores</h2>
+  <div class="card">
+    <h3>Add New Store</h3>
+    <input type="text" id="storeNo" placeholder="Store No / Code (optional)">
+    <input type="text" id="storeName" placeholder="Store Name" required>
+    <input type="text" id="storeLoc" placeholder="Location (optional)">
+    <button onclick="addStore()">ADD STORE</button>
+  </div>
+  <div class="card">
+    <h3>Stores List</h3>
+    <div id="storesList"></div>
+  </div>
+</div>
+
+<!-- CASHIERS TAB -->
+<div class="tab-content" id="tab-cashiers">
+  <h2>Manage Cashiers</h2>
+  <div class="card">
+    <h3>Add New Cashier</h3>
+    <input type="text" id="cName" placeholder="First Name" required>
+    <input type="text" id="cLname" placeholder="Last Name (optional)">
+    <input type="password" id="cPass" placeholder="4-digit Password" maxlength="4" required>
+    <button onclick="addCashier()">ADD CASHIER</button>
+  </div>
+  <div class="card">
+    <h3>Cashiers List</h3>
+    <div id="cashiersList"></div>
+  </div>
+</div>
+
+<!-- SALES OVERVIEW TAB -->
+<div class="tab-content" id="tab-sales">
+  <h2>Sales Overview</h2>
+  <div class="card">
+    <select id="salesStore">
+      <option value="">-- Select Store --</option>
+    </select>
+    <input type="date" id="salesFrom">
+    <input type="date" id="salesTo">
+    <button onclick="loadSales()">GENERATE</button>
+    <div id="salesResult" style="margin-top:20px;"></div>
+  </div>
+</div>
+
+<!-- PRODUCTS TAB -->
+<div class="tab-content" id="tab-products">
+  <h2>Manage Products</h2>
+  <div class="card">
+    <select id="prodStore">
+      <option value="">-- Select Store --</option>
+    </select>
+    <input type="text" id="prodName" placeholder="Product Name" required>
+    <input type="number" id="prodQty" placeholder="Quantity" min="1" required>
+    <input type="number" id="prodPrice" placeholder="Price" step="0.01" required>
+    <input type="text" id="prodBarcode" placeholder="Barcode / SKU (optional)">
+    <button onclick="addProduct()">ADD PRODUCT</button>
+  </div>
+  <div class="card">
+    <h3>Products List</h3>
+    <div id="productsList"></div>
+  </div>
+</div>
+
+<!-- STOCKS TAB -->
+<div class="tab-content" id="tab-stocks">
+  <h2>Stocks Overview</h2>
+  <div class="card">
+    <select id="stockStore" onchange="loadStocks()">
+      <option value="">-- Select Store --</option>
+    </select>
+    <div id="stocksResult" style="margin-top:15px;"></div>
+  </div>
+</div>
+
+<!-- VOID REQUESTS TAB -->
+<div class="tab-content" id="tab-voids">
+  <h2>Void Requests</h2>
+  <div id="voidsList"></div>
+</div>
+
+<!-- TRANSACTION SUMMARY TAB -->
+<div class="tab-content" id="tab-summary">
+  <h2>Transaction Summary</h2>
+  <div class="card">
+    <select id="sumStore" onchange="loadSummary()">
+      <option value="">-- Select Store --</option>
+    </select>
+    <div id="summaryResult" style="margin-top:15px;"></div>
+  </div>
+</div>
+
+<!-- STOCK COUNT TAB -->
+<div class="tab-content" id="tab-count">
+  <h2>Request Stock Count</h2>
+  <div class="card">
+    <select id="countStore">
+      <option value="">-- Select Store --</option>
+    </select>
+    <select id="countCashier">
+      <option value="">-- Select Cashier --</option>
+    </select>
+    <p style="margin:10px 0;">Select Products to Count:</p>
+    <div id="countProdList" style="max-height:200px;overflow-y:auto;border:1px solid #ddd;padding:10px;"></div>
+    <button onclick="sendCountRequest()" style="margin-top:15px;">SEND COUNT REQUEST</button>
+  </div>
+  <div class="card">
+    <h3>Count Responses</h3>
+    <div id="countResponses"></div>
+  </div>
+</div>
+
+<!-- CHAT TAB -->
+<div class="tab-content" id="tab-chat">
+  <h2>Private Chat</h2>
+  <div class="card">
+    <select id="chatTarget" onchange="switchChat()">
+      <option value="">-- Select who to chat with --</option>
+    </select>
+    <div class="chat-container" id="chatBox">
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input">
+        <input type="text" id="chatText" placeholder="Type message...">
+        <button onclick="sendChat()">SEND</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAxuB4gacmWIf3U4Ic5TsOxSHCaynR0vhw",
+  authDomain: "bpos-pos.firebaseapp.com",
+  projectId: "bpos-pos",
+  storageBucket: "bpos-pos.firebasestorage.app",
+  messagingSenderId: "1024558399693",
+  appId: "1:1024558399693:web:13412d95960d8be732a984",
+  measurementId: "G-BY03FZEN6E"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+if (!user || user.role !== 'admin') {
+  localStorage.clear();
+  window.location.href = '../login.html';
+}
+document.getElementById('userNameDisplay').textContent = user.name;
+
+let currentChatWith = null;
+
+// TAB SWITCHING
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'stores') loadStores();
+    if (tab.dataset.tab === 'cashiers') loadCashiers();
+    if (tab.dataset.tab === 'products') loadProducts();
+    if (tab.dataset.tab === 'voids') loadVoidRequests();
+    if (tab.dataset.tab === 'count') loadCountTab();
+    if (tab.dataset.tab === 'chat') loadChatTargets();
+    fillStoreSelects();
+  });
+});
+
+function logout() {
+  localStorage.clear();
+  window.location.href = '../login.html';
+}
+
+// STORES
+async function addStore() {
+  const no = document.getElementById('storeNo').value.trim() || ('STORE-' + Date.now());
+  const name = document.getElementById('storeName').value.trim();
+  const loc = document.getElementById('storeLoc').value.trim();
+  if (!name) return alert('Enter store name');
+  
+  await db.collection('stores').add({
+    storeNo: no, name, loc,
+    createdBy: user.name,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  document.getElementById('storeName').value = '';
+  loadStores();
+  fillStoreSelects();
+}
+
+async function loadStores() {
+  const snap = await db.collection('stores').orderBy('createdAt', 'desc').get();
+  let html = '';
+  snap.forEach(doc => {
+    const s = doc.data();
+    html += `<div class="list-item"><div><strong>${s.name}</strong> (${s.storeNo})<br><small>${s.loc || 'No location'}</small></div></div>`;
+  });
+  document.getElementById('storesList').innerHTML = html || '<p>No stores added yet</p>';
+}
+
+// CASHIERS
+async function addCashier() {
+  const name = document.getElementById('cName').value.trim();
+  const lname = document.getElementById('cLname').value.trim();
+  const pass = document.getElementById('cPass').value.trim();
+  if (!name || pass.length !== 4) return alert('Enter name and 4-digit password');
+  
+  await db.collection('users').add({
+    name, lname, password: pass, role: 'cashier',
+    createdBy: user.name,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  document.getElementById('cName').value = '';
+  document.getElementById('cPass').value = '';
+  loadCashiers();
+}
+
+async function loadCashiers() {
+  const snap = await db.collection('users').where('role', '==', 'cashier').orderBy('createdAt', 'desc').get();
+  let html = '';
+  snap.forEach(doc => {
+    const c = doc.data();
+    html += `<div class="list-item"><div><strong>${c.name} ${c.lname || ''}</strong><br><small>Password: ${c.password}</small></div></div>`;
+  });
+  document.getElementById('cashiersList').innerHTML = html || '<p>No cashiers added yet</p>';
+}
+
+// FILL SELECT OPTIONS
+async function fillStoreSelects() {
+  const snap = await db.collection('stores').get();
+  const opts = '<option value="">-- Select Store --</option>';
+  let options = opts;
+  snap.forEach(d => { options += `<option value="${d.id}">${d.data().name}</option>`; });
+  ['salesStore','prodStore','stockStore','sumStore','countStore'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.innerHTML = options;
+  });
+}
+
+// PRODUCTS
+async function addProduct() {
+  const storeId = document.getElementById('prodStore').value;
+  const name = document.getElementById('prodName').value.trim();
+  const qty = parseInt(document.getElementById('prodQty').value);
+  const price = parseFloat(document.getElementById('prodPrice').value);
+  let barcode = document.getElementById('prodBarcode').value.trim() || ('SKU-' + Date.now());
+  if (!storeId || !name) return alert('Select store and enter product name');
+  
+  await db.collection('products').add({
+    storeId, name, qty, price, barcode,
+    addedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  loadProducts();
+}
+
+async function loadProducts() {
+  const snap = await db.collection('products').orderBy('addedAt', 'desc').get();
+  let html = '';
+  snap.forEach(doc => {
+    const p = doc.data();
+    html += `<div class="list-item"><div><strong>${p.name}</strong><br>Qty: ${p.qty} | Price: ₱${p.price.toFixed(2)} | SKU: ${p.barcode}</div></div>`;
+  });
+  document.getElementById('productsList').innerHTML = html || '<p>No products added yet</p>';
+}
+
+async function loadStocks() {
+  const storeId = document.getElementById('stockStore').value;
+  if (!storeId) return;
+  const snap = await db.collection('products').where('storeId', '==', storeId).get();
+  let html = '';
+  snap.forEach(doc => {
+    const p = doc.data();
+    html += `<div class="list-item"><div><strong>${p.name}</strong> — Qty on hand: ${p.qty} | ₱${p.price.toFixed(2)}</div></div>`;
+  });
+  document.getElementById('stocksResult').innerHTML = html || '<p>No products in this store</p>';
+}
+
+// SALES
+async function loadSales() {
+  const storeId = document.getElementById('salesStore').value;
+  const from = document.getElementById('salesFrom').value;
+  const to = document.getElementById('salesTo').value;
+  if (!storeId || !from || !to) return alert('Fill all fields');
+  
+  const start = new Date(from);
+  const end = new Date(to); end.setHours(23,59,59);
+  
+  const snap = await db.collection('transactions')
+    .where('storeId', '==', storeId)
+    .where('timestamp', '>=', start)
+    .where('timestamp', '<=', end)
+    .orderBy('timestamp', 'desc')
+    .get();
+  
+  let total = 0, cash=0, gcash=0;
+  snap.forEach(d => {
+    const t = d.data();
+    total += t.total || 0;
+    if(t.paymentMethod === 'Cash') cash += t.total || 0;
+    if(t.paymentMethod === 'GCash') gcash += t.total || 0;
+  });
+  
+  document.getElementById('salesResult').innerHTML = `
+    <h4>Total Sales: ₱${total.toFixed(2)}</h4>
+    <p>Cash: ₱${cash.toFixed(2)} | GCash: ₱${gcash.toFixed(2)}</p>
+    <p>Transactions: ${snap.size}</p>
+  `;
+}
+
+// VOID REQUESTS
+async function loadVoidRequests() {
+  const snap = await db.collection('voidRequests').where('status', '==', 'pending').get();
+  let html = '';
+  snap.forEach(doc => {
+    const r = doc.data();
+    html += `<div class="card">
+      <p><strong>Cashier:</strong> ${r.cashierName}</p>
+      <p><strong>Reason:</strong> ${r.reason}</p>
+      <p><strong>Wrong Ticket #:</strong> ${r.wrongTicket || 'N/A'}</p>
+      <p><strong>Correct Ticket #:</strong> ${r.correctTicket || 'N/A'}</p>
+      <p class="status-pending">Status: Waiting for approval</p>
+      <button class="success" onclick="approveVoid('${doc.id}')">APPROVE</button>
+      <button class="danger" onclick="rejectVoid('${doc.id}')">REJECT</button>
+    </div>`;
+  });
+  document.getElementById('voidsList').innerHTML = html || '<p>No pending requests</p>';
+}
+
+async function approveVoid(id) {
+  await db.collection('voidRequests').doc(id).update({ status: 'approved' });
+  loadVoidRequests();
+}
+async function rejectVoid(id) {
+  await db.collection('voidRequests').doc(id).update({ status: 'rejected' });
+  loadVoidRequests();
+}
+
+// SUMMARY
+async function loadSummary() {
+  const storeId = document.getElementById('sumStore').value;
+  if (!storeId) return;
+  const snap = await db.collection('transactions').where('storeId', '==', storeId).orderBy('timestamp', 'desc').limit(50).get();
+  let html = '<table style="width:100%;border-collapse:collapse;">';
+  html += '<tr style="background:#f5f5f5;"><th style="border:1px solid #ddd;padding:8px;">Date</th><th>Total</th><th>Method</th></tr>';
+  snap.forEach(d => {
+    const t = d.data();
+    html += `<tr><td style="border:1px solid #ddd;padding:8px;">${new Date(t.timestamp?.toDate()).toLocaleString()}</td><td>₱${(t.total||0).toFixed(2)}</td><td>${t.paymentMethod}</td></tr>`;
+  });
+  html += '</table>';
+  document.getElementById('summaryResult').innerHTML = html;
+}
+
+// STOCK COUNT
+async function loadCountTab() {
+  const [stores, cashiers, prods] = await Promise.all([
+    db.collection('stores').get(),
+    db.collection('users').where('role','==','cashier').get(),
+    db.collection('products').get()
+  ]);
+  
+  let sOpts = '<option value="">-- Select Store --</option>';
+  stores.forEach(d => sOpts += `<option value="${d.id}">${d.data().name}</option>`);
+  document.getElementById('countStore').innerHTML = sOpts;
+  
+  let cOpts = '<option value="">-- Select Cashier --</option>';
+  cashiers.forEach(d => cOpts += `<option value="${d.id}">${d.data().name}</option>`);
+  document.getElementById('countCashier').innerHTML = cOpts;
+  
+  let pHtml = '';
+  prods.forEach(d => {
+    const p = d.data();
+    pHtml += `<label style="display:block;"><input type="checkbox" class="count-prod" value="${d.id}"> ${p.name} (Store: ${p.storeId})</label>`;
+  });
+  document.getElementById('countProdList').innerHTML = pHtml;
+  
+  const resSnap = await db.collection('stockCountResponses').orderBy('submittedAt','desc').limit(10).get();
+  let rHtml = '';
+  resSnap.forEach(d => {
+    const r = d.data();
+    rHtml += `<div class="list-item"><div><strong>${r.cashierName}</strong> — ${new Date(r.submittedAt?.toDate()).toLocaleString()}<br>Expected: ${r.expectedQty} / Actual: ${r.actualQty}</div></div>`;
+  });
+  document.getElementById('countResponses').innerHTML = rHtml || '<p>No responses yet</p>';
+}
+
+async function sendCountRequest() {
+  const storeId = document.getElementById('countStore').value;
+  const cashierId = document.getElementById('countCashier').value;
+  const selected = [...document.querySelectorAll('.count-prod:checked')].map(c => c.value);
+  if (!storeId || !cashierId || !selected.length) return alert('Fill all');
+  
+  for(const pid of selected) {
+    await db.collection('stockCountRequests').add({
+      storeId, cashierId, productId: pid,
+      requestedBy: user.name,
+      requestedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+  alert('Request sent!');
+}
+
+// CHAT
+async function loadChatTargets() {
+  const [cashiers, sps] = await Promise.all([
+    db.collection('users').where('role','==','cashier').get(),
+    db.collection('users').where('role','==','sp').get()
+  ]);
+  let opts = '<option value="">-- Select --</option>';
+  cashiers.forEach(d => opts += `<option value="user-${d.id}">Cashier: ${d.data().name}</option>`);
+  sps.forEach(d => opts += `<option value="sp-${d.id}">Service Provider</option>`);
+  document.getElementById('chatTarget').innerHTML = opts;
+}
+
+function switchChat() {
+  currentChatWith = document.getElementById('chatTarget').value;
+  if (!currentChatWith) { document.getElementById('chatMessages').innerHTML = ''; return; }
+  loadMessages();
+}
+
+async function loadMessages() {
+  if (!currentChatWith) return;
+  const chatId = [user.role, user.name, currentChatWith].sort().join('_');
+  const snap = await db.collection('chats').doc(chatId).collection('messages').orderBy('sentAt').get();
+  let html = '';
+  snap.forEach(d => {
+    const m = d.data();
+    html += `<div class="msg ${m.sender === 'admin' ? 'me' : 'other'}">${m.text}</div>`;
+  });
+  document.getElementById('chatMessages').innerHTML = html;
+  document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+}
+
+async function sendChat() {
+  if (!currentChatWith) return alert('Select chat partner first');
+  const text = document.getElementById('chatText').value.trim();
+  if (!text) return;
+  const chatId = [user.role, user.name, currentChatWith].sort().join('_');
+  await db.collection('chats').doc(chatId).collection('messages').add({
+    sender: 'admin', text, sentAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  document.getElementById('chatText').value = '';
+  loadMessages();
+}
+
+document.getElementById('chatText').addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendChat();
+});
+
+loadStores();
+fillStoreSelects();
+</script>
+</body>
+</html>

@@ -14,21 +14,24 @@
     .topbar { background: var(--navy); color: white; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
     .topbar h1 { font-size: 18px; font-weight: 600; }
     .topbar .user { display: flex; align-items: center; gap: 12px; }
-    .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; }
+    .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.9; }
     .btn-danger { background: var(--red); color: white; }
     .btn-primary { background: var(--blue); color: white; }
     .btn-success { background: var(--green); color: white; }
     .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-sm+.btn-sm { margin-left: 4px; }
     .layout { display: flex; margin-top: 56px; min-height: calc(100vh - 56px); }
     .sidebar { width: 220px; background: white; border-right: 1px solid var(--border); padding: 20px 0; position: fixed; top: 56px; bottom: 0; left: 0; overflow-y: auto; }
-    .sidebar-tab { padding: 14px 24px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; font-weight: 500; color: var(--gray); }
+    .sidebar-tab { padding: 14px 24px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; font-weight: 500; color: var(--gray); display: flex; justify-content: space-between; align-items: center; }
     .sidebar-tab:hover, .sidebar-tab.active { background: #eff6ff; border-left-color: var(--blue); color: var(--blue); }
+    .notification-dot { display: none; width: 10px; height: 10px; background: var(--red); border-radius: 50%; }
     .main { margin-left: 220px; padding: 24px; flex: 1; }
     .page { display: none; }
     .page.active { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from {opacity:0; transform:translateY(6px);} to {opacity:1;} }
     .card { background: white; border-radius: 10px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .card h3 { margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border); color: var(--navy); font-size: 16px; }
+    .card h3 { margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border); color: var(--navy); font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
     .form-group { margin-bottom: 14px; }
     label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
@@ -40,6 +43,8 @@
     table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
     th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: #f8fafc; font-weight: 600; color: var(--navy); }
+    .ticket-link { color: var(--blue); cursor: pointer; text-decoration: underline; font-weight: 600; }
+    .ticket-link:hover { color: #1d4ed8; }
     .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
     .badge-wait { background: #fef3c7; color: #92400e; }
     .badge-ok { background: #dcfce7; color: #166534; }
@@ -55,10 +60,12 @@
     .chat-input input { flex: 1; margin: 0; border: none; border-radius: 0; }
     .chat-input button { border-radius: 0; border: none; }
     .hidden { display: none !important; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
+    .modal-content { background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .modal-actions { margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
   </style>
 </head>
 <body>
-
 <!-- TOPBAR -->
 <div class="topbar">
   <h1>🏪 BPOS — Admin Dashboard</h1>
@@ -67,7 +74,6 @@
     <button class="btn btn-danger" onclick="logout()">🚪 LOG OUT</button>
   </div>
 </div>
-
 <div class="layout">
 <!-- SIDEBAR -->
 <div class="sidebar">
@@ -76,15 +82,13 @@
   <div class="sidebar-tab" data-page="products">📦 Products</div>
   <div class="sidebar-tab" data-page="stocks">📊 Stocks Overview</div>
   <div class="sidebar-tab" data-page="sales">💰 Sales Overview</div>
-  <div class="sidebar-tab" data-page="voids">📝 Void Requests</div>
-  <div class="sidebar-tab" data-page="count">🔢 Stock Count Requests</div>
-  <div class="sidebar-tab" data-page="chat">💬 Chat Module</div>
+  <div class="sidebar-tab" data-page="voids">📝 Void Requests <span class="notification-dot" id="dot-voids"></span></div>
+  <div class="sidebar-tab" data-page="count">🔢 Stock Count Requests <span class="notification-dot" id="dot-count"></span></div>
+  <div class="sidebar-tab" data-page="chat">💬 Chat Module <span class="notification-dot" id="dot-chat"></span></div>
   <div class="sidebar-tab" data-page="passwords">🔑 Password Logs</div>
 </div>
-
 <!-- MAIN CONTENT -->
 <div class="main">
-
 <!-- ===== STORES PAGE ===== -->
 <div id="page-stores" class="page active">
   <div class="card">
@@ -197,7 +201,7 @@
 <!-- ===== SALES OVERVIEW ===== -->
 <div id="page-sales" class="page">
   <div class="card">
-    <h3>Sales Overview</h3>
+    <h3>Sales & Remittance Overview</h3>
     <div class="grid">
       <div class="form-group">
         <label>Select Store</label>
@@ -220,9 +224,10 @@
 <!-- ===== VOID REQUESTS ===== -->
 <div id="page-voids" class="page">
   <div class="card">
-    <h3>Void Requests</h3>
+    <h3>Void Requests <span id="pendingVoidBadge" class="badge badge-wait hidden">0 Pending</span></h3>
+    <p style="color:var(--gray);margin-bottom:12px;">Click Ticket # to view transaction details before approving or rejecting.</p>
     <table>
-      <thead><tr><th>Ticket #</th><th>Cashier</th><th>Type</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+      <thead><tr><th>Ticket #</th><th>Cashier</th><th>Correct Ticket</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
       <tbody id="voidList"></tbody>
     </table>
   </div>
@@ -234,7 +239,7 @@
     <h3>Send Stock Count Request</h3>
     <div class="form-group">
       <label>Select Store</label>
-      <select id="countStore"></select>
+      <select id="countStore" onchange="renderCountProducts()"></select>
     </div>
     <div class="form-group">
       <label>Select Products to Count</label>
@@ -261,6 +266,7 @@
     <div class="chat-container" id="chatBox" style="display:none;">
       <div class="chat-header">
         <span id="chatWithLabel"></span>
+        <button class="btn btn-sm" style="background:transparent;color:var(--gray);" onclick="markChatRead()">✓ Mark Read</button>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input">
@@ -281,12 +287,48 @@
     </table>
   </div>
 </div>
-
 </div>
+</div>
+
+<!-- ===== TRANSACTION VERIFICATION MODAL ===== -->
+<div id="txModal" class="modal-overlay" onclick="if(event.target===this) closeTxModal()">
+  <div class="modal-content">
+    <h3 id="txModalTitle" style="margin-bottom:16px;"></h3>
+    <div id="txModalBody"></div>
+    <div class="modal-actions">
+      <button class="btn" style="background:var(--light);" onclick="closeTxModal()">Close</button>
+      <button class="btn btn-success" id="modalApproveBtn" onclick="approveVoidFromModal()">✓ Approve</button>
+      <button class="btn btn-danger" id="modalRejectBtn" onclick="rejectVoidFromModal()">✗ Reject</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// ===== DATA HELPERS =====
+// ========== NOTIFICATION SYSTEM ==========
+function showDot(id) { const d=document.getElementById('dot-'+id); if(d)d.style.display='block'; }
+function hideDot(id) { const d=document.getElementById('dot-'+id); if(d)d.style.display='none'; }
+
+function checkAllNotifications() {
+  const pendingVoids = getVoids().filter(v => v.status === 'pending').length;
+  if (pendingVoids) { showDot('voids'); const b=document.getElementById('pendingVoidBadge'); b.classList.remove('hidden'); b.textContent = pendingVoids + ' Pending'; }
+  else { hideDot('voids'); document.getElementById('pendingVoidBadge').classList.add('hidden'); }
+
+  const pendingCounts = getCountReqs().filter(r => !r.submittedAt).length;
+  if (pendingCounts) showDot('count'); else hideDot('count');
+
+  const chats = getChats();
+  let unreadChat = false;
+  for(const key in chats) {
+    if(!key.includes('Admin')) continue;
+    const lastMsg = chats[key]?.[chats[key].length-1];
+    if(!lastMsg || lastMsg.sender === 'Admin') continue;
+    const lastView = parseInt(localStorage.getItem('chatView_'+key) || '0');
+    if(new Date(lastMsg.time).getTime() > lastView) { unreadChat = true; break; }
+  }
+  if(unreadChat) showDot('chat'); else hideDot('chat');
+}
+
+// ========== DATA HELPERS ==========
 function getStores() { return JSON.parse(localStorage.getItem('stores') || '[]'); }
 function saveStores(d) { localStorage.setItem('stores', JSON.stringify(d)); }
 function getCashiers() { return JSON.parse(localStorage.getItem('cashiers') || '[]'); }
@@ -317,7 +359,7 @@ function getNextBarcode() {
   return bc;
 }
 
-// ===== INIT =====
+// ========== INIT ==========
 document.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('userRole') !== 'admin') {
     window.location.href = '/auth/login.html';
@@ -325,9 +367,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   document.getElementById('adminName').textContent = sessionStorage.getItem('username') || 'Admin';
   renderAll();
+  checkAllNotifications();
+  setInterval(checkAllNotifications, 8000);
 });
 
-// ===== SIDEBAR NAV =====
+// ========== SIDEBAR NAV ==========
 document.querySelectorAll('.sidebar-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
@@ -338,7 +382,7 @@ document.querySelectorAll('.sidebar-tab').forEach(tab => {
   });
 });
 
-// ===== STORES =====
+// ========== STORES ==========
 function addStore() {
   const code = document.getElementById('storeCode').value.trim() || String(getStores().length+1).padStart(3,'0');
   const name = document.getElementById('storeName').value.trim();
@@ -370,7 +414,7 @@ function renderStores() {
 }
 function delStore(id) { if(confirm('Remove this store?')) saveStores(getStores().filter(x=>x.id!==id)); renderStores(); }
 
-// ===== CASHIERS =====
+// ========== CASHIERS ==========
 function addCashier() {
   const first = document.getElementById('cshFirstName').value.trim();
   const last = document.getElementById('cshLastName').value.trim();
@@ -415,7 +459,7 @@ function changeCashierPass(id) {
 }
 function toggleCashier(id) { const c=getCashiers(); const u=c.find(x=>x.id===id); u.active=!u.active; saveCashiers(c); renderCashiers(); }
 
-// ===== PRODUCTS =====
+// ========== PRODUCTS ==========
 function addProduct() {
   const storeId = document.getElementById('prodStore').value;
   const name = document.getElementById('prodName').value.trim();
@@ -442,7 +486,7 @@ function renderProducts() {
 }
 function delProduct(id) { if(confirm('Delete product?')) saveProducts(getProducts().filter(x=>x.id!==id)); renderProducts(); }
 
-// ===== STOCKS =====
+// ========== STOCKS ==========
 function renderStocks() {
   const sid = document.getElementById('stockStoreFilter').value;
   let p = getProducts();
@@ -451,7 +495,7 @@ function renderStocks() {
     <tr><td>${x.barcode}</td><td>${x.name}</td><td>${x.qty}</td><td>₱${x.price.toFixed(2)}</td></tr>`).join('');
 }
 
-// ===== SALES =====
+// ========== SALES & REMITTANCE OVERVIEW ==========
 function renderSales() {
   const sid = document.getElementById('saleStoreFilter').value;
   const from = document.getElementById('saleFrom').value;
@@ -460,21 +504,66 @@ function renderSales() {
   if(sid) tx = tx.filter(x=>x.storeId==sid);
   if(from) tx = tx.filter(x=>new Date(x.time)>=new Date(from));
   if(to) tx = tx.filter(x=>new Date(x.time)<=new Date(new Date(to).setHours(23,59,59)));
+  
   const cashTotal = tx.filter(x=>x.paymentMethod==='Cash').reduce((s,t)=>s+t.total,0);
   const gcashTotal = tx.filter(x=>x.paymentMethod==='GCash').reduce((s,t)=>s+t.total,0);
   const splitTotal = tx.filter(x=>x.paymentMethod==='Split').reduce((s,t)=>s+t.total,0);
+  const grandTotal = cashTotal+gcashTotal+splitTotal;
+
+  // Remittance declarations
+  const declarations = JSON.parse(localStorage.getItem('remitDeclarations') || '[]');
+  const filteredDecl = declarations.filter(d => {
+    const matchStore = !sid || d.storeId == sid;
+    const matchFrom = !from || new Date(d.declaredAt) >= new Date(from);
+    const matchTo = !to || new Date(d.declaredAt) <= new Date(new Date(to).setHours(23,59,59));
+    return matchStore && matchFrom && matchTo;
+  });
+
   document.getElementById('salesReport').innerHTML = `
     <h4>Transactions: ${tx.length}</h4>
-    <p><strong>Cash:</strong> ₱${cashTotal.toFixed(2)}</p>
-    <p><strong>GCash:</strong> ₱${gcashTotal.toFixed(2)}</p>
-    <p><strong>Split:</strong> ₱${splitTotal.toFixed(2)}</p>
-    <p style="font-size:18px;margin-top:10px;"><strong>TOTAL:</strong> ₱${(cashTotal+gcashTotal+splitTotal).toFixed(2)}</p>
-    <table style="margin-top:20px;">
+    <div class="grid" style="margin:16px 0;">
+      <div style="padding:12px;background:#eff6ff;border-radius:8px;">
+        <strong>Cash Sales</strong><br>₱${cashTotal.toFixed(2)}
+      </div>
+      <div style="padding:12px;background:#f0fdf4;border-radius:8px;">
+        <strong>GCash Sales</strong><br>₱${gcashTotal.toFixed(2)}
+      </div>
+      <div style="padding:12px;background:#fef3c7;border-radius:8px;">
+        <strong>Split Sales</strong><br>₱${splitTotal.toFixed(2)}
+      </div>
+    </div>
+    <p style="font-size:18px;"><strong>Expected Total Remittance:</strong> ₱${grandTotal.toFixed(2)}</p>
+    
+    ${filteredDecl.length ? `
+    <div style="margin-top:20px;">
+      <h4>Cashier Remittance Declarations</h4>
+      <table>
+        <thead><tr><th>Cashier</th><th>Remitted Amount</th><th>Difference</th><th>Explanation</th><th>Date</th></tr></thead>
+        <tbody>
+          ${filteredDecl.map(d => {
+            const exp = d.expectedAmount || 0;
+            const diff = d.remittedAmount - exp;
+            return `
+              <tr>
+                <td>${d.cashier}</td>
+                <td>₱${d.remittedAmount.toFixed(2)}</td>
+                <td style="color:${diff===0?'inherit':diff>0?'green':'red'};font-weight:bold;">
+                  ${diff===0?'—':(diff>0?'OVER +':'SHORT -')}₱${Math.abs(diff).toFixed(2)}
+                </td>
+                <td>${d.explanation || '—'}</td>
+                <td>${new Date(d.declaredAt).toLocaleString()}</td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>` : ''}
+    
+    <table style="margin-top:24px;">
       <thead><tr><th>Ticket #</th><th>Cashier</th><th>Items</th><th>Total</th><th>Method</th><th>Date</th></tr></thead>
       <tbody>
         ${tx.map(x=>`
           <tr>
-            <td>${x.ticket}</td>
+            <td class="ticket-link" onclick="viewTx('${x.ticket}')">${x.ticket}</td>
             <td>${x.cashier}</td>
             <td>${x.items.map(i=>i.name+'×'+i.qty).join(', ')}</td>
             <td>₱${x.total.toFixed(2)}</td>
@@ -485,28 +574,76 @@ function renderSales() {
     </table>`;
 }
 
-// ===== VOID APPROVAL =====
+// ========== TRANSACTION VERIFICATION MODAL ==========
+let currentVoidId = null;
+function viewTx(ticketNo, voidId=null) {
+  const tx = getTransactions().find(t => t.ticket === ticketNo);
+  currentVoidId = voidId;
+  
+  if (!tx) {
+    document.getElementById('txModalTitle').textContent = `Ticket #${ticketNo} — NOT FOUND`;
+    document.getElementById('txModalBody').innerHTML = '<p style="color:var(--red);">This transaction was not found in records.</p>';
+  } else {
+    document.getElementById('txModalTitle').textContent = `Transaction — Ticket #${tx.ticket}`;
+    document.getElementById('txModalBody').innerHTML = `
+      <p><strong>Cashier:</strong> ${tx.cashier}</p>
+      <p><strong>Date/Time:</strong> ${new Date(tx.time).toLocaleString()}</p>
+      <p><strong>Payment Method:</strong> ${tx.paymentMethod}</p>
+      <h4 style="margin:12px 0 6px;">Items:</h4>
+      <ul style="margin-left:20px;">
+        ${tx.items.map(i => `<li>${i.name} × ${i.qty} — ₱${(i.price*i.qty).toFixed(2)}</li>`).join('')}
+      </ul>
+      <p style="margin-top:10px;"><strong>Total: ₱${tx.total.toFixed(2)}</strong></p>
+    `;
+  }
+  
+  document.getElementById('txModal').style.display = 'flex';
+}
+function closeTxModal() {
+  document.getElementById('txModal').style.display = 'none';
+  currentVoidId = null;
+}
+function approveVoidFromModal() {
+  if(!currentVoidId) return;
+  approveVoid(currentVoidId);
+  closeTxModal();
+}
+function rejectVoidFromModal() {
+  if(!currentVoidId) return;
+  rejectVoid(currentVoidId);
+  closeTxModal();
+}
+
+// ========== VOID APPROVAL — Ticket CLICKABLE for verification ==========
 function renderVoids() {
   const v = getVoids();
   document.getElementById('voidList').innerHTML = v.map(x=>`
     <tr>
-      <td><strong>${x.ticketNo}</strong></td>
+      <td class="ticket-link" onclick="viewTx('${x.wrongTicket}', ${x.id})">${x.wrongTicket}</td>
       <td>${x.cashier}</td>
-      <td>${x.type === 'wrong' ? '❌ Wrong Ticket' : '✅ Correct Ticket'}</td>
+      <td>${x.correctTicket ? `<span class="ticket-link" onclick="viewTx('${x.correctTicket}')">${x.correctTicket}</span>` : '—'}</td>
       <td>${x.reason}</td>
       <td><span class="badge ${x.status==='pending'?'badge-wait':x.status==='approved'?'badge-ok':'badge-no'}">${x.status}</span></td>
       <td>
         ${x.status==='pending'?`
-          <button class="btn btn-sm btn-success" onclick="approveVoid(${x.id})">✓ Approve</button>
-          <button class="btn btn-sm btn-danger" onclick="rejectVoid(${x.id})">✗ Reject</button>
+          <button class="btn btn-sm btn-success" onclick="viewTx('${x.wrongTicket}', ${x.id})">👁️ Verify & Approve</button>
         `:'—'}
       </td>
     </tr>`).join('');
+  checkAllNotifications();
 }
-function approveVoid(id) { const v=getVoids(); const x=v.find(y=>y.id===id); x.status='approved'; saveVoids(v); renderVoids(); }
-function rejectVoid(id) { const v=getVoids(); const x=v.find(y=>y.id===id); x.status='rejected'; saveVoids(v); renderVoids(); }
+function approveVoid(id) { 
+  const v=getVoids(); const x=v.find(y=>y.id===id); 
+  x.status='approved'; x.statusUpdatedAt=new Date().toISOString(); 
+  saveVoids(v); renderVoids(); 
+}
+function rejectVoid(id) { 
+  const v=getVoids(); const x=v.find(y=>y.id===id); 
+  x.status='rejected'; x.statusUpdatedAt=new Date().toISOString(); 
+  saveVoids(v); renderVoids(); 
+}
 
-// ===== COUNT REQUESTS =====
+// ========== COUNT REQUESTS — System qty HIDDEN from cashier ==========
 function renderCountProducts() {
   const sid = document.getElementById('countStore').value;
   const p = sid ? getProducts().filter(x=>x.storeId==sid) : [];
@@ -517,14 +654,24 @@ function renderCountProducts() {
     </label>`).join('');
 }
 document.getElementById('countStore')?.addEventListener('change', renderCountProducts);
+
 function sendCountRequest() {
   const sid = document.getElementById('countStore').value;
-  const checked = [...document.querySelectorAll('.count-prod:checked')].map(c=>c.value);
-  if(!sid || !checked.length) return alert('Select store and at least one product');
-  const req = { id:Date.now(), storeId:sid, productIds:checked, status:'sent', sentAt:new Date().toISOString() };
+  const boxes = [...document.querySelectorAll('.count-prod:checked')];
+  if(!sid || !boxes.length) return alert('Select store and at least one product');
+  
+  const req = { 
+    id: Date.now(), 
+    storeId: sid, 
+    productIds: boxes.map(c=>c.value),
+    status: 'sent', 
+    sentAt: new Date().toISOString()
+  };
   const r = getCountReqs(); r.push(req); saveCountReqs(r);
-  alert('✅ Sent to cashier(s) of selected store');
+  alert('✅ Sent! Cashier will NOT see system quantity — only their counted amount');
+  checkAllNotifications();
 }
+
 function renderCountResults() {
   const r = getCountReqs().filter(x=>x.submittedAt);
   document.getElementById('countResults').innerHTML = r.length ? r.map(req=>{
@@ -536,10 +683,12 @@ function renderCountResults() {
         ${req.submissions.map(sub=>`
           <div style="margin:8px 0;padding:8px;background:#f8fafc;border-radius:6px;">
             <strong>${sub.cashier}</strong> counted:
-            <ul>
+            <ul style="margin-left:18px;margin-top:4px;">
               ${sub.items.map(it=>{
                 const prod = p.find(x=>x.id==it.productId);
-                return `<li>${prod?.name||'Unknown'} — System: ${prod?.qty||0} vs Actual: ${it.actual} — Difference: ${(it.actual-(prod?.qty||0))}</li>`;
+                const sysQty = prod?.qty || 0;
+                const diff = it.actual - sysQty;
+                return `<li><strong>${prod?.name||'Unknown'}</strong> — System: ${sysQty} vs Actual: ${it.actual} — Difference: <span style="color:${diff===0?'inherit':diff>0?'green':'red'}">${diff}</span></li>`;
               }).join('')}
             </ul>
           </div>`).join('')}
@@ -547,7 +696,7 @@ function renderCountResults() {
   }).join('') : '<p>No submissions yet</p>';
 }
 
-// ===== CHAT =====
+// ========== CHAT MODULE ==========
 let currentChatWith = null;
 function populateChatTargets() {
   const c = getCashiers();
@@ -569,7 +718,6 @@ function switchChat() {
 function renderChatMessages() {
   if(!currentChatWith) return;
   const allChats = getChats();
-  // Key format: admin_peer or peer_admin — always sorted alphabetically for same room
   const key = ['Admin', currentChatWith].sort().join('_');
   const msgs = allChats[key] || [];
   document.getElementById('chatMessages').innerHTML = msgs.map(m=>`
@@ -578,6 +726,14 @@ function renderChatMessages() {
       <div class="msg-time">${new Date(m.time).toLocaleTimeString()}</div>
     </div>`).join('');
   document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+  localStorage.setItem('chatView_' + key, Date.now());
+  checkAllNotifications();
+}
+function markChatRead() {
+  if(!currentChatWith) return;
+  const key = ['Admin', currentChatWith].sort().join('_');
+  localStorage.setItem('chatView_' + key, Date.now());
+  checkAllNotifications();
 }
 function sendChat() {
   if(!currentChatWith) return;
@@ -593,14 +749,14 @@ function sendChat() {
   renderChatMessages();
 }
 
-// ===== PASSWORD LOGS =====
+// ========== PASSWORD LOGS ==========
 function renderPwLogs() {
   const l = getPwLogs();
   document.getElementById('passwordLogList').innerHTML = l.map(x=>`
     <tr><td>${x.cashier}</td><td>${x.oldPass}</td><td>${x.newPass}</td><td>${x.time}</td></tr>`).join('');
 }
 
-// ===== ALL RENDER =====
+// ========== ALL RENDER ==========
 function renderAll() {
   renderStores();
   renderCashiers();
@@ -612,7 +768,7 @@ function renderAll() {
   renderPwLogs();
 }
 
-// ===== LOGOUT =====
+// ========== LOGOUT ==========
 function logout() {
   if(confirm('Log out?')) {
     sessionStorage.clear();
@@ -620,6 +776,6 @@ function logout() {
   }
 }
 </script>
-  <script src="../../js/sync.js"></script>
+<script src="../../js/sync.js"></script>
 </body>
 </html>

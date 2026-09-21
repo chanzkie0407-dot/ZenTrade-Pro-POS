@@ -167,27 +167,72 @@
     </div>
   </div>
 
-  <!-- ═══════════════ BROADCAST SYSTEM ═══════════════ -->
-  <div id="page-broadcast" class="page">
-    <div class="card">
-      <h3>📢 Send Broadcast Announcement</h3>
-      <p class="note-text" style="margin-bottom:16px;">Message will appear to all users (Cashier, Admin) as a system announcement. Direct PM to Cashier is disabled — use this for POS updates, reminders, and announcements.</p>
-      
-      <div class="broadcast-box">
-        <div class="form-group">
-          <label>Announcement Message</label>
-          <textarea id="broadcastMsg" rows="3" placeholder="e.g. 'Pahiram muna ng POS sandali lang ito'"></textarea>
-        </div>
-        <button class="btn btn-warning" onclick="sendBroadcast()">📢 Send to All Users</button>
-      </div>
+  // ===== BROADCAST — CROSS-DEVICE SYNC VERSION =====
+function getBroadcasts() { 
+  // Kung may sync.js gamitin natin shared storage, kung wala fallback sa localStorage
+  if (typeof getSharedData === 'function') {
+    return getSharedData('broadcasts') || [];
+  }
+  return JSON.parse(localStorage.getItem('broadcasts') || '[]'); 
+}
 
-      <div class="broadcast-history">
-        <h4 style="margin-bottom:12px;">Recent Announcements</h4>
-        <div id="broadcastList"></div>
-      </div>
+function saveBroadcasts(d) { 
+  if (typeof saveSharedData === 'function') {
+    saveSharedData('broadcasts', d);
+    return;
+  }
+  localStorage.setItem('broadcasts', JSON.stringify(d)); 
+}
+
+function sendBroadcast() {
+  const msg = document.getElementById('broadcastMsg').value.trim();
+  if (!msg) return alert('Please type a message first babe 😊');
+  
+  const broadcasts = getBroadcasts();
+  broadcasts.unshift({
+    message: msg,
+    sender: 'Service Provider',
+    senderRole: 'sp',
+    time: new Date().toISOString(),
+    readBy: []
+  });
+  
+  saveBroadcasts(broadcasts);
+  
+  // Trigger sync sa ibang device kung available
+  if (typeof triggerSync === 'function') triggerSync('broadcasts');
+  
+  alert('✅ Broadcast sent! Will appear to all connected devices immediately.');
+  document.getElementById('broadcastMsg').value = '';
+  renderBroadcasts();
+}
+
+function renderBroadcasts() {
+  const list = document.getElementById('broadcastList');
+  const broadcasts = getBroadcasts().slice(0, 5);
+  if (!broadcasts.length) {
+    list.innerHTML = '<p style="color:var(--gray);font-size:13px;">No announcements sent yet</p>';
+    return;
+  }
+  list.innerHTML = broadcasts.map(b => `
+    <div class="broadcast-item">
+      <div style="white-space:pre-wrap;">${b.message}</div>
+      <div class="broadcast-time">📢 Sent: ${new Date(b.time).toLocaleString()}</div>
     </div>
-  </div>
+  `).join('');
+}
 
+// Auto-refresh kapag bumalik sa tab
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    renderBroadcasts();
+  }
+});
+
+// Kung may sync listener na galing sa sync.js — auto update
+if (typeof onSyncUpdate === 'function') {
+  onSyncUpdate('broadcasts', () => renderBroadcasts());
+}
   <!-- ═══════════════ ADMIN DIRECT PM ═══════════════ -->
   <div id="page-adminchat" class="page">
     <div class="card">

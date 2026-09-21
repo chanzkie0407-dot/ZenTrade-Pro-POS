@@ -34,6 +34,26 @@
     .btn-success { background: var(--green); color: white; }
     .btn-danger { background: var(--red); color: white; }
     .btn-warning { background: var(--yellow); color: #1f2937; }
+    
+    /* ===== BROADCAST POPUP — NEW ===== */
+    .popup-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+      z-index: 9999; animation: fadeIn 0.3s;
+    }
+    .popup-box {
+      background: white; border-radius: 12px; padding: 24px; max-width: 420px; width: 90%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15); animation: slideUp 0.3s;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .popup-icon { font-size: 32px; margin-bottom: 12px; }
+    .popup-title { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 12px; }
+    .popup-msg { font-size: 15px; line-height: 1.5; color: #374151; margin-bottom: 20px; white-space: pre-wrap; }
+    .popup-time { font-size: 12px; color: var(--gray); margin-bottom: 16px; }
+    
     /* ===== TABS ===== */
     .tabs-bar {
       background: white; margin-top: 56px; display: flex; border-bottom: 1px solid var(--border);
@@ -93,6 +113,9 @@
   </style>
 </head>
 <body>
+<!-- ===== BROADCAST POPUP CONTAINER — NEW ===== -->
+<div id="broadcastPopupContainer"></div>
+
 <!-- ===== TOPBAR ===== -->
 <div class="topbar">
   <h1>🛡️ BPOS — Service Provider</h1>
@@ -170,14 +193,14 @@
     <div class="card">
       <h3>📢 Send Broadcast Announcement</h3>
       <p class="note-text" style="margin-bottom:16px;">
-        ✅ Message will appear to ALL devices (Cashier, Admin, SP) — real-time sync ready.
-        <br>Direct PM to Cashier is disabled — use this for system-wide announcements.
+        ✅ Message will appear as POP-UP to Admin & Cashier devices immediately.<br>
+        Direct PM to Cashier is disabled — use this for system-wide announcements.
       </p>
       
       <div class="broadcast-box">
         <div class="form-group">
           <label>Announcement Message</label>
-          <textarea id="broadcastMsg" rows="3" placeholder="e.g. 'System update at 10PM'"></textarea>
+          <textarea id="broadcastMsg" rows="3" placeholder="e.g. 'System update at 10PM — please save your work'"></textarea>
         </div>
         <button class="btn btn-warning" onclick="sendBroadcast()">📢 Send to All Users & Devices</button>
       </div>
@@ -286,7 +309,9 @@ function saveAdminChat(d) { localStorage.setItem('adminChat', JSON.stringify(d))
 function getLogs() { return JSON.parse(localStorage.getItem('spLogs') || '[]'); }
 function saveLogs(d) { localStorage.setItem('spLogs', JSON.stringify(d)); }
 
-// ===== BROADCAST — CROSS-DEVICE SYNC =====
+// ===== BROADCAST — CROSS-DEVICE SYNC + POPUP =====
+let lastSeenBroadcastTime = null; // Track to avoid duplicate popups
+
 function getBroadcasts() { 
   if (typeof getSharedData === 'function') {
     return getSharedData('broadcasts') || [];
@@ -300,26 +325,55 @@ function saveBroadcasts(d) {
   }
   localStorage.setItem('broadcasts', JSON.stringify(d)); 
 }
+
+// SHOW POPUP — NEW (not shown to sender SP)
+function showBroadcastPopup(broadcast) {
+  // Don't show popup to sender (SP) — as requested babe ✅
+  if (broadcast.senderRole === 'sp') return;
+  
+  const container = document.getElementById('broadcastPopupContainer');
+  container.innerHTML = `
+    <div class="popup-overlay" id="broadcastPopup">
+      <div class="popup-box">
+        <div class="popup-icon">📢</div>
+        <div class="popup-title">NEW ANNOUNCEMENT</div>
+        <div class="popup-msg">${broadcast.message}</div>
+        <div class="popup-time">From: ${broadcast.sender || 'Service Provider'}<br>
+        Sent: ${new Date(broadcast.time).toLocaleString()}</div>
+        <button class="btn btn-primary" style="width:100%;" onclick="closeBroadcastPopup()">✅ OK, Got it</button>
+      </div>
+    </div>
+  `;
+}
+
+function closeBroadcastPopup() {
+  document.getElementById('broadcastPopupContainer').innerHTML = '';
+}
+
 function sendBroadcast() {
   const msg = document.getElementById('broadcastMsg').value.trim();
   if (!msg) return alert('Please type a message first babe 😊');
   
   const broadcasts = getBroadcasts();
-  broadcasts.unshift({
+  const newBroadcast = {
     message: msg,
     sender: 'Service Provider',
     senderRole: 'sp',
     time: new Date().toISOString(),
     readBy: []
-  });
+  };
+  broadcasts.unshift(newBroadcast);
   
   saveBroadcasts(broadcasts);
+  lastSeenBroadcastTime = newBroadcast.time; // SP sees this as "read"
+  
   if (typeof triggerSync === 'function') triggerSync('broadcasts');
   
-  alert('✅ Broadcast sent! Will appear to all connected devices immediately.');
+  alert('✅ Broadcast sent! Pop-up will appear to Admin & Cashier devices immediately.');
   document.getElementById('broadcastMsg').value = '';
   renderBroadcasts();
 }
+
 function renderBroadcasts() {
   const list = document.getElementById('broadcastList');
   const broadcasts = getBroadcasts().slice(0, 5);
@@ -334,11 +388,33 @@ function renderBroadcasts() {
     </div>
   `).join('');
 }
+
+// Check for new broadcasts and trigger popup (for Admin/Cashier side)
+function checkNewBroadcastForPopup() {
+  const broadcasts = getBroadcasts();
+  if (!broadcasts.length) return;
+  
+  const latest = broadcasts[0];
+  // Skip if sent by SP (sender) or already seen
+  if (latest.senderRole === 'sp') return;
+  if (lastSeenBroadcastTime === latest.time) return;
+  
+  lastSeenBroadcastTime = latest.time;
+  showBroadcastPopup(latest);
+}
+
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) renderBroadcasts();
+  if (!document.hidden) {
+    renderBroadcasts();
+    checkNewBroadcastForPopup();
+  }
 });
+
 if (typeof onSyncUpdate === 'function') {
-  onSyncUpdate('broadcasts', () => renderBroadcasts());
+  onSyncUpdate('broadcasts', () => {
+    renderBroadcasts();
+    checkNewBroadcastForPopup();
+  });
 }
 
 // ===== ADMIN PM FUNCTIONS =====

@@ -13,13 +13,14 @@
     h1 { text-align: center; font-size: 22px; color: #1a1a1a; margin-bottom: 4px; }
     .subtitle { text-align: center; color: #6b7280; margin-bottom: 24px; font-size: 14px; }
     .role-tabs { display: flex; gap: 10px; margin-bottom: 24px; }
-    .role-tab { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; text-align: center; font-weight: 500; transition: all 0.2s; }
+    .role-tab { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; text-align: center; font-weight: 600; transition: all 0.2s; font-size: 13px; }
     .role-tab.active { background: #3b82f6; color: white; border-color: #3b82f6; }
     .input-group { margin-bottom: 16px; }
     input { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 15px; }
     button { width: 100%; padding: 13px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; }
     button:hover { background: #2563eb; }
     .error { color: #dc2626; margin-top: 14px; text-align: center; font-size: 14px; display: none; }
+    .note { color: #666; font-size: 12px; margin-top: 10px; text-align: center; }
   </style>
 </head>
 <body>
@@ -35,7 +36,7 @@
     <p class="subtitle">Sign in to your account</p>
 
     <div class="role-tabs">
-      <button class="role-tab" data-role="admin" onclick="selectRole('admin')">Admin</button>
+      <button class="role-tab active" data-role="admin" onclick="selectRole('admin')">Admin</button>
       <button class="role-tab" data-role="cashier" onclick="selectRole('cashier')">Cashier</button>
       <button class="role-tab" data-role="sp" onclick="selectRole('sp')">SP</button>
     </div>
@@ -44,11 +45,12 @@
       <input type="text" id="username" placeholder="Username" autocomplete="username">
     </div>
     <div class="input-group">
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+      <input type="password" id="password" placeholder="Password" autocomplete="off">
     </div>
 
     <button onclick="handleLogin()">🔒 SIGN IN</button>
     <div class="error" id="errorMsg"></div>
+    <p class="note" id="hintNote"></p>
   </div>
 
   <script>
@@ -59,6 +61,14 @@
       document.querySelectorAll('.role-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.role === role);
       });
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('errorMsg').style.display = 'none';
+      
+      const note = document.getElementById('hintNote');
+      if (role === 'admin') note.textContent = '';
+      else if (role === 'sp') note.textContent = '';
+      else note.textContent = 'Credentials created by Admin';
     }
 
     function handleLogin() {
@@ -66,15 +76,31 @@
       const password = document.getElementById('password').value;
       const errorMsg = document.getElementById('errorMsg');
 
-      // ✅ ETO ANG GUSTO MO — EKSAKTO!
       const validUsers = {
         admin:   { user: 'Admin',  pass: '8888' },
         sp:      { user: 'sp',     pass: '19970407chan' },
-        cashier: { user: 'Admin',  pass: '8888' }
+        cashier: { checkLocal: true }
       };
 
-      const creds = validUsers[selectedRole];
+      sessionStorage.removeItem('passwordHint');
       
+      if (selectedRole === 'cashier') {
+        // Cashier — check list from admin
+        const cashiers = JSON.parse(localStorage.getItem('cashiers') || '[]');
+        const found = cashiers.find(c => c.name === username && c.password === password);
+        if (found) {
+          sessionStorage.setItem('userRole', 'cashier');
+          sessionStorage.setItem('username', username);
+          sessionStorage.setItem('cashierName', `${username} ${found.lname || ''}`);
+          window.location.href = '../pages/cashier/dashboard.html';
+        } else {
+          errorMsg.textContent = "❌ Invalid credentials — created by Admin only";
+          errorMsg.style.display = 'block';
+        }
+        return;
+      }
+
+      const creds = validUsers[selectedRole];
       if (creds && username === creds.user && password === creds.pass) {
         sessionStorage.setItem('userRole', selectedRole);
         sessionStorage.setItem('username', username);

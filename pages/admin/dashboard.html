@@ -63,9 +63,22 @@
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
     .modal-content { background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
     .modal-actions { margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
+    .popup-toast { position: fixed; top: 70px; right: 24px; background: #dbeafe; border-left: 4px solid var(--blue); padding: 14px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 300; display: none; max-width: 350px; animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+    .popup-toast.show { display: block; }
   </style>
 </head>
 <body>
+<!-- SP MESSAGE POPUP TOAST -->
+<div id="spMessageToast" class="popup-toast">
+  <strong>🛡️ Message from Service Provider</strong>
+  <p id="spToastText" style="margin:6px 0 10px 0; font-size:14px;"></p>
+  <div style="display:flex; gap:8px; justify-content:flex-end;">
+    <button class="btn btn-sm" style="background:var(--light);" onclick="closeSpToast()">Dismiss</button>
+    <button class="btn btn-sm btn-primary" onclick="goToChat()">Reply</button>
+  </div>
+</div>
+
 <!-- TOPBAR -->
 <div class="topbar">
   <h1>🏪 BPOS — Admin Dashboard</h1>
@@ -117,7 +130,6 @@
     </table>
   </div>
 </div>
-
 <!-- ===== CASHIERS PAGE ===== -->
 <div id="page-cashiers" class="page">
   <div class="card">
@@ -146,7 +158,6 @@
     </table>
   </div>
 </div>
-
 <!-- ===== PRODUCTS PAGE ===== -->
 <div id="page-products" class="page">
   <div class="card">
@@ -182,7 +193,6 @@
     <div id="productList"></div>
   </div>
 </div>
-
 <!-- ===== STOCKS OVERVIEW ===== -->
 <div id="page-stocks" class="page">
   <div class="card">
@@ -197,7 +207,6 @@
     </table>
   </div>
 </div>
-
 <!-- ===== SALES OVERVIEW ===== -->
 <div id="page-sales" class="page">
   <div class="card">
@@ -220,7 +229,6 @@
     <div id="salesReport" style="margin-top:20px;"></div>
   </div>
 </div>
-
 <!-- ===== VOID REQUESTS ===== -->
 <div id="page-voids" class="page">
   <div class="card">
@@ -232,7 +240,6 @@
     </table>
   </div>
 </div>
-
 <!-- ===== STOCK COUNT REQUESTS ===== -->
 <div id="page-count" class="page">
   <div class="card">
@@ -252,7 +259,6 @@
     <div id="countResults"></div>
   </div>
 </div>
-
 <!-- ===== CHAT MODULE ===== -->
 <div id="page-chat" class="page">
   <div class="card">
@@ -276,7 +282,6 @@
     </div>
   </div>
 </div>
-
 <!-- ===== PASSWORD CHANGE LOGS ===== -->
 <div id="page-passwords" class="page">
   <div class="card">
@@ -289,7 +294,6 @@
 </div>
 </div>
 </div>
-
 <!-- ===== TRANSACTION VERIFICATION MODAL ===== -->
 <div id="txModal" class="modal-overlay" onclick="if(event.target===this) closeTxModal()">
   <div class="modal-content">
@@ -302,20 +306,58 @@
     </div>
   </div>
 </div>
-
 <script>
+// ========== SP MESSAGE POPUP ==========
+let lastSeenSpMessageTime = parseInt(localStorage.getItem('lastSeenSpMsgTime') || '0');
+
+function showSpPopup(messageText) {
+  document.getElementById('spToastText').textContent = messageText;
+  document.getElementById('spMessageToast').classList.add('show');
+}
+
+function closeSpToast() {
+  document.getElementById('spMessageToast').classList.remove('show');
+}
+
+function goToChat() {
+  closeSpToast();
+  // Switch to Chat tab
+  document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-page="chat"]').classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-chat').classList.add('active');
+  // Select SP in dropdown
+  document.getElementById('chatTarget').value = 'SP';
+  switchChat();
+}
+
+function checkForSpMessages() {
+  const chats = getChats();
+  const spKey = ['Admin', 'SP'].sort().join('_');
+  const spMsgs = chats[spKey] || [];
+  
+  if (spMsgs.length === 0) return;
+  
+  const latestMsg = spMsgs[spMsgs.length - 1];
+  const latestTime = new Date(latestMsg.time).getTime();
+  
+  // Show popup only if from SP and newer than last seen
+  if (latestMsg.sender === 'SP' && latestTime > lastSeenSpMessageTime) {
+    lastSeenSpMessageTime = latestTime;
+    localStorage.setItem('lastSeenSpMsgTime', latestTime);
+    showSpPopup(latestMsg.text);
+  }
+}
+
 // ========== NOTIFICATION SYSTEM ==========
 function showDot(id) { const d=document.getElementById('dot-'+id); if(d)d.style.display='block'; }
 function hideDot(id) { const d=document.getElementById('dot-'+id); if(d)d.style.display='none'; }
-
 function checkAllNotifications() {
   const pendingVoids = getVoids().filter(v => v.status === 'pending').length;
   if (pendingVoids) { showDot('voids'); const b=document.getElementById('pendingVoidBadge'); b.classList.remove('hidden'); b.textContent = pendingVoids + ' Pending'; }
   else { hideDot('voids'); document.getElementById('pendingVoidBadge').classList.add('hidden'); }
-
   const pendingCounts = getCountReqs().filter(r => !r.submittedAt).length;
   if (pendingCounts) showDot('count'); else hideDot('count');
-
   const chats = getChats();
   let unreadChat = false;
   for(const key in chats) {
@@ -326,8 +368,10 @@ function checkAllNotifications() {
     if(new Date(lastMsg.time).getTime() > lastView) { unreadChat = true; break; }
   }
   if(unreadChat) showDot('chat'); else hideDot('chat');
+  
+  // Check for new SP messages
+  checkForSpMessages();
 }
-
 // ========== DATA HELPERS ==========
 function getStores() { return JSON.parse(localStorage.getItem('stores') || '[]'); }
 function saveStores(d) { localStorage.setItem('stores', JSON.stringify(d)); }
@@ -345,7 +389,6 @@ function getPwLogs() { return JSON.parse(localStorage.getItem('passwordLogs') ||
 function savePwLogs(d) { localStorage.setItem('passwordLogs', JSON.stringify(d)); }
 function getTransactions() { return JSON.parse(localStorage.getItem('transactions') || '[]'); }
 function saveTransactions(d) { localStorage.setItem('transactions', JSON.stringify(d)); }
-
 let nextTicket = parseInt(localStorage.getItem('nextTicket') || '1');
 function getNextTicket() { 
   const t = String(nextTicket).padStart(3,'0');
@@ -358,7 +401,6 @@ function getNextBarcode() {
   localStorage.setItem('nextBarcode', ++nextBarcode);
   return bc;
 }
-
 // ========== INIT ==========
 document.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('userRole') !== 'admin') {
@@ -368,9 +410,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('adminName').textContent = sessionStorage.getItem('username') || 'Admin';
   renderAll();
   checkAllNotifications();
-  setInterval(checkAllNotifications, 8000);
+  setInterval(checkAllNotifications, 3000); // Check every 3 sec for SP messages
 });
-
 // ========== SIDEBAR NAV ==========
 document.querySelectorAll('.sidebar-tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -381,7 +422,6 @@ document.querySelectorAll('.sidebar-tab').forEach(tab => {
     if (tab.dataset.page === 'chat') populateChatTargets();
   });
 });
-
 // ========== STORES ==========
 function addStore() {
   const code = document.getElementById('storeCode').value.trim() || String(getStores().length+1).padStart(3,'0');
@@ -405,15 +445,21 @@ function renderStores() {
       <td>${x.code}</td>
       <td>${x.name}</td>
       <td>${x.location || '—'}</td>
-      <td><button class="btn btn-sm btn-danger" onclick="delStore(${x.id})">Remove</button></td>
+      <td>
+        <button class="btn btn-sm btn-danger" onclick="deleteStore(${x.id})">🗑️ Delete</button>
+      </td>
     </tr>`).join('');
   const opts = s.map(x=>`<option value="${x.id}">${x.name}</option>`).join('');
   ['prodStore','stockStoreFilter','saleStoreFilter','countStore'].forEach(id=>{
     const el = document.getElementById(id); if(el) el.innerHTML = '<option value="">-- Select --</option>' + opts;
   });
 }
-function delStore(id) { if(confirm('Remove this store?')) saveStores(getStores().filter(x=>x.id!==id)); renderStores(); }
-
+function deleteStore(id) { 
+  if(confirm('⚠️ Are you sure you want to DELETE this store? This action cannot be undone!')) {
+    saveStores(getStores().filter(x=>x.id!==id)); 
+    renderStores(); 
+  }
+}
 // ========== CASHIERS ==========
 function addCashier() {
   const first = document.getElementById('cshFirstName').value.trim();
@@ -435,18 +481,20 @@ function renderCashiers() {
   const c = getCashiers();
   document.getElementById('cashierList').innerHTML = c.map(x=>`
     <tr>
-      <td><strong>${x.firstName}</strong> <em style="color:#94a3b8">(login name)</em></td>
-      <td>${x.lastName?x.firstName+' '+x.lastName:x.firstName}</td>
-      <td>${x.active?'<span style="color:green">Active</span>':'<span style="color:red">Inactive</span>'}</td>
+      <td><strong>${x.firstName || '—'}</strong> <em style="color:#94a3b8">(login name)</em></td>
+      <td>${(x.lastName ? x.firstName+' '+x.lastName : x.firstName) || '—'}</td>
+      <td>${x.active?'<span style="color:green;font-weight:600;">Active</span>':'<span style="color:red;font-weight:600;">Inactive</span>'}</td>
       <td>
         <button class="btn btn-sm btn-primary" onclick="changeCashierPass(${x.id})">Change Password</button>
-        <button class="btn btn-sm btn-danger" onclick="toggleCashier(${x.id})">${x.active?'Deactivate':'Activate'}</button>
+        <button class="btn btn-sm ${x.active?'btn-danger':'btn-success'}" onclick="toggleCashier(${x.id})">${x.active?'Deactivate':'Activate'}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteCashier(${x.id})">🗑️ Delete</button>
       </td>
     </tr>`).join('');
 }
 function changeCashierPass(id) {
   const c = getCashiers();
   const u = c.find(x=>x.id===id);
+  if(!u) return alert('Cashier not found');
   const newPass = prompt(`Enter new 4-digit password for ${u.firstName}:`);
   if(!newPass || newPass.length!==4) return alert('Must be 4 digits');
   const logs = getPwLogs();
@@ -455,10 +503,23 @@ function changeCashierPass(id) {
   u.password = newPass;
   saveCashiers(c);
   renderCashiers(); renderPwLogs();
-  alert('Password updated & logged');
+  alert('✅ Password updated & logged');
 }
-function toggleCashier(id) { const c=getCashiers(); const u=c.find(x=>x.id===id); u.active=!u.active; saveCashiers(c); renderCashiers(); }
-
+function toggleCashier(id) { 
+  const c=getCashiers(); 
+  const u=c.find(x=>x.id===id); 
+  if(!u) return;
+  u.active=!u.active; 
+  saveCashiers(c); 
+  renderCashiers(); 
+}
+function deleteCashier(id) {
+  if(confirm('⚠️ PERMANENT DELETE — Remove this cashier completely? This cannot be undone!')) {
+    saveCashiers(getCashiers().filter(x=>x.id!==id));
+    renderCashiers();
+    populateChatTargets(); // Refresh chat dropdown
+  }
+}
 // ========== PRODUCTS ==========
 function addProduct() {
   const storeId = document.getElementById('prodStore').value;
@@ -485,7 +546,6 @@ function renderProducts() {
     </div>`).join('');
 }
 function delProduct(id) { if(confirm('Delete product?')) saveProducts(getProducts().filter(x=>x.id!==id)); renderProducts(); }
-
 // ========== STOCKS ==========
 function renderStocks() {
   const sid = document.getElementById('stockStoreFilter').value;
@@ -494,7 +554,6 @@ function renderStocks() {
   document.getElementById('stockBody').innerHTML = p.map(x=>`
     <tr><td>${x.barcode}</td><td>${x.name}</td><td>${x.qty}</td><td>₱${x.price.toFixed(2)}</td></tr>`).join('');
 }
-
 // ========== SALES & REMITTANCE OVERVIEW ==========
 function renderSales() {
   const sid = document.getElementById('saleStoreFilter').value;
@@ -509,7 +568,6 @@ function renderSales() {
   const gcashTotal = tx.filter(x=>x.paymentMethod==='GCash').reduce((s,t)=>s+t.total,0);
   const splitTotal = tx.filter(x=>x.paymentMethod==='Split').reduce((s,t)=>s+t.total,0);
   const grandTotal = cashTotal+gcashTotal+splitTotal;
-
   // Remittance declarations
   const declarations = JSON.parse(localStorage.getItem('remitDeclarations') || '[]');
   const filteredDecl = declarations.filter(d => {
@@ -518,7 +576,6 @@ function renderSales() {
     const matchTo = !to || new Date(d.declaredAt) <= new Date(new Date(to).setHours(23,59,59));
     return matchStore && matchFrom && matchTo;
   });
-
   document.getElementById('salesReport').innerHTML = `
     <h4>Transactions: ${tx.length}</h4>
     <div class="grid" style="margin:16px 0;">
@@ -573,7 +630,6 @@ function renderSales() {
       </tbody>
     </table>`;
 }
-
 // ========== TRANSACTION VERIFICATION MODAL ==========
 let currentVoidId = null;
 function viewTx(ticketNo, voidId=null) {
@@ -613,7 +669,6 @@ function rejectVoidFromModal() {
   rejectVoid(currentVoidId);
   closeTxModal();
 }
-
 // ========== VOID APPROVAL — Ticket CLICKABLE for verification ==========
 function renderVoids() {
   const v = getVoids();
@@ -642,7 +697,6 @@ function rejectVoid(id) {
   x.status='rejected'; x.statusUpdatedAt=new Date().toISOString(); 
   saveVoids(v); renderVoids(); 
 }
-
 // ========== COUNT REQUESTS — System qty HIDDEN from cashier ==========
 function renderCountProducts() {
   const sid = document.getElementById('countStore').value;
@@ -654,7 +708,6 @@ function renderCountProducts() {
     </label>`).join('');
 }
 document.getElementById('countStore')?.addEventListener('change', renderCountProducts);
-
 function sendCountRequest() {
   const sid = document.getElementById('countStore').value;
   const boxes = [...document.querySelectorAll('.count-prod:checked')];
@@ -671,7 +724,6 @@ function sendCountRequest() {
   alert('✅ Sent! Cashier will NOT see system quantity — only their counted amount');
   checkAllNotifications();
 }
-
 function renderCountResults() {
   const r = getCountReqs().filter(x=>x.submittedAt);
   document.getElementById('countResults').innerHTML = r.length ? r.map(req=>{
@@ -695,7 +747,6 @@ function renderCountResults() {
       </div>`;
   }).join('') : '<p>No submissions yet</p>';
 }
-
 // ========== CHAT MODULE ==========
 let currentChatWith = null;
 function populateChatTargets() {
@@ -748,14 +799,12 @@ function sendChat() {
   input.value='';
   renderChatMessages();
 }
-
 // ========== PASSWORD LOGS ==========
 function renderPwLogs() {
   const l = getPwLogs();
   document.getElementById('passwordLogList').innerHTML = l.map(x=>`
     <tr><td>${x.cashier}</td><td>${x.oldPass}</td><td>${x.newPass}</td><td>${x.time}</td></tr>`).join('');
 }
-
 // ========== ALL RENDER ==========
 function renderAll() {
   renderStores();
@@ -767,7 +816,6 @@ function renderAll() {
   renderCountResults();
   renderPwLogs();
 }
-
 // ========== LOGOUT ==========
 function logout() {
   if(confirm('Log out?')) {

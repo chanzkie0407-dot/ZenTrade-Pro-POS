@@ -30,7 +30,6 @@
     .btn-danger { background: var(--red); color: white; }
     .btn-warning { background: var(--yellow); color: #1f2937; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
     /* ===== TABS ===== */
     .tabs-bar {
       background: white; margin-top: 56px; display: flex; border-bottom: 1px solid var(--border);
@@ -39,15 +38,25 @@
     .tab-btn {
       padding: 14px 20px; background: none; border: none; font-size: 14px; font-weight: 600;
       color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap;
+      position: relative;
     }
     .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: #eff6ff; }
-
+    /* ===== NOTIFICATION DOT ===== */
+    .notification-dot {
+      position: absolute; top: 8px; right: 8px; width: 10px; height: 10px;
+      background: var(--red); border-radius: 50%; display: none;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
     /* ===== MAIN CONTENT ===== */
     .content { padding: 20px; max-width: 1400px; margin: 0 auto; }
     .page { display: none; animation: fadeIn 0.3s; }
     .page.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
-
     /* ===== CARDS & LAYOUT ===== */
     .card {
       background: white; border-radius: 12px; padding: 22px; margin-bottom: 20px;
@@ -63,7 +72,6 @@
       border-radius: 8px; font-size: 15px; transition: border 0.2s;
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); }
-
     /* ===== PRODUCT BUTTONS ===== */
     .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
     .product-btn {
@@ -73,7 +81,6 @@
     .product-btn:hover { background: var(--blue); color: white; border-color: var(--blue); transform: scale(1.03); }
     .product-btn .p-name { font-weight: 600; font-size: 13px; }
     .product-btn .p-price { font-size: 15px; font-weight: 700; margin-top: 4px; }
-
     /* ===== CART / CURRENT SALE ===== */
     .cart-item {
       display: flex; align-items: center; justify-content: space-between; padding: 10px 0;
@@ -85,12 +92,10 @@
     .total-display { font-size: 32px; font-weight: 800; text-align: right; padding: 16px 0; color: var(--navy); }
     .subtotal-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 15px; }
     .discount-row { display: flex; justify-content: space-between; padding: 6px 0; color: var(--green); font-weight: 600; }
-
     /* ===== TABLES ===== */
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: var(--light); font-weight: 600; color: var(--navy); }
-
     /* ===== CHAT ===== */
     .chat-box { border: 1px solid var(--border); border-radius: 10px; height: 400px; display: flex; flex-direction: column; }
     .chat-msgs { flex: 1; overflow-y: auto; padding: 16px; background: var(--light); }
@@ -100,16 +105,21 @@
     .msg-time { font-size: 10px; opacity: 0.7; margin-top: 4px; text-align: right; }
     .chat-input-row { display: flex; border-top: 1px solid var(--border); }
     .chat-input-row input { flex: 1; border: none; border-radius: 0; margin: 0; }
-
     /* ===== DENOMINATION ===== */
     .denom-row { display: grid; grid-template-columns: 100px 1fr 100px; gap: 10px; align-items: center; margin-bottom: 8px; }
     .denom-row label { margin: 0; font-weight: 600; }
     .hidden { display: none !important; }
     .shift-banner { background: #fef3c7; border-left: 4px solid var(--yellow); padding: 12px 16px; margin-bottom: 20px; border-radius: 0 8px 8px 0; }
+    /* ===== HELD TRANSACTIONS ===== */
+    .held-item { padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; background: var(--light); }
+    .btn-sm-hold { padding: 4px 10px; font-size: 12px; margin-left: 6px; }
+    /* ===== BROADCAST MESSAGE ===== */
+    .broadcast-msg { background: #fef9c3; border-left: 4px solid var(--yellow); padding: 12px 16px; margin-bottom: 16px; border-radius: 0 8px 8px 0; display: none; }
+    /* ===== HIDE DIFFERENCE FROM CASHIER ===== */
+    .cashier-hide { display: none !important; }
   </style>
 </head>
 <body>
-
 <!-- ===== TOPBAR ===== -->
 <div class="topbar">
   <h1>🏪 BPOS — Cashier</h1>
@@ -122,26 +132,37 @@
     <button class="btn btn-danger" onclick="logout()">🚪 LOG OUT</button>
   </div>
 </div>
-
 <!-- ===== TABS ===== -->
 <div class="tabs-bar">
-  <button class="tab-btn active" data-page="sales">🛒 Sales</button>
-  <button class="tab-btn" data-page="recent">📋 Recent Tx</button>
+  <button class="tab-btn active" data-page="sales">🛒 Sales<span class="notification-dot" id="dot-sales"></span></button>
+  <button class="tab-btn" data-page="recent">📋 Recent Tx<span class="notification-dot" id="dot-recent"></span></button>
   <button class="tab-btn" data-page="cashio">💰 Cash In/Out</button>
-  <button class="tab-btn" data-page="void">📝 Void Request</button>
+  <button class="tab-btn" data-page="void">📝 Void Request<span class="notification-dot" id="dot-void"></span></button>
+  <button class="tab-btn" data-page="myvoids">📋 My Void Requests<span class="notification-dot" id="dot-myvoids"></span></button>
   <button class="tab-btn" data-page="prodout">📦 Product Out</button>
-  <button class="tab-btn" data-page="count">🔢 Stock Count</button>
-  <button class="tab-btn" data-page="chat">💬 Chat</button>
+  <button class="tab-btn" data-page="count">🔢 Stock Count<span class="notification-dot" id="dot-count"></span></button>
+  <button class="tab-btn" data-page="chat">💬 Chat<span class="notification-dot" id="dot-chat"></span></button>
   <button class="tab-btn" data-page="close">🔒 Close Shift</button>
 </div>
-
 <!-- ===== MAIN CONTENT ===== -->
 <div class="content">
-
   <!-- ═══════════════ SALES PAGE ═══════════════ -->
   <div id="page-sales" class="page active">
     <div id="noStoreMsg" class="shift-banner">⚠️ Please Select Store & Start Shift first</div>
     <div id="salesReady" class="hidden">
+      <!-- Broadcast Message from SP -->
+      <div id="spBroadcast" class="broadcast-msg">
+        <strong>📢 Announcement from Service Provider:</strong>
+        <p id="spBroadcastText" style="margin-top:4px;"></p>
+        <small id="spBroadcastTime" style="opacity:0.7;"></small>
+      </div>
+      
+      <!-- Held Transactions Section -->
+      <div class="card" id="heldSection" style="display:none;">
+        <h3>⏸️ Held Transactions</h3>
+        <div id="heldList"></div>
+      </div>
+      
       <div class="grid">
         <!-- PRODUCTS PANEL -->
         <div>
@@ -153,7 +174,6 @@
             <div class="products-grid" id="productsList"></div>
           </div>
         </div>
-
         <!-- CURRENT SALE / CART -->
         <div>
           <div class="card">
@@ -173,7 +193,6 @@
               <span id="discountAmt">-₱0.00</span>
             </div>
             <div class="total-display">TOTAL: <span id="grandTotal">₱0.00</span></div>
-
             <div class="form-row" style="margin-top:20px;">
               <label>Payment Method</label>
               <select id="payMethod" onchange="togglePaymentFields()">
@@ -182,7 +201,6 @@
                 <option value="split">Split (Cash + GCash)</option>
               </select>
             </div>
-
             <div id="cashFields">
               <div class="form-group">
                 <label>Cash Received ₱</label>
@@ -192,15 +210,16 @@
                 Change: <span id="change">₱0.00</span>
               </div>
             </div>
-
             <button class="btn btn-success" style="width:100%;margin-top:20px;font-size:18px;padding:14px;" onclick="finalizeSale()">✅ PAY & COMPLETE</button>
-            <button class="btn btn-warning btn-sm" style="margin-top:10px;" onclick="clearCart()">🗑️ Clear Cart</button>
+            <div style="display:flex;gap:10px;margin-top:10px;">
+              <button class="btn btn-warning" style="flex:1;" onclick="holdCurrentSale()">⏸️ HOLD TRANSACTION</button>
+              <button class="btn btn-danger btn-sm" style="flex:1;" onclick="clearCart()">🗑️ Clear Cart</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
   <!-- ═══════════════ RECENT TRANSACTIONS ═══════════════ -->
   <div id="page-recent" class="page">
     <div class="card">
@@ -211,7 +230,6 @@
       </table>
     </div>
   </div>
-
   <!-- ═══════════════ CASH IN / OUT ═══════════════ -->
   <div id="page-cashio" class="page">
     <div class="card">
@@ -226,7 +244,6 @@
       </div>
       <button class="btn btn-success" onclick="recordCashIn()">➕ Record Cash In</button>
     </div>
-
     <div class="card">
       <h3>Cash Out (Deduct from Remittance)</h3>
       <div class="form-group">
@@ -239,7 +256,6 @@
       </div>
       <button class="btn btn-danger" onclick="recordCashOut()">➖ Record Cash Out</button>
     </div>
-
     <div class="card">
       <h3>Cash Logs</h3>
       <table>
@@ -248,7 +264,6 @@
       </table>
     </div>
   </div>
-
   <!-- ═══════════════ VOID REQUEST ═══════════════ -->
   <div id="page-void" class="page">
     <div class="card">
@@ -270,7 +285,16 @@
       <button class="btn btn-warning" onclick="submitVoid()">📤 Send Void Request to Admin</button>
     </div>
   </div>
-
+  <!-- ═══════════════ MY VOID REQUESTS — NEW ═══════════════ -->
+  <div id="page-myvoids" class="page">
+    <div class="card">
+      <h3>My Submitted Void Requests</h3>
+      <table>
+        <thead><tr><th>Ticket #</th><th>Reason</th><th>Status</th><th>Submitted</th></tr></thead>
+        <tbody id="myVoidList"></tbody>
+      </table>
+    </div>
+  </div>
   <!-- ═══════════════ PRODUCT OUT ═══════════════ -->
   <div id="page-prodout" class="page">
     <div class="card">
@@ -297,19 +321,18 @@
       </table>
     </div>
   </div>
-
   <!-- ═══════════════ STOCK COUNT ═══════════════ -->
   <div id="page-count" class="page">
     <div class="card">
       <h3>Pending Count Request from Admin</h3>
       <div id="countRequestArea"></div>
       <div id="countForm" class="hidden">
+        <!-- SYSTEM QTY HIDDEN FROM CASHIER -->
         <div id="countItemsList"></div>
         <button class="btn btn-success" onclick="submitCount()">✅ Submit Actual Count to Admin</button>
       </div>
     </div>
   </div>
-
   <!-- ═══════════════ CHAT MODULE ═══════════════ -->
   <div id="page-chat" class="page">
     <div class="card">
@@ -319,7 +342,6 @@
         <select id="chatPeer" onchange="switchChat()">
           <option value="">-- Select --</option>
           <option value="Admin">👤 Admin / Owner</option>
-          <option value="SP">🛡️ Service Provider</option>
         </select>
       </div>
       <div class="chat-box" id="chatDisplay" style="display:none;">
@@ -331,7 +353,6 @@
       </div>
     </div>
   </div>
-
   <!-- ═══════════════ CLOSE SHIFT ═══════════════ -->
   <div id="page-close" class="page">
     <div class="card">
@@ -374,25 +395,23 @@
         <input type="number" id="dcoins" min="0" step="0.01" value="0" oninput="computeTotal()">
         <span id="tcoins">₱0.00</span>
       </div>
-
       <div style="margin-top:20px;padding:16px;background:var(--light);border-radius:8px;">
         <div class="subtotal-row"><strong>Total Cash Declared:</strong> <span id="declaredTotal">₱0.00</span></div>
-        <div class="subtotal-row">Expected Remittance: <span id="expectedTotal">₱0.00</span></div>
-        <div class="subtotal-row" style="font-size:18px;font-weight:bold;padding-top:10px;border-top:1px solid #ddd;">
+        <!-- HIDDEN FROM CASHIER: Expected Remittance & Difference -->
+        <div class="subtotal-row cashier-hide">Expected Remittance: <span id="expectedTotal">₱0.00</span></div>
+        <div class="subtotal-row cashier-hide" style="font-size:18px;font-weight:bold;padding-top:10px;border-top:1px solid #ddd;">
           Difference: <span id="diffAmt">₱0.00</span>
         </div>
+        <!-- REMARKS FIELD ALWAYS VISIBLE -->
         <div class="form-group" style="margin-top:12px;">
           <label>Remarks / Reason if Short or Over</label>
           <textarea id="closeRemarks" rows="2" placeholder="Explain difference if any..."></textarea>
         </div>
       </div>
-
       <button class="btn btn-danger" style="width:100%;margin-top:20px;padding:14px;font-size:16px;" onclick="confirmCloseShift()">🔒 CONFIRM CLOSE & LOG OUT</button>
     </div>
   </div>
-
 </div>
-
 <!-- ===== MODALS ===== -->
 <div id="shiftModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center;">
   <div style="background:white;padding:30px;border-radius:12px;max-width:400px;width:90%;">
@@ -407,7 +426,6 @@
     </div>
   </div>
 </div>
-
 <script>
 // ===== AUTO LOGOUT TIMER — 10 MINUTES =====
 let inactivityTimer;
@@ -423,6 +441,38 @@ function resetTimer() {
   document.addEventListener(evt, resetTimer);
 });
 resetTimer();
+
+// ===== NOTIFICATION SYSTEM =====
+function showDot(id) {
+  const dot = document.getElementById('dot-' + id);
+  if (dot) dot.style.display = 'block';
+}
+function hideDot(id) {
+  const dot = document.getElementById('dot-' + id);
+  if (dot) dot.style.display = 'none';
+}
+function checkNotifications() {
+  // Check pending count requests
+  const reqs = getCountReqs().filter(r => r.storeId == currentStoreId && !r.submittedAt);
+  if (reqs.length) showDot('count'); else hideDot('count');
+  
+  // Check unread chat
+  const chats = getChats();
+  const key = ['Cashier', 'Admin'].sort().join('_');
+  const msgs = chats[key] || [];
+  const lastChatTime = msgs.length ? new Date(msgs[msgs.length-1].time).getTime() : 0;
+  const lastChatView = parseInt(localStorage.getItem('lastChatView') || '0');
+  if (lastChatTime > lastChatView) showDot('chat'); else hideDot('chat');
+  
+  // Check void requests status
+  const myVoids = getVoids().filter(v => v.cashier === sessionStorage.getItem('username'));
+  const hasUpdate = myVoids.some(v => {
+    const statusTime = v.statusUpdatedAt ? new Date(v.statusUpdatedAt).getTime() : 0;
+    const lastVoidView = parseInt(localStorage.getItem('lastVoidView') || '0');
+    return statusTime > lastVoidView;
+  });
+  if (hasUpdate) showDot('myvoids');
+}
 
 // ===== DATA HELPERS =====
 function getStores() { return JSON.parse(localStorage.getItem('stores') || '[]'); }
@@ -440,6 +490,9 @@ function getCashLogs() { return JSON.parse(localStorage.getItem('cashIoLogs') ||
 function saveCashLogs(d) { localStorage.setItem('cashIoLogs', JSON.stringify(d)); }
 function getProdOutLogs() { return JSON.parse(localStorage.getItem('prodOutLogs') || '[]'); }
 function saveProdOutLogs(d) { localStorage.setItem('prodOutLogs', JSON.stringify(d)); }
+function getHeldSales() { return JSON.parse(localStorage.getItem('heldSales') || '[]'); }
+function saveHeldSales(d) { localStorage.setItem('heldSales', JSON.stringify(d)); }
+function getBroadcast() { return JSON.parse(localStorage.getItem('spBroadcast') || '{}'); }
 
 let currentStoreId = null;
 let shiftOpen = false;
@@ -468,7 +521,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const stores = getStores();
   const sel = document.getElementById('storeSelect');
   stores.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
-
+  
+  // Load SP Broadcast
+  const broadcast = getBroadcast();
+  if (broadcast.message && broadcast.expiresAt > Date.now()) {
+    document.getElementById('spBroadcast').style.display = 'block';
+    document.getElementById('spBroadcastText').textContent = broadcast.message;
+    document.getElementById('spBroadcastTime').textContent = new Date(broadcast.sentAt).toLocaleString();
+  }
+  
   // Tab switching
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -480,13 +541,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn.dataset.page === 'recent') renderRecentTx();
       if (btn.dataset.page === 'cashio') renderCashLogs();
       if (btn.dataset.page === 'void') populateVoidTickets();
+      if (btn.dataset.page === 'myvoids') {
+        localStorage.setItem('lastVoidView', Date.now());
+        hideDot('myvoids');
+        renderMyVoidRequests();
+      }
       if (btn.dataset.page === 'prodout') populateProdOutSelect();
-      if (btn.dataset.page === 'count') renderCountRequest();
+      if (btn.dataset.page === 'count') {
+        renderCountRequest();
+      }
+      if (btn.dataset.page === 'chat') {
+        localStorage.setItem('lastChatView', Date.now());
+        hideDot('chat');
+        renderChatMsgs();
+      }
       if (btn.dataset.page === 'close') {
         document.getElementById('openingFloatDisplay').value = '₱' + openingFloat.toFixed(2);
       }
+      if (btn.dataset.page === 'sales') renderHeldSales();
     });
   });
+  
+  checkNotifications();
+  setInterval(checkNotifications, 10000); // Refresh every 10s
 });
 
 // ===== STORE SELECT =====
@@ -498,6 +575,7 @@ function selectStore(id) {
     renderProducts();
     populateVoidTickets();
     populateProdOutSelect();
+    renderHeldSales();
   } else {
     document.getElementById('noStoreMsg').classList.remove('hidden');
     document.getElementById('salesReady').classList.add('hidden');
@@ -620,6 +698,86 @@ function clearCart() {
   updateCartDisplay();
 }
 
+// ===== HOLD / RESUME TRANSACTION =====
+function holdCurrentSale() {
+  if (!cart.length) return alert('Cart is empty — nothing to hold!');
+  const held = {
+    id: Date.now(),
+    ticket: currentTicket,
+    storeId: currentStoreId,
+    cashier: sessionStorage.getItem('username'),
+    items: [...cart],
+    subtotal: cart.reduce((s,i)=>s+i.price*i.qty,0),
+    hasDiscount: document.getElementById('applyDiscount').checked,
+    time: new Date().toISOString()
+  };
+  const allHeld = getHeldSales();
+  allHeld.unshift(held);
+  saveHeldSales(allHeld);
+  
+  // Reset for new customer
+  cart = [];
+  document.getElementById('applyDiscount').checked = false;
+  document.getElementById('cashGiven').value = '';
+  currentTicket = getNextTicket();
+  document.getElementById('ticketNo').textContent = currentTicket;
+  updateCartDisplay();
+  
+  alert('✅ Transaction Held! You can serve the next customer now.');
+  renderHeldSales();
+}
+function renderHeldSales() {
+  const allHeld = getHeldSales().filter(h => h.storeId == currentStoreId);
+  const section = document.getElementById('heldSection');
+  const list = document.getElementById('heldList');
+  
+  if (!allHeld.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  list.innerHTML = allHeld.map(h => `
+    <div class="held-item">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong>Ticket #${h.ticket}</strong>
+        <small>${new Date(h.time).toLocaleTimeString()}</small>
+      </div>
+      <div style="margin:6px 0;">${h.items.map(i=>i.name+' × '+i.qty).join(', ')}</div>
+      <div style="font-weight:bold;">Subtotal: ₱${h.subtotal.toFixed(2)}</div>
+      <div style="margin-top:8px;">
+        <button class="btn btn-success btn-sm btn-sm-hold" onclick="resumeSale(${h.id})">▶️ RESUME</button>
+        <button class="btn btn-danger btn-sm btn-sm-hold" onclick="deleteHeld(${h.id})">🗑️ DELETE</button>
+      </div>
+    </div>
+  `).join('');
+}
+function resumeSale(heldId) {
+  const allHeld = getHeldSales();
+  const idx = allHeld.findIndex(h => h.id === heldId);
+  if (idx === -1) return;
+  
+  if (cart.length && !confirm('Current cart will be cleared. Resume held transaction?')) return;
+  
+  const held = allHeld[idx];
+  allHeld.splice(idx, 1);
+  saveHeldSales(allHeld);
+  
+  // Restore
+  cart = held.items;
+  currentTicket = held.ticket;
+  document.getElementById('ticketNo').textContent = currentTicket;
+  document.getElementById('applyDiscount').checked = held.hasDiscount;
+  updateCartDisplay();
+  renderHeldSales();
+}
+function deleteHeld(heldId) {
+  if (!confirm('Delete this held transaction permanently?')) return;
+  let allHeld = getHeldSales();
+  allHeld = allHeld.filter(h => h.id !== heldId);
+  saveHeldSales(allHeld);
+  renderHeldSales();
+}
+
 // ===== FINALIZE SALE =====
 function finalizeSale() {
   if (!cart.length) return alert('Cart is empty!');
@@ -629,7 +787,7 @@ function finalizeSale() {
   
   if (method === 'cash' && given < total) return alert('Insufficient cash amount!');
   if (method === 'split' && given <= 0) return alert('Enter cash amount for split payment');
-
+  
   // Deduct stock
   const prods = getProducts();
   cart.forEach(item => {
@@ -637,7 +795,7 @@ function finalizeSale() {
     if (p) p.qty -= item.qty;
   });
   saveProducts(prods);
-
+  
   // Record transaction
   const tx = {
     id: Date.now(),
@@ -655,11 +813,10 @@ function finalizeSale() {
   const allTx = getTransactions();
   allTx.unshift(tx);
   saveTransactions(allTx);
-
+  
   // Next ticket
   currentTicket = getNextTicket();
   document.getElementById('ticketNo').textContent = currentTicket;
-
   alert(`✅ Transaction Complete!\nTicket #${tx.ticket}\nTotal: ₱${total.toFixed(2)}`);
   clearCart();
 }
@@ -713,68 +870,139 @@ function renderCashLogs() {
 
 // ===== VOID REQUEST =====
 function populateVoidTickets() {
-  const txs = getTransactions().filter(t => t.storeId == currentStoreId);
-  const opts = txs.map(t => `<option value="${t.ticket}">${t.ticket} — ₱${t.total.toFixed(2)}</option>`).join('');
-  document.getElementById('wrongTicket').innerHTML = opts;
-  document.getElementById('correctTicket').innerHTML = '<option value="">— None / Cancelled —</option>' + opts;
+    const txs = getTransactions().filter(t => t.storeId == currentStoreId);
+  const wrongSel = document.getElementById('wrongTicket');
+  const correctSel = document.getElementById('correctTicket');
+  
+  wrongSel.innerHTML = '<option value="">-- Select Ticket --</option>';
+  txs.forEach(t => {
+    wrongSel.innerHTML += `<option value="${t.ticket}">#${t.ticket} — ₱${t.total.toFixed(2)} — ${new Date(t.time).toLocaleTimeString()}</option>`;
+    correctSel.innerHTML += `<option value="${t.ticket}">#${t.ticket} — ₱${t.total.toFixed(2)}</option>`;
+  });
 }
+
 function submitVoid() {
-  const wrong = document.getElementById('wrongTicket').value;
-  const correct = document.getElementById('correctTicket').value;
+  const wrongTicket = document.getElementById('wrongTicket').value;
+  const correctTicket = document.getElementById('correctTicket').value || null;
   const reason = document.getElementById('voidReason').value.trim();
-  if (!wrong || !reason) return alert('Fill in all required fields');
+  
+  if (!wrongTicket) return alert('Select the wrong ticket number');
+  if (!reason) return alert('Please state the reason for void');
   
   const voidReq = {
     id: Date.now(),
-    wrongTicket: wrong,
-    correctTicket: correct || null,
+    wrongTicket,
+    correctTicket,
     reason,
-    cashier: sessionStorage.getItem('username'),
     storeId: currentStoreId,
+    cashier: sessionStorage.getItem('username'),
     status: 'pending',
-    time: new Date().toISOString()
+    submittedAt: new Date().toISOString(),
+    statusUpdatedAt: null,
+    adminNote: ''
   };
-  const voids = getVoids(); voids.unshift(voidReq); saveVoids(voids);
-  alert('✅ Void Request Sent to Admin');
+  
+  const voids = getVoids();
+  voids.unshift(voidReq);
+  saveVoids(voids);
+  
+  document.getElementById('wrongTicket').value = '';
+  document.getElementById('correctTicket').value = '';
   document.getElementById('voidReason').value = '';
+  
+  alert('✅ Void request sent to Admin!');
+  showDot('void');
+  checkNotifications();
+}
+
+function renderMyVoidRequests() {
+  const username = sessionStorage.getItem('username');
+  const myVoids = getVoids().filter(v => v.cashier === username);
+  const list = document.getElementById('myVoidList');
+  
+  if (!myVoids.length) {
+    list.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">No void requests yet</td></tr>';
+    return;
+  }
+  
+  list.innerHTML = myVoids.map(v => {
+    let statusColor = '#eab308';
+    if (v.status === 'approved') statusColor = '#16a34a';
+    if (v.status === 'rejected') statusColor = '#dc2626';
+    
+    return `
+      <tr>
+        <td><strong>${v.wrongTicket}</strong>${v.correctTicket ? ` ↔ ${v.correctTicket}` : ''}</td>
+        <td>${v.reason.substring(0, 40)}${v.reason.length > 40 ? '...' : ''}</td>
+        <td style="color:${statusColor};font-weight:bold;text-transform:capitalize;">${v.status}</td>
+        <td>${new Date(v.submittedAt).toLocaleString()}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 // ===== PRODUCT OUT =====
 function populateProdOutSelect() {
   const prods = getProducts().filter(p => p.storeId == currentStoreId && p.qty > 0);
-  document.getElementById('prodOutSelect').innerHTML = prods.map(p => `<option value="${p.id}">${p.name} — Stock: ${p.qty}</option>`).join('');
-  renderProdOutLogs();
+  const sel = document.getElementById('prodOutSelect');
+  sel.innerHTML = '<option value="">-- Select Product --</option>';
+  prods.forEach(p => {
+    sel.innerHTML += `<option value="${p.id}">${p.name} — Stock: ${p.qty}</option>`;
+  });
 }
+
 function submitProductOut() {
-  const pid = parseInt(document.getElementById('prodOutSelect').value);
+  const prodId = document.getElementById('prodOutSelect').value;
   const qty = parseInt(document.getElementById('prodOutQty').value);
   const reason = document.getElementById('prodOutReason').value.trim();
-  if (!pid || !qty || qty <= 0) return alert('Fill in correctly');
+  
+  if (!prodId) return alert('Select a product');
+  if (!qty || qty <= 0) return alert('Enter valid quantity');
+  if (!reason) return alert('State the reason');
   
   const prods = getProducts();
-  const prod = prods.find(p => p.id === pid);
-  if (prod.qty < qty) return alert('Insufficient stock');
+  const prod = prods.find(p => p.id === prodId);
+  if (!prod || prod.qty < qty) return alert('Insufficient stock available');
+  
+  // Deduct stock
   prod.qty -= qty;
   saveProducts(prods);
-
-  const log = {
-    productId: pid, productName: prod.name, qty, reason: reason || '—',
-    cashier: sessionStorage.getItem('username'), time: new Date().toISOString()
-  };
-  const logs = getProdOutLogs(); logs.unshift(log); saveProdOutLogs(logs);
   
-  alert('✅ Recorded & Stock Deducted');
+  // Log record
+  const log = {
+    id: Date.now(),
+    productId: prodId,
+    productName: prod.name,
+    qty,
+    reason,
+    storeId: currentStoreId,
+    cashier: sessionStorage.getItem('username'),
+    time: new Date().toISOString()
+  };
+  
+  const logs = getProdOutLogs();
+  logs.unshift(log);
+  saveProdOutLogs(logs);
+  
+  document.getElementById('prodOutSelect').value = '';
+  document.getElementById('prodOutQty').value = '1';
   document.getElementById('prodOutReason').value = '';
+  
+  alert('✅ Product Out recorded! Stock updated');
   populateProdOutSelect();
+  renderProdOutLog();
 }
-function renderProdOutLogs() {
-  document.getElementById('prodOutLog').innerHTML = getProdOutLogs().slice(0,10).map(l => `
+
+function renderProdOutLog() {
+  const logs = getProdOutLogs().filter(l => l.storeId == currentStoreId).slice(0, 15);
+  document.getElementById('prodOutLog').innerHTML = logs.length ? logs.map(l => `
     <tr>
       <td>${l.productName}</td>
       <td>${l.qty}</td>
       <td>${l.reason}</td>
       <td>${new Date(l.time).toLocaleString()}</td>
-    </tr>`).join('');
+    </tr>
+  `).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">No records yet</td></tr>';
 }
 
 // ===== STOCK COUNT =====
@@ -784,138 +1012,175 @@ function renderCountRequest() {
   const form = document.getElementById('countForm');
   
   if (!reqs.length) {
-    area.innerHTML = '<p style="color:var(--gray);">No pending count requests from Admin</p>';
+    area.innerHTML = '<p style="color:var(--gray);padding:10px;">No pending count requests</p>';
     form.classList.add('hidden');
     return;
   }
   
-  const req = reqs[0]; // take latest
-  area.innerHTML = `<p style="color:var(--blue);font-weight:600;">📥 New count request from Admin — ${new Date(req.sentAt).toLocaleString()}</p>`;
-  form.classList.remove('hidden');
-  
-  const prods = getProducts();
-  const items = req.productIds.map(pid => {
-    const p = prods.find(x => x.id == pid);
-    return `<div style="padding:10px 0;border-bottom:1px solid var(--border);">
-      <strong>${p?.name || 'Unknown'}</strong><br>
-      System Qty: ${p?.qty || 0}<br>
-      <label style="margin-top:6px;display:block;">Actual Count:</label>
-      <input type="number" class="count-actual" data-pid="${pid}" min="0" placeholder="Enter actual count">
-    </div>`;
-  }).join('');
-  document.getElementById('countItemsList').innerHTML = items;
-}
-function submitCount() {
-  const reqs = getCountReqs().filter(r => r.storeId == currentStoreId && !r.submittedAt);
-  if (!reqs.length) return;
   const req = reqs[0];
+  area.innerHTML = `
+    <div style="background:#fef3c7;padding:14px;border-radius:8px;margin-bottom:12px;">
+      <strong>📋 Count Request:</strong> ${req.note || 'Please verify stock quantities'}<br>
+      <small>Issued: ${new Date(req.issuedAt).toLocaleString()}</small>
+    </div>
+  `;
   
-  const items = [...document.querySelectorAll('.count-actual')].map(inp => ({
-    productId: parseInt(inp.dataset.pid),
-    actual: parseInt(inp.value) || 0
-  }));
+  form.classList.remove('hidden');
+  const prods = getProducts().filter(p => p.storeId == currentStoreId);
+  document.getElementById('countItemsList').innerHTML = prods.map(p => `
+    <div class="form-group" style="padding:10px;background:var(--light);border-radius:8px;">
+      <label>${p.name} — System Qty: <span class="cashier-hide">${p.qty}</span></label>
+      <input type="number" class="actual-count" data-id="${p.id}" min="0" placeholder="Enter actual count..." required>
+    </div>
+  `).join('');
+}
+
+function submitCount() {
+  const inputs = document.querySelectorAll('.actual-count');
+  const counts = [];
+  const prods = getProducts();
   
-  if (items.some(i => isNaN(i.actual))) return alert('Fill all actual counts');
+  for (const inp of inputs) {
+    const prodId = inp.dataset.id;
+    const actual = parseInt(inp.value);
+    if (isNaN(actual) || actual < 0) return alert('Enter valid quantity for all items');
+    counts.push({ productId: prodId, actualQty: actual });
+  }
   
-  req.submittedAt = new Date().toISOString();
-  req.submissions = req.submissions || [];
-  req.submissions.push({
-    cashier: sessionStorage.getItem('username'),
-    items,
-    submittedAt: req.submittedAt
-  });
-  saveCountReqs(getCountReqs());
+  // Mark request as submitted
+  const reqs = getCountReqs();
+  const idx = reqs.findIndex(r => r.storeId == currentStoreId && !r.submittedAt);
+  if (idx !== -1) {
+    reqs[idx].submittedAt = new Date().toISOString();
+    reqs[idx].submittedBy = sessionStorage.getItem('username');
+    reqs[idx].counts = counts;
+    saveCountReqs(reqs);
+  }
   
-  alert('✅ Count submitted to Admin');
+  alert('✅ Count submitted to Admin!');
   renderCountRequest();
+  checkNotifications();
 }
 
 // ===== CHAT =====
-let chatWith = null;
 function switchChat() {
-  chatWith = document.getElementById('chatPeer').value;
-  const display = document.getElementById('chatDisplay');
-  if (!chatWith) { display.style.display = 'none'; return; }
-  display.style.display = 'flex';
-  renderChatMsgs();
+  const peer = document.getElementById('chatPeer').value;
+  document.getElementById('chatDisplay').style.display = peer ? 'flex' : 'none';
+  if (peer) renderChatMsgs();
 }
+
 function renderChatMsgs() {
-  if (!chatWith) return;
-  const allChats = getChats();
-  const key = ['Cashier', chatWith].sort().join('_');
-  const msgs = allChats[key] || [];
-  document.getElementById('chatMessages').innerHTML = msgs.map(m => `
-    <div class="msg ${m.sender === sessionStorage.getItem('username') ? 'me' : 'other'}">
-      <div>${m.text}</div>
+  const peer = document.getElementById('chatPeer').value;
+  if (!peer) return;
+  
+  const myName = sessionStorage.getItem('username');
+  const key = [myName, peer].sort().join('_');
+  const chats = getChats();
+  const msgs = chats[key] || [];
+  
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = msgs.map(m => `
+    <div class="msg ${m.from === myName ? 'me' : 'other'}">
+      ${m.text}
       <div class="msg-time">${new Date(m.time).toLocaleTimeString()}</div>
-    </div>`).join('');
-  document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+    </div>
+  `).join('');
+  
+  container.scrollTop = container.scrollHeight;
 }
+
 function sendChatMsg() {
-  if (!chatWith) return alert('Select who to chat with first');
+  const peer = document.getElementById('chatPeer').value;
   const text = document.getElementById('chatText').value.trim();
+  
+  if (!peer) return alert('Select who to chat with first');
   if (!text) return;
-  const allChats = getChats();
-  const key = ['Cashier', chatWith].sort().join('_');
-  if (!allChats[key]) allChats[key] = [];
-  allChats[key].push({
-    sender: sessionStorage.getItem('username'),
+  
+  const myName = sessionStorage.getItem('username');
+  const key = [myName, peer].sort().join('_');
+  const chats = getChats();
+  if (!chats[key]) chats[key] = [];
+  
+  chats[key].push({
+    from: myName,
+    to: peer,
     text,
     time: new Date().toISOString()
   });
-  saveChats(allChats);
+  
+  saveChats(chats);
   document.getElementById('chatText').value = '';
   renderChatMsgs();
 }
 
 // ===== CLOSE SHIFT =====
 function computeTotal() {
-  const d = {
-    '1000': parseInt(document.getElementById('d1000').value) || 0,
-    '500': parseInt(document.getElementById('d500').value) || 0,
-    '200': parseInt(document.getElementById('d200').value) || 0,
-    '100': parseInt(document.getElementById('d100').value) || 0,
-    '50': parseInt(document.getElementById('d50').value) || 0,
-    'coins': parseFloat(document.getElementById('dcoins').value) || 0
-  };
-  const vals = { '1000': 1000, '500': 500, '200': 200, '100': 100, '50': 50, 'coins': 1 };
+  const d1000 = parseInt(document.getElementById('d1000').value) || 0;
+  const d500 = parseInt(document.getElementById('d500').value) || 0;
+  const d200 = parseInt(document.getElementById('d200').value) || 0;
+  const d100 = parseInt(document.getElementById('d100').value) || 0;
+  const d50 = parseInt(document.getElementById('d50').value) || 0;
+  const dcoins = parseFloat(document.getElementById('dcoins').value) || 0;
   
-  let total = 0;
-  for (const k in d) {
-    const amt = d[k] * vals[k];
-    document.getElementById('t' + k).textContent = '₱' + amt.toFixed(2);
-    total += amt;
-  }
+  document.getElementById('t1000').textContent = '₱' + (d1000 * 1000).toFixed(2);
+  document.getElementById('t500').textContent = '₱' + (d500 * 500).toFixed(2);
+  document.getElementById('t200').textContent = '₱' + (d200 * 200).toFixed(2);
+  document.getElementById('t100').textContent = '₱' + (d100 * 100).toFixed(2);
+  document.getElementById('t50').textContent = '₱' + (d50 * 50).toFixed(2);
+  document.getElementById('tcoins').textContent = '₱' + dcoins.toFixed(2);
+  
+  const total = d1000*1000 + d500*500 + d200*200 + d100*100 + d50*50 + dcoins;
   document.getElementById('declaredTotal').textContent = '₱' + total.toFixed(2);
   
-  // Expected = opening + sales total + cashIn - cashOut
-  const salesTotal = getTransactions()
-    .filter(t => t.storeId == currentStoreId)
-    .reduce((s, t) => s + t.total, 0);
-  const cashInTotal = getCashLogs()
-    .filter(l => l.type === 'IN')
-    .reduce((s, l) => s + l.amount, 0);
-  const cashOutTotal = getCashLogs()
-    .filter(l => l.type === 'OUT')
-    .reduce((s, l) => s + l.amount, 0);
+  // Calculate expected & difference (hidden from cashier)
+  const txs = getTransactions().filter(t => t.storeId == currentStoreId);
+  const totalSales = txs.reduce((s, t) => s + t.total, 0);
+  const cashIns = getCashLogs().filter(l => l.type === 'IN').reduce((s, l) => s + l.amount, 0);
+  const cashOuts = getCashLogs().filter(l => l.type === 'OUT').reduce((s, l) => s + l.amount, 0);
+  const expected = openingFloat + totalSales + cashIns - cashOuts;
   
-  const expected = openingFloat + salesTotal + cashInTotal - cashOutTotal;
   document.getElementById('expectedTotal').textContent = '₱' + expected.toFixed(2);
-  
   const diff = total - expected;
   document.getElementById('diffAmt').textContent = (diff >= 0 ? '+' : '') + '₱' + diff.toFixed(2);
-  document.getElementById('diffAmt').style.color = diff >= 0 ? 'green' : 'red';
+  document.getElementById('diffAmt').style.color = diff >= 0 ? '#16a34a' : '#dc2626';
 }
+
 function confirmCloseShift() {
-  if (!confirm('Finalize shift and log out? Make sure counts are correct.')) return;
-  alert('✅ Shift Closed. Logging out...');
-  logout();
+  if (!shiftOpen) return alert('No open shift to close!');
+  
+  const declaredText = document.getElementById('declaredTotal').textContent;
+  const remarks = document.getElementById('closeRemarks').value.trim();
+  
+  if (!confirm(`⚠️ Confirm Close Shift?\nDeclared Total: ${declaredText}\n\nThis will log you out.`)) return;
+  
+  // Save closing report
+  const closingReport = {
+    storeId: currentStoreId,
+    cashier: sessionStorage.getItem('username'),
+    openingFloat,
+    declaredTotal: parseFloat(declaredText.replace(/[₱,]/g, '')),
+    remarks,
+    closedAt: new Date().toISOString()
+  };
+  
+  localStorage.setItem('lastClosingReport', JSON.stringify(closingReport));
+  
+  // Reset session
+  shiftOpen = false;
+  openingFloat = 0;
+  cart = [];
+  sessionStorage.clear();
+  
+  alert('✅ Shift Closed Successfully!\nThank you for your work today!');
+  window.location.href = '/auth/login.html';
 }
+
+// ===== LOGOUT =====
 function logout() {
+  if (!confirm('Are you sure you want to log out?')) return;
   sessionStorage.clear();
   window.location.href = '/auth/login.html';
 }
 </script>
-  <script src="../../js/sync.js"></script>
 </body>
 </html>

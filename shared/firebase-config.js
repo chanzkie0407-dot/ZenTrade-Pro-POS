@@ -1,5 +1,5 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyAxuB4gacmWIf3U4Ic5TsOxSHCaynR0vhw",
+  apiKey: "AIzaSyAxuB4gacmVIf3U4Ic5TsOxSHCaynR0vvhw",
   authDomain: "bpos-pos.firebaseapp.com",
   projectId: "bpos-pos",
   storageBucket: "bpos-pos.firebasestorage.app",
@@ -8,8 +8,8 @@ const firebaseConfig = {
   measurementId: "G-BY03FZEN6E"
 };
 
-// Using compat version to match all HTML files
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
+// Initialize Firebase
+import { initializeApp } from "firebase/app";
+const app = initializeApp(firebaseConfig);
+
+export default app;

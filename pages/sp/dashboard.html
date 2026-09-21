@@ -3,772 +3,479 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Service Provider — ZenTrade Pro POS</title>
+  <title>Service Provider — BPOS System</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
     :root {
-      --primary: #8e44ad;
-      --blue: #3498db;
-      --green: #2ecc71;
-      --yellow: #f1c40f;
-      --orange: #f39c12;
-      --red: #e74c3c;
-      --gray-100: #f8f9fa;
-      --gray-200: #e9ecef;
-      --gray-300: #dee2e6;
-      --gray-600: #6c757d;
-      --gray-800: #343a40;
-      --dark: #2c3e50;
-      --white: #ffffff;
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.06);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-      --radius: 10px;
+      --navy: #1e3a5f; --blue: #2563eb; --green: #16a34a; --yellow: #eab308; --red: #dc2626;
+      --gray: #64748b; --light: #f8fafc; --border: #e2e8f0;
     }
-    body { background: var(--gray-100); min-height: 100vh; color: var(--gray-800); }
-    header {
-      background: linear-gradient(90deg, var(--dark), #4a5568);
-      color: white; padding: 14px 24px;
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 100;
+    body { background: #f1f5f9; min-height: 100vh; }
+    
+    /* ===== TOPBAR ===== */
+    .topbar {
+      background: var(--navy); color: white; height: 56px; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 24px; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     }
-    .logo { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
-    .user-info { display: flex; gap: 16px; align-items: center; font-size: 15px; }
-    .logout-btn {
-      background: var(--red); color: white; border: none; padding: 10px 20px;
-      border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 14px;
-      transition: transform 0.15s, background 0.2s;
+    .topbar h1 { font-size: 18px; font-weight: 600; }
+    .btn {
+      padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer;
+      font-weight: 600; font-size: 14px; transition: all 0.2s;
     }
-    .logout-btn:hover { background: #c0392b; transform: translateY(-1px); }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .btn-primary { background: var(--blue); color: white; }
+    .btn-success { background: var(--green); color: white; }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-warning { background: var(--yellow); color: #1f2937; }
 
-    .tabs {
-      display: flex; background: var(--white); border-bottom: 2px solid var(--gray-200);
-      flex-wrap: wrap; position: sticky; top: 70px; z-index: 99; padding: 0 24px;
+    /* ===== TABS ===== */
+    .tabs-bar {
+      background: white; margin-top: 56px; display: flex; border-bottom: 1px solid var(--border);
+      position: sticky; top: 56px; z-index: 999; overflow-x: auto;
     }
-    .tab {
-      padding: 14px 20px; cursor: pointer; border-bottom: 3px solid transparent;
-      font-weight: 600; color: var(--gray-600); transition: all 0.2s; font-size: 15px;
+    .tab-btn {
+      padding: 14px 20px; background: none; border: none; font-size: 14px; font-weight: 600;
+      color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap;
     }
-    .tab:hover { background: var(--gray-100); color: var(--gray-800); }
-    .tab.active { border-bottom-color: var(--primary); color: var(--primary); background: #f8f0fc; }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: #eff6ff; }
 
-    .tab-content { padding: 24px; max-width: 1400px; margin: 0 auto; display: none; }
-    .tab-content.active { display: block; }
-    h2 { color: var(--dark); margin-bottom: 20px; border-bottom: 2px solid var(--gray-200); padding-bottom: 10px; font-size: 22px; }
-    h3 { font-size: 18px; margin-bottom: 12px; color: var(--dark); }
+    /* ===== MAIN CONTENT ===== */
+    .content { padding: 24px; max-width: 1200px; margin: 0 auto; }
+    .page { display: none; animation: fadeIn 0.3s; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
 
+    /* ===== CARDS & FORMS ===== */
     .card {
-      background: var(--white); padding: 24px; border-radius: var(--radius);
-      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+      background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    input, select, button, textarea {
-      width: 100%; padding: 14px 16px; margin: 6px 4px;
-      border: 2px solid var(--gray-200); border-radius: var(--radius); font-size: 15px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+    .card h3 { margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-size: 16px; color: var(--navy); }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; color: #374151; }
+    input, select, textarea {
+      width: 100%; padding: 12px 14px; border: 2px solid var(--border);
+      border-radius: 8px; font-size: 15px; transition: border 0.2s;
     }
-    input:focus, select:focus {
-      outline: none; border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(142,68,173,0.15);
-    }
-    button {
-      background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600;
-      transition: all 0.2s;
-    }
-    button:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-    button.small { width: auto; padding: 10px 18px; font-size: 14px; }
-    button.success { background: var(--green); }
-    button.success:hover { background: #27ae60; }
-    button.danger { background: var(--red); }
-    button.danger:hover { background: #c0392b; }
-    button.warning { background: var(--orange); }
-    button.warning:hover { background: #e67e22; }
-    button.info { background: var(--blue); }
-    button.info:hover { background: #2980b9; }
-    button.ghost {
-      background: transparent; color: var(--primary); border: 2px solid var(--primary);
-    }
-    button.ghost:hover { background: var(--primary); color: white; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); }
+    .price-tag { font-size: 24px; font-weight: 700; color: var(--green); }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-expired { background: #fee2e2; color: #991b1b; }
+    .badge-trial { background: #fef3c7; color: #92400e; }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media(max-width:768px) { .grid-2 { grid-template-columns: 1fr; } }
+    /* ===== TABLES ===== */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 12px; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--light); font-weight: 600; color: var(--navy); }
 
-    .list-item {
-      padding: 16px; border-bottom: 1px solid var(--gray-200);
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 12px; transition: background 0.15s;
-    }
-    .list-item:hover { background: var(--gray-100); }
-    .status-active { color: var(--green); font-weight: 700; }
-    .status-trial { color: var(--orange); font-weight: 700; }
-    .status-expired { color: var(--red); font-weight: 700; }
-    .plan-tag {
-      display: inline-block; padding: 5px 12px; border-radius: 20px;
-      font-size: 13px; font-weight: 700; margin-left: 8px;
-    }
-    .plan-trial { background: #fef3c7; color: #92400e; }
-    .plan-weekly { background: #dbeafe; color: #1e40af; }
-    .plan-biweekly { background: #ddd6fe; color: #5b21b6; }
-    .plan-monthly { background: #d1fae5; color: #065f46; }
-
-    .log-row {
-      padding: 10px 0; border-bottom: 1px solid var(--gray-200); font-size: 14px;
-    }
-    .log-row time { color: var(--gray-600); font-size: 12px; }
-
-    .chat-box {
-      border: 1px solid var(--gray-200); border-radius: var(--radius); height: 450px;
-      display: flex; flex-direction: column; background: var(--white); margin-top: 12px;
-    }
-    .chat-msgs { flex: 1; padding: 16px; overflow-y: auto; background: var(--gray-100); }
-    .chat-input { display: flex; border-top: 1px solid var(--gray-200); }
-    .chat-input input { flex: 1; margin: 0; border: none; border-radius: 0; background: transparent; }
-    .msg {
-      margin: 8px 0; padding: 12px 16px; border-radius: 20px; max-width: 72%;
-      font-size: 14px; line-height: 1.4;
-    }
-    .msg.me {
-      background: var(--primary); color: white; margin-left: auto;
-      border-bottom-right-radius: 4px;
-    }
-    .msg.other {
-      background: var(--white); color: var(--gray-800); margin-right: auto;
-      border: 1px solid var(--gray-200); border-bottom-left-radius: 4px;
-    }
-    .msg small { opacity: 0.7; font-size: 11px; display: block; margin-top: 4px; }
-
-    .note { color: var(--gray-600); font-size: 13px; margin-top: 8px; }
-    .success-msg { color: var(--green); font-weight: 700; margin: 10px 0; }
-    .danger-msg { color: var(--red); font-weight: 700; margin: 10px 0; }
-    .warning-msg { color: var(--orange); font-weight: 700; margin: 10px 0; }
+    /* ===== CHAT ===== */
+    .chat-box { border: 1px solid var(--border); border-radius: 10px; height: 400px; display: flex; flex-direction: column; margin-top: 16px; }
+    .chat-msgs { flex: 1; overflow-y: auto; padding: 16px; background: var(--light); }
+    .msg { margin-bottom: 12px; max-width: 75%; }
+    .msg.me { margin-left: auto; background: var(--blue); color: white; padding: 10px 14px; border-radius: 18px 18px 4px 18px; }
+    .msg.other { margin-right: auto; background: white; padding: 10px 14px; border-radius: 18px 18px 18px 4px; border: 1px solid var(--border); }
+    .msg-time { font-size: 10px; opacity: 0.7; margin-top: 4px; text-align: right; }
+    .chat-input-row { display: flex; border-top: 1px solid var(--border); }
+    .chat-input-row input { flex: 1; border: none; border-radius: 0; margin: 0; }
     .hidden { display: none !important; }
-
-    .badge {
-      display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;
-      margin-left: 6px;
-    }
-    .badge-admin { background: #e3f2fd; color: #0d47a1; }
-    .badge-cashier { background: #e8f5e9; color: #2e7d32; }
-    .badge-sp { background: #f3e5f5; color: #7b1fa2; }
-    .badge-reset { background: #fff3e0; color: #e65100; }
-    .badge-limit { background: #fce4ec; color: #c2185b; }
-
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
-    .stat-card { background: var(--white); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow-sm); text-align: center; }
-    .stat-num { font-size: 28px; font-weight: 800; color: var(--primary); }
-    .stat-label { font-size: 13px; color: var(--gray-600); margin-top: 4px; }
   </style>
 </head>
 <body>
-<header>
-  <div class="logo">ZenTrade Pro POS — Service Provider</div>
-  <div class="user-info">
-    <span id="userNameDisplay"></span>
-    <button class="logout-btn" onclick="logout()">LOG OUT</button>
-  </div>
-</header>
 
-<div class="tabs">
-  <div class="tab active" data-tab="admins">Admins Overview</div>
-  <div class="tab" data-tab="plans">Plans & Subscription</div>
-  <div class="tab" data-tab="limits">Store/Cashier Limits</div>
-  <div class="tab" data-tab="passwords">Password Management</div>
-  <div class="tab" data-tab="chat">Direct Chat</div>
-  <div class="tab" data-tab="logs">Activity Logs</div>
-</div>
-
-<!-- ADMINS OVERVIEW TAB -->
-<div class="tab-content active" id="tab-admins">
-  <h2>Registered Admin Accounts & Subscription Status</h2>
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-num" id="totalAdmins">0</div>
-      <div class="stat-label">Total Admins</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="activeAdmins">0</div>
-      <div class="stat-label">Active Subscriptions</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="trialAdmins">0</div>
-      <div class="stat-label">On Free Trial</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="expiredAdmins">0</div>
-      <div class="stat-label">Expired</div>
-    </div>
-  </div>
-  <div class="card">
-    <p class="note">Free Trial: 7 days from first login or sign-up. Once expired, system access is restricted until renewed.</p>
-    <div id="adminsList"></div>
+<!-- ===== TOPBAR ===== -->
+<div class="topbar">
+  <h1>🛡️ BPOS — Service Provider</h1>
+  <div>
+    <span>SP</span>
+    <button class="btn btn-danger btn-sm" onclick="logout()">🚪 LOG OUT</button>
   </div>
 </div>
 
-<!-- PLANS & SUBSCRIPTION TAB -->
-<div class="tab-content" id="tab-plans">
-  <h2>Manage Subscription Plans</h2>
-  <div class="card">
-    <h3>Assign / Update Plan — Renew or Extend Access</h3>
-    <select id="planAdmin">
-      <option value="">-- Select Admin Account --</option>
-    </select>
-    <div class="grid-2" style="margin: 16px 0;">
-      <label style="padding: 10px; border: 2px solid var(--gray-200); border-radius: var(--radius); cursor: pointer;">
-        <input type="radio" name="planSel" value="trial"> <strong>Reset Free Trial</strong> — 7 Days Full Access
-      </label>
-      <label style="padding: 10px; border: 2px solid var(--gray-200); border-radius: var(--radius); cursor: pointer;">
-        <input type="radio" name="planSel" value="weekly"> <strong>Weekly — ₱199</strong> — 7 Days
-      </label>
-      <label style="padding: 10px; border: 2px solid var(--gray-200); border-radius: var(--radius); cursor: pointer;">
-        <input type="radio" name="planSel" value="biweekly"> <strong>2 Weeks — ₱325</strong> — 14 Days
-      </label>
-      <label style="padding: 10px; border: 2px solid var(--gray-200); border-radius: var(--radius); cursor: pointer;">
-        <input type="radio" name="planSel" value="monthly"> <strong>Monthly — ₱579</strong> — 30 Days
-      </label>
-    </div>
-    <button class="success" onclick="assignPlan()">✅ UPDATE PLAN & RENEW ACCESS</button>
-    <p id="planMsg" class="success-msg"></p>
-  </div>
-  <div class="card">
-    <h3>Plan Access Details</h3>
-    <ul style="line-height: 2; padding-left: 20px;">
-      <li><strong>Free Trial (7 Days):</strong> Full system access — 5 Stores, Unlimited Cashiers</li>
-      <li><strong>Weekly ₱199 (7 Days):</strong> Full access — 5 Stores, Unlimited Cashiers</li>
-      <li><strong>Biweekly ₱325 (14 Days):</strong> Full access — 5 Stores, upgradable to 20</li>
-      <li><strong>Monthly ₱579 (30 Days):</strong> Full access — 5 Stores, upgradable to 20</li>
-      <li class="note" style="margin-top: 10px;">💡 <strong>Reset Trial</strong> — Use this for accounts that haven't subscribed yet or need fresh start (SP discretion)</li>
-    </ul>
-  </div>
+<!-- ===== TABS ===== -->
+<div class="tabs-bar">
+  <button class="tab-btn active" data-page="subscriptions">💳 Subscriptions</button>
+  <button class="tab-btn" data-page="adminpass">🔑 Reset Admin Password</button>
+  <button class="tab-btn" data-page="sppass">🔐 Change SP Password</button>
+  <button class="tab-btn" data-page="chat">💬 Chat Module</button>
 </div>
 
-<!-- LIMITS TAB -->
-<div class="tab-content" id="tab-limits">
-  <h2>Adjust Account Limits</h2>
-  <div class="card">
-    <p class="note">Control how many stores an Admin can create and how many Cashiers they can add. Enforced system-wide.</p>
-    <select id="limitAdmin">
-      <option value="">-- Select Admin Account --</option>
-    </select>
-    <div class="grid-2" style="margin: 16px 0;">
-      <div>
-        <label style="font-weight: 600; display: block; margin-bottom: 6px;">Max Stores Allowed</label>
-        <input type="number" id="maxStores" min="1" max="20" value="5">
-        <p class="note">Range: 1–20 stores</p>
-      </div>
-      <div>
-        <label style="font-weight: 600; display: block; margin-bottom: 6px;">Max Cashiers Allowed</label>
-        <input type="number" id="maxCashiers" min="1" max="20" value="5">
-        <p class="note">Range: 1–20 cashiers per admin</p>
+<!-- ===== MAIN CONTENT ===== -->
+<div class="content">
+
+  <!-- ═══════════════ SUBSCRIPTIONS ═══════════════ -->
+  <div id="page-subscriptions" class="page active">
+    <div class="card">
+      <h3>Subscription Plans</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;">
+        <div style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:0.2s;" onmouseover="this.borderColor='#2563eb'" onmouseout="this.borderColor='var(--border)'">
+          <h4 style="font-size:18px;margin-bottom:8px;">Weekly</h4>
+          <p class="price-tag">₱199</p>
+          <p style="color:var(--gray);font-size:13px;">7 days access</p>
+        </div>
+        <div style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:0.2s;" onmouseover="this.borderColor='#2563eb'" onmouseout="this.borderColor='var(--border)'">
+          <h4 style="font-size:18px;margin-bottom:8px;">Bi-Weekly</h4>
+          <p class="price-tag">₱325</p>
+          <p style="color:var(--gray);font-size:13px;">14 days access</p>
+        </div>
+        <div style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:0.2s;" onmouseover="this.borderColor='#2563eb'" onmouseout="this.borderColor='var(--border)'">
+          <h4 style="font-size:18px;margin-bottom:8px;">Monthly</h4>
+          <p class="price-tag">₱579</p>
+          <p style="color:var(--gray);font-size:13px;">30 days access</p>
+        </div>
       </div>
     </div>
-    <button class="info" onclick="updateLimits()">🔄 UPDATE LIMITS</button>
-    <p id="limitMsg" class="success-msg"></p>
-  </div>
-  <div class="card">
-    <h3>Current Limits Overview</h3>
-    <div id="limitsOverview"></div>
-  </div>
-</div>
 
-<!-- PASSWORD MANAGEMENT TAB -->
-<div class="tab-content" id="tab-passwords">
-  <h2>Password Management & Security</h2>
-  <div class="card">
-    <h3>Change My SP Password</h3>
-    <input type="password" id="spCurrentPass" placeholder="Current Password" required>
-    <input type="password" id="spNewPass" placeholder="New Password (4–8 digits)" required>
-    <input type="password" id="spConfirmPass" placeholder="Confirm New Password" required>
-    <button class="warning" onclick="changeSPPass()">🔐 UPDATE MY PASSWORD</button>
-    <p id="spPassMsg" class="success-msg"></p>
-    <p class="note">Only you can change your SP password — Admins cannot access this.</p>
-  </div>
-  <div class="card">
-    <h3>Reset Admin Password</h3>
-    <select id="passAdmin">
-      <option value="">-- Select Admin Account --</option>
-    </select>
-    <input type="password" id="adminNewPass" placeholder="New 4-Digit Password" maxlength="4" required>
-    <button class="danger" onclick="resetAdminPass()">🔑 RESET ADMIN PASSWORD</button>
-    <p id="passMsg" class="success-msg"></p>
-    <p class="note">Admin password can only be changed by SP or by Admin themselves if they know current password.</p>
-  </div>
-  <div class="card">
-    <h3>Password Change History</h3>
-    <div id="passwordLog"></div>
-  </div>
-</div>
-
-<!-- CHAT TAB -->
-<div class="tab-content" id="tab-chat">
-  <h2>Direct Private Chat</h2>
-  <div class="card">
-    <p class="note">💬 Conversations here are <strong>isolated and private</strong> — only you and the selected person can see these messages.</p>
-    <select id="chatTarget" onchange="switchChat()">
-      <option value="">-- Select who to chat with --</option>
-    </select>
-    <div class="chat-box">
-      <div class="chat-msgs" id="chatMessages">
-        <p class="note" style="text-align: center; padding: 30px;">Select a contact above to start chatting</p>
+    <div class="card">
+      <h3>Extend / Renew Subscription</h3>
+      <div class="form-group">
+        <label>Select Plan</label>
+        <select id="renewPlan">
+          <option value="199-7">Weekly — ₱199 (7 days)</option>
+          <option value="325-14">Bi-Weekly — ₱325 (14 days)</option>
+          <option value="579-30">Monthly — ₱579 (30 days)</option>
+        </select>
       </div>
-      <div class="chat-input">
-        <input type="text" id="chatText" placeholder="Type message...">
-        <button onclick="sendChat()">SEND</button>
+      <div class="form-group">
+        <label>Remarks / Reference #</label>
+        <input type="text" id="subRemarks" placeholder="Payment reference or notes...">
+      </div>
+      <button class="btn btn-success" onclick="processRenewal()">✅ Activate & Extend</button>
+    </div>
+
+    <div class="card">
+      <h3>Current Subscription Status</h3>
+      <div id="subStatus"></div>
+      <table style="margin-top:20px;">
+        <thead><tr><th>Status</th><th>Plan</th><th>Expiry Date</th><th>Days Remaining</th></tr></thead>
+        <tbody id="subHistory"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RESET ADMIN PASSWORD ═══════════════ -->
+  <div id="page-adminpass" class="page">
+    <div class="card">
+      <h3>🔑 Reset / Change Admin Password</h3>
+      <p style="color:var(--gray);margin-bottom:16px;">Only Service Provider can change Admin's password</p>
+      <div class="form-group">
+        <label>New Admin Username</label>
+        <input type="text" id="newAdminUser" placeholder="Leave blank to keep current">
+      </div>
+      <div class="form-group">
+        <label>New Admin Password</label>
+        <input type="password" id="newAdminPass" placeholder="Enter new password">
+      </div>
+      <div class="form-group">
+        <label>Confirm New Admin Password</label>
+        <input type="password" id="confirmAdminPass" placeholder="Re-type new password">
+      </div>
+      <button class="btn btn-primary" onclick="changeAdminPassword()">🔄 Update Admin Credentials</button>
+    </div>
+    <div class="card">
+      <h3>Admin Password Change Log</h3>
+      <table>
+        <thead><tr><th>Old Username</th><th>New Username</th><th>Changed By</th><th>Date & Time</th></tr></thead>
+        <tbody id="adminPassLog"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CHANGE SP PASSWORD ═══════════════ -->
+  <div id="page-sppass" class="page">
+    <div class="card">
+      <h3>🔐 Change SP Password</h3>
+      <p style="color:var(--gray);margin-bottom:16px;">Only SP can change own password</p>
+      <div class="form-group">
+        <label>Current Password</label>
+        <input type="password" id="spCurrentPass" placeholder="Enter current password">
+      </div>
+      <div class="form-group">
+        <label>New Password</label>
+        <input type="password" id="spNewPass" placeholder="Enter new password">
+      </div>
+      <div class="form-group">
+        <label>Confirm New Password</label>
+        <input type="password" id="spConfirmPass" placeholder="Re-type new password">
+      </div>
+      <button class="btn btn-primary" onclick="changeSPPassword()">🔄 Update My Password</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CHAT MODULE ═══════════════ -->
+  <div id="page-chat" class="page">
+    <div class="card">
+      <h3>💬 Private Chat — SP Side</h3>
+      <div class="form-group">
+        <label>Chat with</label>
+        <select id="chatPeer" onchange="switchChat()">
+          <option value="">-- Select --</option>
+          <option value="Admin">👤 Admin / Owner</option>
+        </select>
+      </div>
+      <div class="chat-box" id="chatDisplay" style="display:none;">
+        <div class="chat-msgs" id="chatMessages"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chatText" placeholder="Type message...">
+          <button class="btn btn-primary" onclick="sendChatMsg()">Send</button>
+        </div>
       </div>
     </div>
   </div>
+
 </div>
 
-<!-- ACTIVITY LOGS TAB -->
-<div class="tab-content" id="tab-logs">
-  <h2>System Activity Logs</h2>
-  <div class="card">
-    <h3>Recent Plan & Subscription Changes</h3>
-    <div id="planChangeLog"></div>
-  </div>
-  <div class="card">
-    <h3>Limit Adjustments</h3>
-    <div id="limitChangeLog"></div>
-  </div>
-</div>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAxuB4gacmWIf3U4Ic5TsOxSHCaynR0vhw",
-  authDomain: "bpos-pos.firebaseapp.com",
-  projectId: "bpos-pos",
-  storageBucket: "bpos-pos.firebasestorage.app",
-  messagingSenderId: "1024558399693",
-  appId: "1:1024558399693:web:13412d95960d8be732a984",
-  measurementId: "G-BY03FZEN6E"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-const user = JSON.parse(localStorage.getItem('user') || '{}');
-if (!user || user.role !== 'sp') {
-  localStorage.clear();
-  window.location.href = '../login.html';
+// ===== AUTO LOGOUT TIMER — 10 MINUTES =====
+let inactivityTimer;
+function resetTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    alert('⏰ Session expired — Enter your password again');
+    sessionStorage.clear();
+    window.location.href = '/auth/login.html';
+  }, 10 * 60 * 1000);
 }
-document.getElementById('userNameDisplay').textContent = user.name;
+['mousedown','keydown','touchstart','click','scroll'].forEach(evt => {
+  document.addEventListener(evt, resetTimer);
+});
+resetTimer();
 
-let currentChatWith = null;
+// ===== DATA HELPERS =====
+function getSubscription() { return JSON.parse(localStorage.getItem('subscription') || '{}'); }
+function saveSubscription(d) { localStorage.setItem('subscription', JSON.stringify(d)); }
+function getAdminUser() { return localStorage.getItem('adminUser') || 'Admin'; }
+function saveAdminUser(d) { localStorage.setItem('adminUser', d); }
+function getAdminPass() { return localStorage.getItem('adminPass') || '8888'; }
+function saveAdminPass(d) { localStorage.setItem('adminPass', d); }
+function getSPPass() { return localStorage.getItem('spPass') || '19970407chan'; }
+function saveSPPass(d) { localStorage.setItem('spPass', d); }
+function getChats() { return JSON.parse(localStorage.getItem('chats') || '{}'); }
+function saveChats(d) { localStorage.setItem('chats', JSON.stringify(d)); }
+function getLogs() { return JSON.parse(localStorage.getItem('spLogs') || '[]'); }
+function saveLogs(d) { localStorage.setItem('spLogs', JSON.stringify(d)); }
 
-// === TAB SWITCHING ===
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
-    
-    if (tab.dataset.tab === 'admins') loadAdmins();
-    if (tab.dataset.tab === 'plans') fillPlanAdminSelect();
-    if (tab.dataset.tab === 'limits') fillLimitAdminSelect();
-    if (tab.dataset.tab === 'passwords') { fillPassAdminSelect(); loadPasswordLog(); }
-    if (tab.dataset.tab === 'chat') loadChatTargets();
-    if (tab.dataset.tab === 'logs') loadLogs();
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('userRole') !== 'sp') {
+    window.location.href = '/auth/login.html';
+    return;
+  }
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + btn.dataset.page).classList.add('active');
+      
+      if (btn.dataset.page === 'subscriptions') renderSubStatus();
+      if (btn.dataset.page === 'adminpass') renderAdminPassLog();
+    });
   });
+
+  renderSubStatus();
+  renderAdminPassLog();
 });
 
-function logout() {
-  localStorage.clear();
-  window.location.href = '../login.html';
-}
-
-// === HELPER: Subscription Status Calculation ===
-function getSubscriptionStatus(userData) {
+// ===== SUBSCRIPTION & RENEWAL =====
+function processRenewal() {
+  const planVal = document.getElementById('renewPlan').value;
+  const remarks = document.getElementById('subRemarks').value.trim();
+  const [price, days] = planVal.split('-').map(v => parseInt(v));
+  
+  if (!price || !days) return alert('Select valid plan');
+  
+  const sub = getSubscription();
   const now = new Date();
-  let startDate = userData.subscriptionStart?.toDate ? userData.subscriptionStart.toDate() : 
-                  (userData.createdAt?.toDate ? userData.createdAt.toDate() : 
-                   (userData.createdAt ? new Date(userData.createdAt) : now));
-  let plan = userData.plan || 'trial';
-  let days = 7;
   
-  if (plan === 'weekly') days = 7;
-  if (plan === 'biweekly') days = 14;
-  if (plan === 'monthly') days = 30;
-  
-  const expiry = new Date(startDate);
-  expiry.setDate(expiry.getDate() + days);
-  const remaining = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
-  
-  let status, statusClass, planClass;
-  if (remaining <= 0) {
-    status = 'EXPIRED — Access Restricted';
-    statusClass = 'status-expired';
-    planClass = 'plan-trial';
-  } else if (plan === 'trial') {
-    status = `${remaining} Days Left (Free Trial)`;
-    statusClass = 'status-trial';
-    planClass = 'plan-trial';
-  } else if (plan === 'weekly') {
-    status = `${remaining} Days Left (Weekly)`;
-    statusClass = 'status-active';
-    planClass = 'plan-weekly';
-  } else if (plan === 'biweekly') {
-    status = `${remaining} Days Left (Biweekly)`;
-    statusClass = 'status-active';
-    planClass = 'plan-biweekly';
-  } else if (plan === 'monthly') {
-    status = `${remaining} Days Left (Monthly)`;
-    statusClass = 'status-active';
-    planClass = 'plan-monthly';
-  }
-  
-  return { status, statusClass, plan, planClass, remaining, expiry };
-}
-
-// === ADMINS LIST ===
-async function loadAdmins() {
-  const snap = await db.collection('users').where('role', '==', 'admin').orderBy('createdAt', 'desc').get();
-  let html = '';
-  let total = 0, active = 0, trial = 0, expired = 0;
-  
-  if (snap.empty) {
-    html = '<p style="text-align:center; padding:30px;">No admin accounts registered yet</p>';
+  // Calculate new expiry
+  let newExpiry;
+  if (sub.expiryDate && new Date(sub.expiryDate) > now) {
+    newExpiry = new Date(sub.expiryDate);
   } else {
-    snap.forEach(doc => {
-      const a = doc.data();
-      const { status, statusClass, plan, planClass, expiry, remaining } = getSubscriptionStatus(a);
-      total++;
-      if (remaining <= 0) expired++;
-      else if (plan === 'trial') trial++;
-      else active++;
-      
-      html += `<div class="list-item">
-        <div>
-          <strong>${a.name || 'Unnamed'}</strong> — ${a.email || 'No email'}<br>
-          <small>Created: ${a.createdAt?.toDate ? new Date(a.createdAt.toDate()).toLocaleString() : 'Unknown'}</small>
-          ${a.maxStores ? `<br><small>Limits: ${a.maxStores} Stores | ${a.maxCashiers === 0 ? 'Unlimited' : a.maxCashiers} Cashiers</small>` : ''}
-        </div>
-        <div>
-          <span class="${statusClass}">${status}</span>
-          <span class="plan-tag ${planClass}">${plan.toUpperCase()}</span><br>
-          <small>Expires: ${expiry.toLocaleDateString()}</small>
-        </div>
-      </div>`;
-    });
+    newExpiry = new Date(now);
+  }
+  newExpiry.setDate(newExpiry.getDate() + days);
+  
+  // Update subscription
+  sub.expiryDate = newExpiry.toISOString();
+  sub.lastPlan = `${price} - ${days} days`;
+  sub.lastRenewed = now.toISOString();
+  sub.remarks = remarks || '—';
+  sub.isTrial = false;
+  
+  saveSubscription(sub);
+  
+  // Log the renewal
+  const logs = getLogs();
+  logs.unshift({
+    action: 'Renewal',
+    plan: `${price} - ${days} days`,
+    expiry: newExpiry.toLocaleString(),
+    remarks,
+    time: now.toLocaleString()
+  });
+  saveLogs(logs);
+  
+  alert(`✅ Subscription Updated!\nNew Expiry: ${newExpiry.toLocaleDateString()}`);
+  document.getElementById('subRemarks').value = '';
+  renderSubStatus();
+}
+
+function renderSubStatus() {
+  const sub = getSubscription();
+  const now = new Date();
+  let status, expiry, daysLeft;
+  
+  if (sub.expiryDate) {
+    expiry = new Date(sub.expiryDate);
+    daysLeft = Math.ceil((expiry - now) / (86400000));
+    status = daysLeft > 0 
+      ? `<span class="badge badge-active">ACTIVE</span>` 
+      : `<span class="badge badge-expired">EXPIRED</span>`;
+  } else {
+    // Trial mode
+    const trialStart = sub.trialStart ? new Date(sub.trialStart) : now;
+    expiry = new Date(trialStart);
+    expiry.setDate(expiry.getDate() + 7);
+    daysLeft = Math.ceil((expiry - now) / (86400000));
+    status = daysLeft > 0 
+      ? `<span class="badge badge-trial">FREE TRIAL</span>` 
+      : `<span class="badge badge-expired">TRIAL ENDED</span>`;
   }
   
-  document.getElementById('adminsList').innerHTML = html;
-  document.getElementById('totalAdmins').textContent = total;
-  document.getElementById('activeAdmins').textContent = active;
-  document.getElementById('trialAdmins').textContent = trial;
-  document.getElementById('expiredAdmins').textContent = expired;
+  document.getElementById('subStatus').innerHTML = `
+    <div style="padding:16px;background:${daysLeft>0?'#f0fdf4':'#fef2f2'};border-radius:8px;">
+      <p style="font-size:18px;margin-bottom:8px;">${status}</p>
+      <p><strong>Expiry Date:</strong> ${expiry.toLocaleString()}</p>
+      <p style="font-size:20px;font-weight:700;margin-top:8px;">
+        Days Remaining: <span style="color:${daysLeft>0?'#16a34a':'#dc2626'}">${Math.max(0, daysLeft)}</span>
+      </p>
+      ${sub.lastPlan ? `<p style="margin-top:8px;"><strong>Current Plan:</strong> ₱${sub.lastPlan}</p>` : ''}
+      ${sub.remarks ? `<p style="margin-top:4px;"><strong>Remarks:</strong> ${sub.remarks}</p>` : ''}
+    </div>`;
+  
+  document.getElementById('subHistory').innerHTML = getLogs().map(l => `
+    <tr>
+      <td><span class="badge badge-active">Updated</span></td>
+      <td>${l.plan}</td>
+      <td>${l.expiry}</td>
+      <td>${l.remarks || '—'}</td>
+    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">No renewal history yet</td></tr>';
 }
 
-// === PLANS: Assign & Reset Trial ===
-async function fillPlanAdminSelect() {
-  const snap = await db.collection('users').where('role', '==', 'admin').get();
-  let opts = '<option value="">-- Select Admin Account --</option>';
-  snap.forEach(d => opts += `<option value="${d.id}">${d.data().name || 'Unnamed'}</option>`);
-  document.getElementById('planAdmin').innerHTML = opts;
-}
-
-async function assignPlan() {
-  const adminId = document.getElementById('planAdmin').value;
-  const selected = document.querySelector('input[name="planSel"]:checked');
-  if (!adminId || !selected) return alert('⚠️ Select Admin and choose a plan first babe');
+// ===== ADMIN PASSWORD MANAGEMENT =====
+function changeAdminPassword() {
+  const newUser = document.getElementById('newAdminUser').value.trim();
+  const newPass = document.getElementById('newAdminPass').value.trim();
+  const confirmPass = document.getElementById('confirmAdminPass').value.trim();
   
-  const plan = selected.value;
-  const now = firebase.firestore.FieldValue.serverTimestamp();
+  if (!newPass) return alert('Enter new password');
+  if (newPass !== confirmPass) return alert('Passwords do not match!');
   
-  await db.collection('users').doc(adminId).update({
-    plan: plan,
-    subscriptionStart: now,
-    updatedAt: now,
-    lastRenewedBy: user.name,
-    lastRenewedAt: now
-  });
+  const oldUser = getAdminUser();
+  const oldPass = getAdminPass();
+  
+  if (newUser) saveAdminUser(newUser);
+  saveAdminPass(newPass);
   
   // Log the change
-  await db.collection('logs').add({
-    type: 'plan_change',
-    adminId: adminId,
-    adminName: document.getElementById('planAdmin').selectedOptions[0].text,
-    newPlan: plan,
-    changedBy: user.name,
-    changedAt: now
+  const logs = JSON.parse(localStorage.getItem('adminPassChangeLog') || '[]');
+  logs.unshift({
+    oldUser,
+    newUser: newUser || oldUser,
+    oldPass,
+    newPass,
+    changedBy: 'Service Provider',
+    time: new Date().toLocaleString()
   });
+  localStorage.setItem('adminPassChangeLog', JSON.stringify(logs));
   
-  document.getElementById('planMsg').textContent = `✅ Plan updated to ${plan.toUpperCase()}! Access renewed successfully.`;
-  setTimeout(() => document.getElementById('planMsg').textContent = '', 4000);
-  
-  loadAdmins();
-  loadLogs();
+  alert('✅ Admin credentials updated successfully');
+  document.getElementById('newAdminUser').value = '';
+  document.getElementById('newAdminPass').value = '';
+  document.getElementById('confirmAdminPass').value = '';
+  renderAdminPassLog();
 }
 
-// === LIMITS: Enforce & Update ===
-async function fillLimitAdminSelect() {
-  const snap = await db.collection('users').where('role', '==', 'admin').get();
-  let opts = '<option value="">-- Select Admin Account --</option>';
-  snap.forEach(d => opts += `<option value="${d.id}">${d.data().name || 'Unnamed'}</option>`);
-  document.getElementById('limitAdmin').innerHTML = opts;
-  renderLimitsOverview(snap);
+function renderAdminPassLog() {
+  const logs = JSON.parse(localStorage.getItem('adminPassChangeLog') || '[]');
+  document.getElementById('adminPassLog').innerHTML = logs.length 
+    ? logs.map(l => `
+        <tr>
+          <td>${l.oldUser}</td>
+          <td>${l.newUser}</td>
+          <td>${l.changedBy}</td>
+          <td>${l.time}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">No changes yet</td></tr>';
 }
 
-function renderLimitsOverview(snap) {
-  let html = '';
-  if (snap.empty) {
-    html = '<p class="note">No accounts yet</p>';
-  } else {
-    snap.forEach(d => {
-      const a = d.data();
-      html += `<div class="log-row">
-        <strong>${a.name || 'Unnamed'}</strong><br>
-        <small>
-          Stores: ${a.maxStores || 5} / 20 | 
-          Cashiers: ${a.maxCashiers === 0 ? 'Unlimited' : (a.maxCashiers || 5)} / 20
-        </small>
-      </div>`;
-    });
-  }
-  document.getElementById('limitsOverview').innerHTML = html;
-}
-
-async function updateLimits() {
-  const adminId = document.getElementById('limitAdmin').value;
-  const maxStores = parseInt(document.getElementById('maxStores').value);
-  const maxCashiers = parseInt(document.getElementById('maxCashiers').value);
+// ===== SP PASSWORD MANAGEMENT =====
+function changeSPPassword() {
+  const current = document.getElementById('spCurrentPass').value.trim();
+  const newPass = document.getElementById('spNewPass').value.trim();
+  const confirmPass = document.getElementById('spConfirmPass').value.trim();
   
-  if (!adminId) return alert('⚠️ Select an Admin first babe');
-  if (maxStores < 1 || maxStores > 20) return alert('⚠️ Max Stores must be between 1–20');
-  if (maxCashiers < 1 || maxCashiers > 20) return alert('⚠️ Max Cashiers must be between 1–20');
+  if (current !== getSPPass()) return alert('Current password is incorrect!');
+  if (!newPass) return alert('Enter new password');
+  if (newPass !== confirmPass) return alert('Passwords do not match!');
   
-  const now = firebase.firestore.FieldValue.serverTimestamp();
-  
-  await db.collection('users').doc(adminId).update({
-    maxStores: maxStores,
-    maxCashiers: maxCashiers,
-    limitsUpdatedAt: now,
-    limitsUpdatedBy: user.name
-  });
-  
-  // Log the change
-  await db.collection('logs').add({
-    type: 'limit_change',
-    adminId: adminId,
-    adminName: document.getElementById('limitAdmin').selectedOptions[0].text,
-    oldMaxStores: 5, // Could be enhanced to fetch actual old value
-    newMaxStores: maxStores,
-    oldMaxCashiers: 5,
-    newMaxCashiers: maxCashiers,
-    changedBy: user.name,
-    changedAt: now
-  });
-  
-  document.getElementById('limitMsg').textContent = 
-    `✅ Limits updated! Stores: ${maxStores}, Cashiers: ${maxCashiers}`;
-  setTimeout(() => document.getElementById('limitMsg').textContent = '', 4000);
-  
-  fillLimitAdminSelect();
-  loadLogs();
-}
-
-// === PASSWORDS ===
-async function fillPassAdminSelect() {
-  const snap = await db.collection('users').where('role', '==', 'admin').get();
-  let opts = '<option value="">-- Select Admin Account --</option>';
-  snap.forEach(d => opts += `<option value="${d.id}">${d.data().name || 'Unnamed'}</option>`);
-  document.getElementById('passAdmin').innerHTML = opts;
-}
-
-async function changeSPPass() {
-  const curr = document.getElementById('spCurrentPass').value.trim();
-  const newP = document.getElementById('spNewPass').value.trim();
-  const conf = document.getElementById('spConfirmPass').value.trim();
-  
-  if (!curr || !newP) return alert('⚠️ Fill all fields babe');
-  if (newP.length < 4 || newP.length > 8) return alert('⚠️ Password must be 4–8 characters');
-  if (newP !== conf) return alert('⚠️ New password and confirmation do not match');
-  
-  const spSnap = await db.collection('users').where('role', '==', 'sp').get();
-  if (spSnap.empty) return alert('⚠️ SP account not found');
-  
-  const spDoc = spSnap.docs[0];
-  const spData = spDoc.data();
-  
-  if (spData.password !== curr) return alert('⚠️ Current password is incorrect');
-  
-  await db.collection('users').doc(spDoc.id).update({
-    password: newP,
-    passwordUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  
-  document.getElementById('spPassMsg').textContent = '✅ SP Password updated successfully!';
+  saveSPPass(newPass);
+  alert('✅ SP password updated successfully');
   document.getElementById('spCurrentPass').value = '';
   document.getElementById('spNewPass').value = '';
   document.getElementById('spConfirmPass').value = '';
-  setTimeout(() => document.getElementById('spPassMsg').textContent = '', 4000);
 }
 
-async function resetAdminPass() {
-  const adminId = document.getElementById('passAdmin').value;
-  const newPass = document.getElementById('adminNewPass').value.trim();
-  
-  if (!adminId) return alert('⚠️ Select an Admin first babe');
-  if (newPass.length !== 4) return alert('⚠️ Password must be exactly 4 digits');
-  
-  const adminSnap = await db.collection('users').doc(adminId).get();
-  const oldPass = adminSnap.data().password || 'Not Set';
-  
-  await db.collection('users').doc(adminId).update({
-    password: newPass,
-    passwordResetBy: user.name,
-    passwordResetAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  
-  // Log password change
-  await db.collection('passwordChangeLogs').add({
-    targetRole: 'admin',
-    targetId: adminId,
-    targetName: document.getElementById('passAdmin').selectedOptions[0].text,
-    oldPassword: oldPass,
-    newPassword: newPass,
-    changedBy: user.name,
-    changedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  
-  document.getElementById('passMsg').textContent = '✅ Admin Password has been reset!';
-  document.getElementById('adminNewPass').value = '';
-  setTimeout(() => document.getElementById('passMsg').textContent = '', 4000);
-  
-  loadPasswordLog();
-}
-
-async function loadPasswordLog() {
-  const snap = await db.collection('passwordChangeLogs').orderBy('changedAt', 'desc').limit(15).get();
-  let html = '';
-  if (snap.empty) {
-    html = '<p class="note">No password changes recorded yet</p>';
-  } else {
-    snap.forEach(d => {
-      const r = d.data();
-      html += `<div class="log-row">
-        <strong>${r.targetName}</strong>
-        <span class="badge badge-reset">Reset by SP</span><br>
-        Old: <code>${r.oldPassword}</code> → New: <code>${r.newPassword}</code><br>
-        <time>${r.changedAt?.toDate ? new Date(r.changedAt.toDate()).toLocaleString() : 'Unknown'}</time>
-      </div>`;
-    });
-  }
-  document.getElementById('passwordLog').innerHTML = html;
-}
-
-// === CHAT — ISOLATED / PRIVATE ===
-async function loadChatTargets() {
-  const [admins, cashiers] = await Promise.all([
-    db.collection('users').where('role','==','admin').get(),
-    db.collection('users').where('role','==','cashier').get()
-  ]);
-  let opts = '<option value="">-- Select contact --</option>';
-  admins.forEach(d => opts += `<option value="admin-${d.id}">👤 Admin: ${d.data().name || 'Unnamed'}</option>`);
-  cashiers.forEach(d => opts += `<option value="cashier-${d.id}">💼 Cashier: ${d.data().name || 'Unnamed'}</option>`);
-  document.getElementById('chatTarget').innerHTML = opts;
-}
-
+// ===== CHAT =====
+let chatWith = null;
 function switchChat() {
-  currentChatWith = document.getElementById('chatTarget').value;
-  if (!currentChatWith) { 
-    document.getElementById('chatMessages').innerHTML = 
-      '<p class="note" style="text-align:center; padding:30px;">Select who to chat with above</p>'; 
-    return; 
-  }
-  loadMessages();
+  chatWith = document.getElementById('chatPeer').value;
+  const display = document.getElementById('chatDisplay');
+  if (!chatWith) { display.style.display = 'none'; return; }
+  display.style.display = 'flex';
+  renderChatMsgs();
 }
-
-// Private chat ID — unique pair, isolated from others
-function getChatId(target) {
-  // Format: sp_[myId]_[targetId] — sorted so same regardless of who starts
-  const myId = user.id || 'sp_default';
-  return ['sp', myId, target].sort().join('_');
-}
-
-async function loadMessages() {
-  if (!currentChatWith) return;
-  const chatId = getChatId(currentChatWith);
-  const snap = await db.collection('chats').doc(chatId)
-    .collection('messages').orderBy('sentAt', 'asc').limit(50).get();
-  
-  let html = '';
-  if (snap.empty) {
-    html = '<p class="note" style="text-align:center; padding:30px;">No messages yet — start the conversation</p>';
-  } else {
-    snap.forEach(d => {
-      const m = d.data();
-      const isMe = m.senderRole === 'sp';
-      html += `<div class="msg ${isMe ? 'me' : 'other'}">
-        ${m.text}
-        <small>${m.senderName || 'Unknown'} — ${m.sentAt?.toDate ? new Date(m.sentAt.toDate()).toLocaleTimeString() : ''}</small>
-      </div>`;
-    });
-  }
-  document.getElementById('chatMessages').innerHTML = html;
+function renderChatMsgs() {
+  if (!chatWith) return;
+  const allChats = getChats();
+  const key = ['SP', chatWith].sort().join('_');
+  const msgs = allChats[key] || [];
+  document.getElementById('chatMessages').innerHTML = msgs.map(m => `
+    <div class="msg ${m.sender === 'SP' ? 'me' : 'other'}">
+      <div>${m.text}</div>
+      <div class="msg-time">${new Date(m.time).toLocaleTimeString()}</div>
+    </div>`).join('');
   document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 }
-
-async function sendChat() {
-  if (!currentChatWith) return alert('⚠️ Select who to chat with first babe');
+function sendChatMsg() {
+  if (!chatWith) return alert('Select who to chat with first');
   const text = document.getElementById('chatText').value.trim();
   if (!text) return;
-  
-  const chatId = getChatId(currentChatWith);
-  await db.collection('chats').doc(chatId).collection('messages').add({
-    senderRole: 'sp',
-    senderName: user.name,
-    text: text,
-    sentAt: firebase.firestore.FieldValue.serverTimestamp()
+  const allChats = getChats();
+  const key = ['SP', chatWith].sort().join('_');
+  if (!allChats[key]) allChats[key] = [];
+  allChats[key].push({
+    sender: 'SP',
+    text,
+    time: new Date().toISOString()
   });
-  
+  saveChats(allChats);
   document.getElementById('chatText').value = '';
-  loadMessages();
+  renderChatMsgs();
 }
 
-document.getElementById('chatText').addEventListener('keypress', e => {
-  if (e.key === 'Enter') sendChat();
-});
-
-// === ACTIVITY LOGS ===
-async function loadLogs() {
-  const planSnap = await db.collection('logs').where('type', '==', 'plan_change')
-    .orderBy('changedAt', 'desc').limit(10).get();
-  let planHtml = '';
-  if (planSnap.empty) {
-    planHtml = '<p class="note">No plan changes yet</p>';
-  } else {
-    planSnap.forEach(d => {
-      const r = d.data();
-      planHtml += `<div class="log-row">
-        <strong>${r.adminName}</strong> → <span style="color:var(--primary);">${r.newPlan.toUpperCase()}</span><br>
-        <time>${r.changedAt?.toDate ? new Date(r.changedAt.toDate()).toLocaleString() : ''}</time>
-      </div>`;
-    });
+// ===== LOGOUT =====
+function logout() {
+  if (confirm('Log out SP account?')) {
+    sessionStorage.clear();
+    window.location.href = '/auth/login.html';
   }
-  document.getElementById('planChangeLog').innerHTML = planHtml;
-  
-  const limitSnap = await db.collection('logs').where('type', '==', 'limit_change')
-    .orderBy('changedAt', 'desc').limit(10).get();
-  let limitHtml = '';
-  if (limitSnap.empty) {
-    limitHtml = '<p class="note">No limit adjustments yet</p>';
-  } else {
-    limitSnap.forEach(d => {
-      const r = d.data();
-      limitHtml += `<div class="log-row">
-        <strong>${r.adminName}</strong><br>
-        Stores: ${r.oldMaxStores} → <strong>${r.newMaxStores}</strong> | 
-        Cashiers: ${r.oldMaxCashiers} → <strong>${r.newMaxCashiers}</strong><br>
-        <time>${r.changedAt?.toDate ? new Date(r.changedAt.toDate()).toLocaleString() : ''}</time>
-      </div>`;
-    });
-  }
-  document.getElementById('limitChangeLog').innerHTML = limitHtml;
 }
-
-// === INITIAL LOAD ===
-loadAdmins();
 </script>
 </body>
 </html>

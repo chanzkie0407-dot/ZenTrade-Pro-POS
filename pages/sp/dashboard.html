@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Provider — ZenTrade Pro POS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    :root {
+      --primary: #8e44ad;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --info: #3498db;
+      --dark: #2c3e50;
+      --light: #f8f9fa;
+    }
+    body { background: var(--light); min-height: 100vh; }
+    header {
+      background: linear-gradient(90deg, var(--dark), #4a5568);
+      color: white; padding: 15px 25px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .logo { font-size: 20px; font-weight: bold; }
+    .user-info { display: flex; gap: 15px; align-items: center; }
+    .logout-btn {
+      background: var(--danger); color: white; border: none; padding: 8px 16px;
+      border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s;
+    }
+    .logout-btn:hover { background: #c0392b; }
+    .tabs { display: flex; background: white; border-bottom: 2px solid #ddd; flex-wrap: wrap; }
+    .tab {
+      padding: 14px 20px; cursor: pointer; border-bottom: 3px solid transparent;
+      font-weight: 600; color: #555; transition: all 0.2s;
+    }
+    .tab:hover { background: #f0f0f0; }
+    .tab.active { border-bottom-color: var(--primary); color: var(--primary); background: #f8f0fc; }
+    .tab-content { padding: 20px; max-width: 1300px; margin: 0 auto; display: none; }
+    .tab-content.active { display: block; }
+    h2 { color: var(--dark); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    .card {
+      background: white; padding: 25px; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%; padding: 12px 15px; margin: 6px 0; border: 2px solid #eee;
+      border-radius: 8px; font-size: 15px;
+    }
+    button {
+      background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600;
+      transition: background 0.2s;
+    }
+    button:hover { background: #7d3c98; }
+    button.small { width: auto; padding: 8px 14px; margin: 3px; font-size: 14px; }
+    button.success { background: var(--success); }
+    button.success:hover { background: #219653; }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #c0392b; }
+    button.warning { background: var(--warning); }
+    button.warning:hover { background: #e67e22; }
+    button.info { background: var(--info); }
+    button.info:hover { background: #2980b9; }
+    .list-item {
+      padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+    .status-active { color: var(--success); font-weight: bold; }
+    .status-trial { color: var(--warning); font-weight: bold; }
+    .status-expired { color: var(--danger); font-weight: bold; }
+    .plan-tag {
+      display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-left: 8px;
+    }
+    .plan-free { background: #fef3c7; color: #92400e; }
+    .plan-weekly { background: #dbeafe; color: #1e40af; }
+    .plan-biweekly { background: #ddd6fe; color: #5b21b6; }
+    .plan-monthly { background: #d1fae5; color: #065f46; }
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none;
+      align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+    }
+    .modal {
+      background: white; padding: 30px; border-radius: 14px; max-width: 500px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal h3 { margin-bottom: 20px; color: var(--dark); }
+    .hidden { display: none !important; }
+    .chat-box { border: 1px solid #ddd; border-radius: 10px; height: 450px; display: flex; flex-direction: column; background: white; }
+    .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; background: #fafafa; }
+    .chat-input { display: flex; border-top: 1px solid #ddd; }
+    .chat-input input { flex: 1; margin: 0; border: none; border-radius: 0; }
+    .msg { margin: 8px 0; padding: 10px 14px; border-radius: 18px; max-width: 70%; }
+    .msg.me { background: var(--primary); color: white; margin-left: auto; }
+    .msg.other { background: #e9ecef; color: #333; margin-right: auto; }
+    .note { color: #666; font-size: 13px; margin-top: 5px; }
+    .success-msg { color: var(--success); font-weight: bold; margin: 10px 0; }
+    .danger-msg { color: var(--danger); font-weight: bold; margin: 10px 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width:768px) { .grid-2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">ZenTrade Pro POS — Service Provider</div>
+  <div class="user-info">
+    <span id="userNameDisplay"></span>
+    <button class="logout-btn" onclick="logout()">LOG OUT</button>
+  </div>
+</header>
+<div class="tabs">
+  <div class="tab active" data-tab="admins">Admins</div>
+  <div class="tab" data-tab="plans">Plans & Subscription</div>
+  <div class="tab" data-tab="limits">Store/Cashier Limits</div>
+  <div class="tab" data-tab="passwords">Password Management</div>
+  <div class="tab" data-tab="chat">Direct Chat</div>
+</div>
+
+<!-- ADMINS TAB -->
+<div class="tab-content active" id="tab-admins">
+  <h2>Registered Accounts & Subscription Status</h2>
+  <div class="card">
+    <p class="note">All Admin accounts — Free Trial: 7 days from sign-up</p>
+    <div id="adminsList"></div>
+  </div>
+</div>
+
+<!-- PLANS TAB -->
+<div class="tab-content" id="tab-plans">
+  <h2>Subscription Plans</h2>
+  <div class="card">
+    <h3>Assign / Update Plan</h3>
+    <select id="planAdmin">
+      <option value="">-- Select Admin Account --</option>
+    </select>
+    <div class="grid-2">
+      <label><input type="radio" name="planSel" value="weekly"> Weekly — ₱199</label>
+      <label><input type="radio" name="planSel" value="biweekly"> 2 Weeks — ₱325</label>
+      <label><input type="radio" name="planSel" value="monthly"> Monthly — ₱579</label>
+      <label><input type="radio" name="planSel" value="trial"> Reset Free Trial (7 Days)</label>
+    </div>
+    <button class="success" onclick="assignPlan()">✅ ASSIGN PLAN</button>
+    <p id="planMsg" class="success-msg"></p>
+  </div>
+  <div class="card">
+    <h3>Plan Details</h3>
+    <ul style="line-height:1.8; padding-left:20px;">
+      <li><strong>Free Trial:</strong> 7 Days — Full access, 5 Stores, Unlimited Cashiers</li>
+      <li><strong>Weekly (₱199):</strong> 7 Days — Full access, 5 Stores, Unlimited Cashiers</li>
+      <li><strong>2 Weeks (₱325):</strong> 14 Days — Full access, 5 Stores → upgradable to 20</li>
+      <li><strong>Monthly (₱579):</strong> 30 Days — Full access, 5 Stores → upgradable to 20</li>
+    </ul>
+  </div>
+</div>
+
+<!-- LIMITS TAB -->
+<div class="tab-content" id="tab-limits">
+  <h2>Adjust Account Limits</h2>
+  <div class="card">
+    <select id="limitAdmin">
+      <option value="">-- Select Admin Account --</option>
+    </select>
+    <div class="grid-2">
+      <div>
+        <label>Max Stores Allowed</label>
+        <input type="number" id="maxStores" min="1" max="50" value="5">
+      </div>
+      <div>
+        <label>Max Cashiers Allowed (0 = Unlimited)</label>
+        <input type="number" id="maxCashiers" min="0" max="100" value="0">
+      </div>
+    </div>
+    <button class="info" onclick="updateLimits()">🔄 UPDATE LIMITS</button>
+    <p id="limitMsg" class="success-msg"></p>
+  </div>
+</div>
+
+<!-- PASSWORD TAB -->
+<div class="tab-content" id="tab-passwords">
+  <h2>Reset / Change Passwords</h2>
+  <div class="card">
+    <h3>Change My (SP) Password</h3>
+    <input type="password" id="spCurrentPass" placeholder="Current Password" required>
+    <input type="password" id="spNewPass" placeholder="New 4-8 Digit Password" required>
+    <input type="password" id="spConfirmPass" placeholder="Confirm New Password" required>
+    <button class="warning" onclick="changeSPPass()">UPDATE MY PASSWORD</button>
+    <p id="spPassMsg" class="success-msg"></p>
+  </div>
+  <div class="card">
+    <h3>Reset Admin Password</h3>
+    <select id="passAdmin">
+      <option value="">-- Select Admin Account --</option>
+    </select>
+    <input type="password" id="adminNewPass" placeholder="New 4-Digit Password" maxlength="4" required>
+    <button class="danger" onclick="resetAdminPass()">🔑 RESET ADMIN PASSWORD</button>
+    <p id="passMsg" class="success-msg"></p>
+  </div>
+</div>
+
+<!-- CHAT TAB -->
+<div class="tab-content" id="tab-chat">
+  <h2>Direct Private Chat</h2>
+  <div class="card">
+    <select id="chatTarget" onchange="switchChat()">
+      <option value="">-- Select who to chat with --</option>
+    </select>
+    <div class="chat-box">
+      <div class="chat-msgs" id="chatMessages"></div>
+      <div class="chat-input">
+        <input type="text" id="chatText" placeholder="Type message...">
+        <button onclick="sendChat()">SEND</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAxuB4gacmWIf3U4Ic5TsOxSHCaynR0vhw",
+  authDomain: "bpos-pos.firebaseapp.com",
+  projectId: "bpos-pos",
+  storageBucket: "bpos-pos.firebasestorage.app",
+  messagingSenderId: "1024558399693",
+  appId: "1:1024558399693:web:13412d95960d8be732a984",
+  measurementId: "G-BY03FZEN6E"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+if (!user || user.role !== 'sp') {
+  localStorage.clear();
+  window.location.href = '../login.html';
+}
+document.getElementById('userNameDisplay').textContent = user.name;
+
+let currentChatWith = null;
+
+// === TAB SWITCHING ===
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    
+    if (tab.dataset.tab === 'admins') loadAdmins();
+    if (tab.dataset.tab === 'plans') fillPlanAdminSelect();
+    if (tab.dataset.tab === 'limits') fillLimitAdminSelect();
+    if (tab.dataset.tab === 'passwords') fillPassAdminSelect();
+    if (tab.dataset.tab === 'chat') loadChatTargets();
+  });
+});
+
+function logout() {
+  localStorage.clear();
+  window.location.href = '../login.html';
+}
+
+// === HELPER: Subscription Status ===
+function getSubscriptionStatus(userData) {
+  const now = new Date();
+  let startDate = userData.subscriptionStart?.toDate ? userData.subscriptionStart.toDate() : new Date(userData.createdAt?.toDate ? userData.createdAt.toDate() : userData.createdAt || now);
+  let plan = userData.plan || 'trial';
+  let days = 7;
+  
+  if (plan === 'weekly') days = 7;
+  if (plan === 'biweekly') days = 14;
+  if (plan === 'monthly') days = 30;
+  
+  const expiry = new Date(startDate);
+  expiry.setDate(expiry.getDate() + days);
+  const remaining = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+  
+  let status, statusClass, planClass;
+  if (remaining <= 0) {
+    status = 'EXPIRED'; statusClass = 'status-expired'; planClass = 'plan-free';
+  } else if (plan === 'trial') {
+    status = `${remaining} Days Left (Trial)`; statusClass = 'status-trial'; planClass = 'plan-free';
+  } else if (plan === 'weekly') {
+    status = `${remaining} Days Left`; statusClass = 'status-active'; planClass = 'plan-weekly';
+  } else if (plan === 'biweekly') {
+    status = `${remaining} Days Left`; statusClass = 'status-active'; planClass = 'plan-biweekly';
+  } else if (plan === 'monthly') {
+    status = `${remaining} Days Left`; statusClass = 'status-active'; planClass = 'plan-monthly';
+  }
+  
+  return { status, statusClass, plan, planClass, remaining, expiry };
+}
+
+// === ADMINS LIST ===
+async function loadAdmins() {
+  const snap = await db.collection('users').where('role', '==', 'admin').orderBy('createdAt', 'desc').get();
+  let html = '';
+  if (snap.empty) {
+    html = '<p>No admin accounts yet</p>';
+  } else {
+    snap.forEach(doc => {
+      const a = doc.data();
+      const { status, statusClass, plan, planClass, expiry } = getSubscriptionStatus(a);
+      html += `<div class="list-item">
+        <div>
+          <strong>${a.name}</strong> — ${a.email || 'No email'}<br>
+          <small>Created: ${new Date(a.createdAt?.toDate()).toLocaleString()}</small>
+        </div>
+        <div>
+          <span class="${statusClass}">${status}</span>
+          <span class="plan-tag ${planClass}">${plan.toUpperCase()}</span><br>
+          <small>Expires: ${expiry.toLocaleDateString()}</small>
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('adminsList').innerHTML = html;
+}
+
+// === PLANS: Select Populate ===
+async function fillPlanAdminSelect() {
+  const snap = await db.collection('users').where('role', '==', 'admin').get();
+  let opts = '<option value="">-- Select Admin --</option>';
+  snap.forEach(d => opts += `<option value="${d.id}">${d.data().name}</option>`);
+  document.getElementById('planAdmin').innerHTML = opts;
+}
+
+async function assignPlan() {
+  const adminId = document.getElementById('planAdmin').value;
+  const selected = document.querySelector('input[name="planSel"]:checked');
+  if (!adminId || !selected) return alert('Select Admin and Plan');
+  
+  let plan = selected.value;
+  await db.collection('users').doc(adminId).update({
+    plan: plan,
+    subscriptionStart: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  
+  document.getElementById('planMsg').textContent = `✅ Plan updated to ${plan.toUpperCase()}!`;
+  setTimeout(() => document.getElementById('planMsg').textContent = '', 3000);
+  loadAdmins();
+}
+
+// === LIMITS: Select Populate & Update ===
+async function fillLimitAdminSelect() {
+  const snap = await db.collection('users').where('role', '==', 'admin').get();
+  let opts = '<option value="">-- Select Admin --</option>';
+  snap.forEach(d => opts += `<option value="${d.id}">${d.data().name}</option>`);
+  document.getElementById('limitAdmin').innerHTML = opts;
+}
+
+async function updateLimits() {
+  const adminId = document.getElementById('limitAdmin').value;
+  const maxStores = parseInt(document.getElementById('maxStores').value);
+  const maxCashiers = parseInt(document.getElementById('maxCashiers').value);
+  if (!adminId || !maxStores || maxCashiers < 0) return alert('Fill all fields correctly');
+  
+  await db.collection('users').doc(adminId).update({
+    maxStores,
+    maxCashiers,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  
+  document.getElementById('limitMsg').textContent = `✅ Limits updated! Stores: ${maxStores}, Cashiers: ${maxCashiers === 0 ? 'Unlimited' : maxCashiers}`;
+  setTimeout(() => document.getElementById('limitMsg').textContent = '', 3000);
+}
+
+// === PASSWORDS ===
+async function fillPassAdminSelect() {
+  const snap = await db.collection('users').where('role', '==', 'admin').get();
+  let opts = '<option value="">-- Select Admin --</option>';
+  snap.forEach(d => opts += `<option value="${d.id}">${d.data().name}</option>`);
+  document.getElementById('passAdmin').innerHTML = opts;
+}
+
+async function changeSPPass() {
+  const curr = document.getElementById('spCurrentPass').value.trim();
+  const newP = document.getElementById('spNewPass').value.trim();
+  const conf = document.getElementById('spConfirmPass').value.trim();
+  
+  if (!curr || !newP || newP.length < 4 || newP.length > 8) return alert('Check password length (4-8 chars)');
+  if (newP !== conf) return alert('Passwords do not match');
+  
+  const spDoc = await db.collection('users').where('role', '==', 'sp').get();
+  if (spDoc.empty) return alert('SP account not found');
+  
+  const spData = spDoc.docs[0].data();
+  if (spData.password !== curr) return alert('Current password incorrect!');
+  
+  await db.collection('users').doc(spDoc.docs[0].id).update({ password: newP });
+  document.getElementById('spPassMsg').textContent = '✅ SP Password Updated!';
+  document.getElementById('spCurrentPass').value = '';
+  document.getElementById('spNewPass').value = '';
+  document.getElementById('spConfirmPass').value = '';
+  setTimeout(() => document.getElementById('spPassMsg').textContent = '', 3000);
+}
+
+async function resetAdminPass() {
+  const adminId = document.getElementById('passAdmin').value;
+  const newPass = document.getElementById('adminNewPass').value.trim();
+  if (!adminId || newPass.length !== 4) return alert('Select Admin and enter 4-digit password');
+  
+  await db.collection('users').doc(adminId).update({
+    password: newPass,
+    passwordResetBy: user.name,
+    resetAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  
+  document.getElementById('passMsg').textContent = '✅ Admin Password Reset!';
+  document.getElementById('adminNewPass').value = '';
+  setTimeout(() => document.getElementById('passMsg').textContent = '', 3000);
+}
+
+// === CHAT ===
+async function loadChatTargets() {
+  const [admins, cashiers] = await Promise.all([
+    db.collection('users').where('role','==','admin').get(),
+    db.collection('users').where('role','==','cashier').get()
+  ]);
+  let opts = '<option value="">-- Select --</option>';
+  admins.forEach(d => opts += `<option value="admin-${d.id}">Admin: ${d.data().name}</option>`);
+  cashiers.forEach(d => opts += `<option value="cashier-${d.id}">Cashier: ${d.data().name}</option>`);
+  document.getElementById('chatTarget').innerHTML = opts;
+}
+
+function switchChat() {
+  currentChatWith = document.getElementById('chatTarget').value;
+  if (!currentChatWith) { document.getElementById('chatMessages').innerHTML = ''; return; }
+  loadMessages();
+}
+
+function getChatId(target) {
+  return ['sp', user.id || 'sp_id', target].sort().join('_');
+}
+
+async function loadMessages() {
+  if (!currentChatWith) return;
+  const chatId = getChatId(currentChatWith);
+  const snap = await db.collection('chats').doc(chatId).collection('messages').orderBy('sentAt').limit(50).get();
+  let html = '';
+  snap.forEach(d => {
+    const m = d.data();
+    html += `<div class="msg ${m.senderRole === 'sp' ? 'me' : 'other'}">${m.text}</div>`;
+  });
+  document.getElementById('chatMessages').innerHTML = html;
+  document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+}
+
+async function sendChat() {
+  if (!currentChatWith) return alert('Select chat partner first');
+  const text = document.getElementById('chatText').value.trim();
+  if (!text) return;
+  const chatId = getChatId(currentChatWith);
+  await db.collection('chats').doc(chatId).collection('messages').add({
+    senderRole: 'sp',
+    senderName: user.name,
+    text,
+    sentAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  document.getElementById('chatText').value = '';
+  loadMessages();
+}
+
+document.getElementById('chatText').addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendChat();
+});
+
+// === INIT ===
+loadAdmins();
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BPOS — Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-slate-800">🛒 BPOS</h1>
+      <p class="text-gray-500">General Business System</p>
+    </div>
+    
+    <form id="login-form" class="space-y-5">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Select Role</label>
+        <select id="role-select" class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+          <option value="">-- Choose --</option>
+          <option value="admin">Admin / Owner</option>
+          <option value="cashier">Cashier</option>
+          <option value="service_provider">Service Provider</option>
+        </select>
+      </div>
+      
+      <div id="user-field" class="hidden">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Select User</label>
+        <select id="user-select" class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+          <option value="">-- Loading users --</option>
+        </select>
+      </div>
+      
+      <div id="pass-field" class="hidden">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input type="password" id="password" 
+          class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
+          placeholder="Enter password" autocomplete="off">
+      </div>
+      
+      <button type="submit" id="login-btn" disabled
+        class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
+        SIGN IN
+      </button>
+    </form>
+  </div>
+  <script type="module" src="login.js"></script>
+</body>
+</html>

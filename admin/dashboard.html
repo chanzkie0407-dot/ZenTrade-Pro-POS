@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — BPOS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="bg-gray-50">
+  <header class="bg-indigo-700 text-white px-6 py-3 flex justify-between items-center">
+    <h1 class="text-xl font-bold">⚙️ BPOS — Admin Panel</h1>
+    <div class="flex items-center gap-4">
+      <span id="user-name">Welcome</span>
+      <button id="logout-btn" class="bg-red-600 px-3 py-1 rounded hover:bg-red-700">Logout</button>
+    </div>
+  </header>
+
+  <nav class="bg-white shadow flex flex-wrap">
+    <button class="tab-btn active" data-tab="stores">Stores</button>
+    <button class="tab-btn" data-tab="cashiers">Cashiers</button>
+    <button class="tab-btn" data-tab="products">Products</button>
+    <button class="tab-btn" data-tab="stocks">Stocks</button>
+    <button class="tab-btn" data-tab="sales">Sales</button>
+    <button class="tab-btn" data-tab="voids">Void Requests</button>
+    <button class="tab-btn" data-tab="counts">Stock Counts</button>
+    <button class="tab-btn" data-tab="chat">Chat</button>
+  </nav>
+
+  <main class="p-4">
+    <!-- Stores Tab -->
+    <section id="tab-stores" class="tab-content">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h3 class="font-semibold mb-3">Add Store</h3>
+        <form id="store-form" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input type="text" id="store-code" placeholder="Store Code (auto if blank)" class="border rounded px-3 py-2">
+          <input type="text" id="store-name" placeholder="Store Name" required class="border rounded px-3 py-2">
+          <input type="text" id="store-location" placeholder="Location" class="border rounded px-3 py-2">
+          <button type="submit" class="bg-indigo-600 text-white rounded">Add Store</button>
+        </form>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Stores List</h3>
+        <div id="stores-list"></div>
+      </div>
+    </section>
+
+    <!-- Cashiers Tab -->
+    <section id="tab-cashiers" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h3 class="font-semibold mb-3">Add Cashier</h3>
+        <form id="cashier-form" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input type="text" id="c-first" placeholder="First Name" required class="border rounded px-3 py-2">
+          <input type="text" id="c-last" placeholder="Last Name (optional)" class="border rounded px-3 py-2">
+          <input type="text" id="c-pass" placeholder="Password (min 4 chars)" required minlength="4" class="border rounded px-3 py-2">
+          <button type="submit" class="bg-indigo-600 text-white rounded">Add Cashier</button>
+        </form>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Cashiers List</h3>
+        <div id="cashiers-list"></div>
+      </div>
+    </section>
+
+    <!-- Products Tab -->
+    <section id="tab-products" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h3 class="font-semibold mb-3">Add Product</h3>
+        <form id="product-form" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <select id="p-store" class="border rounded px-3 py-2"></select>
+          <input type="text" id="p-name" placeholder="Product Name" required class="border rounded px-3 py-2">
+          <input type="number" id="p-qty" placeholder="Quantity" required class="border rounded px-3 py-2">
+          <input type="number" id="p-price" step="0.01" placeholder="Price" required class="border rounded px-3 py-2">
+          <div class="flex gap-2">
+            <input type="text" id="p-barcode" placeholder="Barcode" class="border rounded px-3 py-2 flex-1">
+            <button type="button" id="scan-barcode-btn" class="bg-gray-200 px-3 rounded">📷 Scan</button>
+          </div>
+          <button type="submit" class="bg-indigo-600 text-white rounded">Save</button>
+        </form>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Products</h3>
+        <div id="products-list"></div>
+      </div>
+    </section>
+
+    <!-- Stocks Tab -->
+    <section id="tab-stocks" class="tab-content hidden">
+      <select id="stock-store-filter" class="mb-4 border rounded px-3 py-2"></select>
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Stock Overview</h3>
+        <div id="stocks-list"></div>
+      </div>
+    </section>
+
+    <!-- Sales Tab -->
+    <section id="tab-sales" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4 mb-4 flex flex-wrap gap-3">
+        <select id="sale-store-filter" class="border rounded px-3 py-2"></select>
+        <input type="date" id="sale-date-from" class="border rounded px-3 py-2">
+        <input type="date" id="sale-date-to" class="border rounded px-3 py-2">
+        <button id="gen-sales" class="bg-indigo-600 text-white px-4 rounded">Generate</button>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Sales Report</h3>
+        <div id="sales-report"></div>
+      </div>
+    </section>
+
+    <!-- Voids Tab -->
+    <section id="tab-voids" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Void Requests</h3>
+        <div id="voids-list"></div>
+      </div>
+    </section>
+
+    <!-- Counts Tab -->
+    <section id="tab-counts" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h3 class="font-semibold mb-3">Send Stock Count Task</h3>
+        <form id="count-form" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <select id="count-store" class="border rounded px-3 py-2"></select>
+          <select id="count-cashier" class="border rounded px-3 py-2"></select>
+          <button type="button" id="select-all-prods" class="bg-gray-200 rounded">Select All Products</button>
+          <div id="prod-checklist" class="col-span-3 max-h-60 overflow-y-auto border rounded p-2"></div>
+          <button type="submit" class="bg-indigo-600 text-white rounded">Send Task</button>
+        </form>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Count Results</h3>
+        <div id="count-results"></div>
+      </div>
+    </section>
+
+    <!-- Chat Tab -->
+    <section id="tab-chat" class="tab-content hidden">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded shadow p-3">
+          <select id="chat-partner" class="w-full border rounded px-2 py-2 mb-3"></select>
+          <div id="chat-partner-list" class="space-y-2"></div>
+        </div>
+        <div class="md:col-span-3 bg-white rounded shadow p-4 flex flex-col h-[500px]">
+          <div id="chat-messages" class="flex-1 overflow-y-auto border-b mb-3 p-2"></div>
+          <div class="flex gap-2">
+            <input type="text" id="chat-input" placeholder="Type message..." class="flex-1 border rounded px-3 py-2">
+            <button id="send-chat" class="bg-indigo-600 text-white px-4 rounded">Send</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

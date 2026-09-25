@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cashier — BPOS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="cashier.css">
+</head>
+<body class="bg-gray-50">
+  <header class="bg-emerald-700 text-white px-6 py-3 flex justify-between items-center">
+    <h1 class="text-xl font-bold">💳 BPOS — Cashier Station</h1>
+    <div class="flex items-center gap-4">
+      <span id="user-name"></span>
+      <span id="shift-status" class="text-yellow-300">Not Started</span>
+      <button id="logout-btn" class="bg-red-600 px-3 py-1 rounded hover:bg-red-700">Logout</button>
+    </div>
+  </header>
+
+  <div id="store-select-screen" class="p-6">
+    <h2 class="text-xl font-semibold mb-4">Select Store & Start Shift</h2>
+    <select id="cashier-store" class="border rounded px-3 py-3 w-full max-w-md mb-4"></select>
+    <input type="number" id="cash-float" placeholder="Enter Cash Float Amount" step="0.01" class="border rounded px-3 py-3 w-full max-w-md mb-4">
+    <button id="start-shift" class="bg-emerald-600 text-white px-6 py-3 rounded font-medium">Start Shift</button>
+  </div>
+
+  <div id="main-pos-screen" class="hidden">
+    <nav class="bg-white shadow flex flex-wrap">
+      <button class="tab-btn active" data-tab="sales">Sales</button>
+      <button class="tab-btn" data-tab="transactions">Transactions</button>
+      <button class="tab-btn" data-tab="void">Void / Refund</button>
+      <button class="tab-btn" data-tab="cashflow">Cash In/Out</button>
+      <button class="tab-btn" data-tab="out">Product Out</button>
+      <button class="tab-btn" data-tab="count">Stock Count</button>
+      <button class="tab-btn" data-tab="chat">Chat</button>
+      <button class="tab-btn" data-tab="close">Close Shift</button>
+    </nav>
+
+    <main class="p-4">
+      <!-- Sales Tab -->
+      <section id="tab-sales" class="tab-content">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2">
+            <div class="flex gap-2 mb-4">
+              <input type="text" id="prod-search" placeholder="Search or Scan Product..." class="flex-1 border rounded px-3 py-2">
+              <button id="scan-btn" class="bg-gray-200 px-3 rounded">📷 Scan</button>
+            </div>
+            <div id="products-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
+          </div>
+          
+          <div class="bg-white rounded shadow p-4">
+            <h3 class="font-semibold mb-3">Current Sale</h3>
+            <div id="cart-items" class="space-y-2 mb-4 max-h-72 overflow-y-auto border-b pb-3">
+              <p class="text-gray-400 text-sm">No items</p>
+            </div>
+            
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span id="cart-total">₱0.00</span>
+              </div>
+              <button id="apply-discount" class="w-full bg-amber-500 text-white py-2 rounded">Senior / PWD Discount</button>
+              
+              <select id="payment-method" class="border rounded px-3 py-2">
+                <option value="cash">Cash</option>
+                <option value="gcash">GCash</option>
+                <option value="split">Split Payment</option>
+              </select>
+              
+              <div id="cash-fields" class="space-y-2">
+                <input type="number" id="cash-tendered" placeholder="Cash Tendered" step="0.01" class="w-full border rounded px-3 py-2">
+                <div class="flex justify-between font-semibold">
+                  <span>Change</span>
+                  <span id="change-amount">₱0.00</span>
+                </div>
+              </div>
+              
+              <button id="complete-sale" class="w-full bg-emerald-600 text-white py-3 rounded font-bold">PAY</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transactions Tab -->
+      <section id="tab-transactions" class="tab-content hidden">
+        <div class="bg-white rounded shadow p-4">
+          <h3 class="font-semibold mb-3">Recent Transactions (Last 5)</h3>
+          <div id="recent-tnx"></div>
+        </div>
+      </section>
+
+      <!-- Void Tab -->
+      <section id="tab-void" class="tab-content hidden">
+        <div class="bg-white rounded shadow p-4 space-y-3">
+          <h3 class="font-semibold">Request Void</h3>
+          <input type="text" id="void-ticket-wrong" placeholder="Wrong Ticket #" class="border rounded px-3 py-2">
+          <input type="text" id="void-ticket-correct" placeholder="Correct Ticket # (Optional)" class="border rounded px-3 py-2">
+          <textarea id="void-reason" placeholder="Reason for void..." class="w-full border rounded px-3 py-2" rows="3"></textarea>
+          <button id="submit-void" class="bg-red-600 text-white px-4 py-2 rounded">Send Void Request</button>
+        </div>
+      </section>
+
+      <!-- Cashflow Tab -->
+      <section id="tab-cashflow" class="tab-content hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white rounded shadow p-4">
+            <h3 class="font-semibold mb-3">Cash In</h3>
+            <input type="number" id="cashin-amt" placeholder="Amount" step="0.01" class="w-full border rounded px-3 py-2 mb-2">
+            <textarea id="cashin-reason" placeholder="Reason" class="w-full border rounded px-3 py-2 mb-2" rows="2"></textarea>
+            <button id="docashin" class="bg-emerald-600 text-white px-4 py-2 rounded">Record Cash In</button>
+          </div>
+          <div class="bg-white rounded shadow p-4">
+            <h3 class="font-semibold mb-3">Cash Out</h3>
+            <input type="number" id="cashout-amt" placeholder="Amount" step="0.01" class="w-full border rounded px-3 py-2 mb-2">
+            <textarea id="cashout-reason" placeholder="Reason" class="w-full border rounded px-3 py-2 mb-2" rows="2"></textarea>
+            <button id="docashout" class="bg-red-600 text-white px-4 py-2 rounded">Record Cash Out</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Product Out Tab -->
+      <section id="tab-out" class="tab-content hidden">
+        <div class="bg-white rounded shadow p-4">
+          <h3 class="font-semibold mb-3">Product Out / Transfer</h3>
+          <select id="prodout-prod" class="w-full border rounded px-3 py-2 mb-2"></select>
+          <input type="number" id="prodout-qty" placeholder="Quantity" class="w-full border rounded px-3 py-2 mb-2">
+          <textarea id="prodout-reason" placeholder="Reason / Transfer To Store" class="w-full border rounded px-3 py-2 mb-2" rows="2"></textarea>
+          <button id="submit-prodout" class="bg-orange-500 text-white px-4 py-2 rounded">Record Product Out</button>
+        </div>
+      </section>
+
+      <!-- Stock Count Tab -->
+      <section id="tab-count" class="tab-content hidden">
+        <div class="bg-white rounded shadow p-4">
+          <h3 class="font-semibold mb-3">Stock Count Task</h3>
+          <div id="count-task-info" class="mb-4 text-gray-600">No pending task</div>
+          <div id="count-input-area" class="hidden">
+            <input type="number" id="actual-qty" placeholder="Actual Counted Quantity" class="w-full border rounded px-3 py-2 mb-3">
+            <button id="submit-count" class="bg-blue-600 text-white px-4 py-2 rounded">Submit Count</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Chat Tab -->
+      <section id="tab-chat" class="tab-content hidden">
+        <div class="bg-white rounded shadow p-4">
+          <select id="chat-partner" class="border rounded px-3 py-2 mb-3"></select>
+          <div id="chat-messages" class="h-80 overflow-y-auto border rounded p-2 mb-3"></div>
+          <div class="flex gap-2">
+            <input type="text" id="chat-input" placeholder="Message..." class="flex-1 border rounded px-3 py-2">
+            <button id="send-chat" class="bg-emerald-600 text-white px-4 rounded">Send</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Close Shift Tab -->
+      <section id="tab-close" class="tab-content hidden">
+        <div class="bg-white rounded shadow p-4">
+          <h3 class="font-semibold mb-4">End of Shift — Cash Breakdown</h3>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <label>₱1000: <input type="number" id="d1000" class="border rounded px-2 py-1 w-24" value="0"></label>
+            <label>₱500: <input type="number" id="d500" class="border rounded px-2 py-1 w-24" value="0"></label>
+            <label>₱200: <input type="number" id="d200" class="border rounded px-2 py-1 w-24" value="0"></label>
+            <label>₱100: <input type="number" id="d100" class="border rounded px-2 py-1 w-24" value="0"></label>
+            <label>₱50: <input type="number" id="d50" class="border rounded px-2 py-1 w-24" value="0"></label>
+            <label>Coins: <input type="number" id="dcoins" class="border rounded px-2 py-1 w-24" value="0"></label>
+          </div>
+          <p class="font-semibold mb-4">Total Cash: <span id="total-cash">₱0.00</span></p>
+          <button id="close-shift" class="bg-red-600 text-white px-6 py-3 rounded font-bold">Close Shift & Logout</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

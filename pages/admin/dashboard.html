@@ -3,869 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — BPOS System</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-    :root {
-      --navy: #1e3a5f; --blue: #2563eb; --green: #16a34a; --yellow: #eab308; --red: #dc2626;
-      --gray: #64748b; --light: #f8fafc; --border: #e2e8f0; --highlight: #fef9c3;
-    }
-    body { background: #f1f5f9; min-height: 100vh; }
-    
-    /* ===== TOPBAR ===== */
-    .topbar {
-      background: var(--navy); color: white; height: 56px; display: flex; align-items: center;
-      justify-content: space-between; padding: 0 20px; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-    }
-    .topbar h1 { font-size: 18px; font-weight: 600; }
-    .topbar .user-area { display: flex; align-items: center; gap: 12px; }
-    .sync-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
-    .sync-online { background: #dcfce7; color: #166534; }
-    .sync-offline { background: #fee2e2; color: #991b1b; }
-    .btn {
-      padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer;
-      font-weight: 600; font-size: 14px; transition: all 0.2s;
-    }
-    .btn:hover { transform: translateY(-1px); }
-    .btn-sm { padding: 6px 12px; font-size: 13px; }
-    .btn-primary { background: var(--blue); color: white; }
-    .btn-success { background: var(--green); color: white; }
-    .btn-danger { background: var(--red); color: white; }
-    .btn-warning { background: var(--yellow); color: #1f2937; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    
-    /* ===== LAYOUT ===== */
-    .layout { display: flex; padding-top: 56px; min-height: 100vh; }
-    .sidebar {
-      width: 220px; background: white; border-right: 1px solid var(--border); position: fixed;
-      top: 56px; bottom: 0; left: 0; overflow-y: auto;
-    }
-    .sidebar-link {
-      display: flex; align-items: center; gap: 10px; padding: 14px 20px;
-      color: var(--gray); text-decoration: none; font-weight: 500; border-left: 3px solid transparent;
-      transition: all 0.2s;
-    }
-    .sidebar-link:hover, .sidebar-link.active {
-      background: #eff6ff; color: var(--blue); border-left-color: var(--blue);
-    }
-    .content { flex: 1; margin-left: 220px; padding: 20px; max-width: 1400px; }
-    
-    /* ===== CARDS & FORMS ===== */
-    .card {
-      background: white; border-radius: 12px; padding: 22px; margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    .card h3 { margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-size: 16px; color: var(--navy); }
-    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px; }
-    .form-group { margin-bottom: 14px; }
-    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; color: #374151; }
-    input, select, textarea {
-      width: 100%; padding: 12px 14px; border: 2px solid var(--border);
-      border-radius: 8px; font-size: 15px; transition: border 0.2s;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); }
-    
-    /* ===== TABLES ===== */
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background: var(--light); font-weight: 600; color: var(--navy); }
-    
-    .hidden { display: none !important; }
-    .red-dot { display: inline-block; width: 8px; height: 8px; background: var(--red); border-radius: 50%; margin-left: 6px; }
-    
-    /* ===== CHAT & BROADCAST ===== */
-    .chat-box { border: 1px solid var(--border); border-radius: 10px; height: 400px; display: flex; flex-direction: column; margin-top: 12px; }
-    .chat-msgs { flex: 1; overflow-y: auto; padding: 16px; background: var(--light); }
-    .msg { margin-bottom: 12px; max-width: 75%; }
-    .msg.me { margin-left: auto; background: var(--blue); color: white; padding: 10px 14px; border-radius: 18px 18px 4px 18px; }
-    .msg.other { margin-right: auto; background: white; padding: 10px 14px; border-radius: 18px 18px 18px 4px; border: 1px solid var(--border); }
-    .msg-time { font-size: 10px; opacity: 0.7; margin-top: 4px; text-align: right; }
-    .chat-input-row { display: flex; border-top: 1px solid var(--border); }
-    .chat-input-row input { flex: 1; border: none; border-radius: 0; margin: 0; }
-    .status-pending { color: var(--yellow); font-weight: bold; }
-    .status-approved { color: var(--green); font-weight: bold; }
-    .status-rejected { color: var(--red); font-weight: bold; }
-  </style>
+  <title>ZenTrade Pro — Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<!-- ===== TOPBAR ===== -->
-<div class="topbar">
-  <h1>🏪 BPOS — Admin Dashboard</h1>
-  <div class="user-area">
-    <span id="syncBadge" class="sync-status sync-offline">Local Mode</span>
-    <span>Admin</span>
-    <button class="btn btn-danger" onclick="logout()">LOG OUT</button>
-  </div>
-</div>
-<div class="layout">
-  <!-- ===== SIDEBAR ===== -->
-  <nav class="sidebar">
-    <a class="sidebar-link active" href="#stores" onclick="showPage('stores')">🏪 Stores</a>
-    <a class="sidebar-link" href="#cashiers" onclick="showPage('cashiers')">👤 Cashiers</a>
-    <a class="sidebar-link" href="#products" onclick="showPage('products')">📦 Products</a>
-    <a class="sidebar-link" href="#stock" onclick="showPage('stock')">📊 Stock Management</a>
-    <a class="sidebar-link" href="#sales" onclick="showPage('sales')">💰 Sales Overview</a>
-    <a class="sidebar-link" href="#broadcast" onclick="showPage('broadcast')">📢 Announcements</a>
-    <a class="sidebar-link" href="#voids" onclick="showPage('voids')">📝 Void Requests<span id="voidDot" class="red-dot hidden"></span></a>
-    <a class="sidebar-link" href="#stockout" onclick="showPage('stockout')">📤 Stock-out Requests<span id="stockoutDot" class="red-dot hidden"></span></a>
-    <a class="sidebar-link" href="#count" onclick="showPage('count')">🔢 Stock Count Requests<span id="countDot" class="red-dot hidden"></span></a>
-    <a class="sidebar-link" href="#chat" onclick="showPage('chat')">💬 Chat Module<span id="chatDot" class="red-dot hidden"></span></a>
-  </nav>
-  <!-- ===== MAIN CONTENT ===== -->
-  <main class="content">
-    <!-- ═══════════════ STORES PAGE ═══════════════ -->
-    <div id="page-stores" class="page">
-      <div class="card">
-        <h3>Add New Store</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Store Code</label>
-            <input type="text" id="storeCode" placeholder="e.g. 001">
-          </div>
-          <div class="form-group">
-            <label>Store Name</label>
-            <input type="text" id="storeName" placeholder="Main Branch">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Location (Optional)</label>
-          <input type="text" id="storeLocation" placeholder="Davao City">
-        </div>
-        <button class="btn btn-primary" onclick="addStore()">+ Add Store</button>
-      </div>
-      <div class="card">
-        <h3>Store List (<span id="storeCount">0</span> / 20)</h3>
-        <table>
-          <thead><tr><th>Code</th><th>Name</th><th>Location</th><th>Action</th></tr></thead>
-          <tbody id="storeListBody"></tbody>
-        </table>
-      </div>
+<body class="bg-gray-50 text-gray-900">
+  <header class="bg-indigo-700 text-white px-6 py-3 flex justify-between items-center shadow">
+    <h1 class="text-xl font-bold">⚙️ ZenTrade Pro — Admin Panel</h1>
+    <div>
+      <span id="admin-name" class="mr-4">Welcome, Admin</span>
+      <button id="logout-btn" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Logout</button>
     </div>
-    <!-- ═══════════════ CASHIERS PAGE ═══════════════ -->
-    <div id="page-cashiers" class="page hidden">
-      <div class="card">
-        <h3>Cashiers Management</h3>
-        <div class="form-row" style="margin:16px 0;gap:10px;display:flex;flex-wrap:wrap;">
-          <input type="text" id="new-cashier-name" placeholder="Full Name" required style="flex:2;min-width:180px;padding:10px;">
-          <input type="text" id="new-cashier-username" placeholder="Username" required style="flex:1;min-width:150px;padding:10px;">
-          <input type="password" id="new-cashier-pass" placeholder="Password" required style="flex:1;min-width:150px;padding:10px;">
-          <select id="new-cashier-store" style="flex:1;min-width:150px;padding:10px;">
-            <option value="">— Assign Store —</option>
-          </select>
-          <button class="btn btn-primary" onclick="addCashier()">➕ Add Cashier</button>
-        </div>
-        <table style="width:100%;margin-top:16px;">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Full Name</th>
-              <th>Assigned Store</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="cashiers-list"></tbody>
-        </table>
-      </div>
-    </div>
-    <!-- ═══════════════ PRODUCTS PAGE ═══════════════ -->
-    <div id="page-products" class="page hidden">
-      <div class="card">
-        <h3>Products Management</h3>
-        <div class="form-row" style="margin:16px 0;gap:10px;display:flex;flex-wrap:wrap;">
-          <input type="text" id="prod-name" placeholder="Product Name" required style="flex:2;min-width:200px;padding:10px;">
-          <input type="text" id="prod-barcode" placeholder="Barcode/SKU" style="flex:1;min-width:140px;padding:10px;">
-          <input type="number" id="prod-price" step="0.01" min="0" placeholder="Price" required style="flex:1;min-width:120px;padding:10px;">
-          <input type="number" id="prod-qty" min="0" placeholder="Initial Stock" required style="flex:1;min-width:120px;padding:10px;">
-          <select id="prod-store" style="flex:1;min-width:150px;padding:10px;">
-            <option value="">— Select Store —</option>
-          </select>
-          <button class="btn btn-primary" onclick="addProduct()">➕ Add Product</button>
-        </div>
-        <table style="width:100%;margin-top:16px;">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Barcode</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Store</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="products-list"></tbody>
-        </table>
-      </div>
-    </div>
-    <!-- ═══════════════ BROADCAST / ANNOUNCEMENTS ═══════════════ -->
-    <div id="page-broadcast" class="page hidden">
-      <div class="card">
-        <h3>📢 Send Announcement to All Cashiers</h3>
-        <div class="form-group">
-          <label>Message</label>
-          <textarea id="broadcastMsg" rows="4" placeholder="Type your announcement here..."></textarea>
-        </div>
-        <div class="form-group">
-          <label>Expires After</label>
-          <select id="broadcastExpiry">
-            <option value="86400000">24 Hours</option>
-            <option value="172800000">48 Hours</option>
-            <option value="604800000">7 Days</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" onclick="sendBroadcast()">📤 Send to All</button>
-      </div>
-      <div class="card">
-        <h3>Sent Announcements</h3>
-        <div id="broadcastHistoryList"></div>
-      </div>
-    </div>
-    <!-- ═══════════════ VOID REQUESTS ═══════════════ -->
-    <div id="page-voids" class="page hidden">
-      <div class="card">
-        <h3>Void Requests from Cashiers</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Requested By</th>
-              <th>Ticket #</th>
-              <th>Reason</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="voidsList"></tbody>
-        </table>
-      </div>
-    </div>
-    <!-- ═══════════════ STOCK COUNT REQUESTS ═══════════════ -->
-    <div id="page-count" class="page hidden">
-      <div class="card">
-        <h3>Send Stock Count Request</h3>
-        <div class="form-group">
-          <label>Target Store</label>
-          <select id="countStore">
-            <option value="">— Select Store —</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Instructions (Optional)</label>
-          <textarea id="countInstruction" rows="3" placeholder="e.g. Count all items in main display area"></textarea>
-        </div>
-        <button class="btn btn-primary" onclick="sendCountRequest()">📤 Send Request</button>
-      </div>
-      <div class="card">
-        <h3>Submitted Counts</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Store</th>
-              <th>Requested</th>
-              <th>Submitted By</th>
-              <th>Status</th>
-              <th>View</th>
-            </tr>
-          </thead>
-          <tbody id="countList"></tbody>
-        </table>
-      </div>
-    </div>
-    <!-- ═══════════════ CHAT MODULE ═══════════════ -->
-    <div id="page-chat" class="page hidden">
-      <div class="card">
-        <h3>💬 Chat with Cashiers</h3>
-        <div class="form-group">
-          <label>Select Cashier</label>
-          <select id="chatCashier" onchange="switchChat()">
-            <option value="">— Select Cashier —</option>
-          </select>
-        </div>
-        <div class="chat-box" id="chatDisplay" style="display:none;">
-          <div class="chat-msgs" id="chatMessages"></div>
-          <div class="chat-input-row">
-            <input type="text" id="chatText" placeholder="Type message...">
-            <button class="btn btn-primary" onclick="sendChatMsg()">Send</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- ═══════════════ PLACEHOLDER PAGES ═══════════════ -->
-    <div id="page-stock" class="page hidden">
-      <div class="card"><h3>Stock Management</h3><p>Page content retained — fully synced with Firebase</p></div>
-    </div>
-    <div id="page-sales" class="page hidden">
-      <div class="card"><h3>Sales Overview</h3><p>Live transactions will appear here</p></div>
-    </div>
-    <div id="page-stockout" class="page hidden">
-      <div class="card"><h3>Stock-out Requests</h3><p>Page content retained</p></div>
-    </div>
-  </main>
-</div>
-<!-- FIREBASE SDK — SAME VERSION AS CASHIER -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script>
-// ==================================================
-// ✅ FIREBASE CONFIG — YOUR PROJECT
-// ==================================================
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAxuB4gacmWIf3U4Ic5TsOxSHCaynR0vhw",
-  authDomain: "bpos-pos.firebaseapp.com",
-  projectId: "bpos-pos",
-  storageBucket: "bpos-pos.firebasestorage.app",
-  messagingSenderId: "1024558399693",
-  appId: "1:1024558399693:web:13412d95960d8be732a984",
-  measurementId: "G-BY03FZEN6E"
-};
+  </header>
 
-let db = null;
-let firebaseInitialized = false;
-let unsubscribeBroadcast = null;
-let unsubscribeVoids = null;
-let unsubscribeCounts = null;
-let unsubscribeChat = null;
-// ===== GLOBALS =====
-let activeChatPeer = null;
-// ==================================================
-// FIREBASE INIT & REALTIME LISTENERS
-// ==================================================
-function initFirebase() {
-  if (!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) {
-    console.log('⚠️ Firebase config not set — running in Local Mode');
-    updateSyncStatus(false);
-    return;
-  }
-  try {
-    const app = firebase.initializeApp(FIREBASE_CONFIG);
-    db = firebase.firestore(app);
-    firebaseInitialized = true;
-    updateSyncStatus(true);
-    console.log('✅ Firebase connected — Online Mode');
-    setupRealtimeListeners();
-  } catch (e) {
-    console.warn('⚠️ Firebase init failed — Local Mode:', e);
-    updateSyncStatus(false);
-  }
-}
-function updateSyncStatus(online) {
-  document.getElementById('syncBadge').textContent = online ? '● Online' : 'Local Mode';
-  document.getElementById('syncBadge').className = 'sync-status ' + (online ? 'sync-online' : 'sync-offline');
-}
-function setupRealtimeListeners() {
-  if (!db) return;
-  // BROADCAST LISTENER
-  unsubscribeBroadcast = db.collection('system').doc('broadcast').onSnapshot(doc => {
-    const data = doc.data();
-    if (data) {
-      localStorage.setItem('spBroadcast', JSON.stringify({
-        id: data.id,
-        message: data.message,
-        title: data.title || 'System Announcement',
-        sentAt: data.sentAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-        expiresAt: data.expiresAt?.toDate?.getTime() || (Date.now() + 86400000)
-      }));
-      renderBroadcastHistory();
-    }
-  });
-  // VOID REQUESTS LISTENER
-  unsubscribeVoids = db.collection('voidRequests').onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(change => {
-      if (change.type === 'added') showDot('voidDot');
-    });
-    renderVoidRequests();
-  });
-  // STOCK COUNT LISTENER
-  unsubscribeCounts = db.collection('countRequests').onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(change => {
-      if (change.type === 'added') showDot('countDot');
-    });
-    renderCountRequests();
-  });
-  // CHAT LISTENER
-  unsubscribeChat = db.collection('chats').onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(change => {
-      if (change.type === 'added') {
-        const msg = change.doc.data();
-        if (msg.to === 'Admin' && msg.from !== 'Admin') showDot('chatDot');
-      }
-    });
-    if (activeChatPeer) renderChatMsgs();
-  });
-}
-function showDot(id) { const d = document.getElementById(id); if(d) d.classList.remove('hidden'); }
-function hideDot(id) { const d = document.getElementById(id); if(d) d.classList.add('hidden'); }
-// ==================================================
-// DATA HELPERS (Local + Firebase Hybrid)
-// ==================================================
-function genId() {
-  return Date.now() + Math.random().toString(36).substr(2, 9);
-}
-function getStores() { 
-  let s = JSON.parse(localStorage.getItem('stores') || '[]');
-  return s.map(x => ({
-    id: x.id || x.storeId || String(x.name||'').replace(/\s+/g,'-').toLowerCase(),
-    code: x.code || '',
-    name: x.name || x.storeName || 'Unnamed Store',
-    location: x.location || '—'
-  }));
-}
-function saveStores(d) { 
-  localStorage.setItem('stores', JSON.stringify(d)); 
-  if (db) d.forEach(s => db.collection('stores').doc(s.id).set(s));
-}
-function getProducts() { return JSON.parse(localStorage.getItem('products') || '[]'); }
-function saveProducts(d) { 
-  localStorage.setItem('products', JSON.stringify(d)); 
-  if (db) d.forEach(p => db.collection('products').doc(String(p.id)).set(p));
-}
-function getUsers() { return JSON.parse(localStorage.getItem('bpox_users') || '[]'); }
-function saveUsers(d) { localStorage.setItem('bpox_users', JSON.stringify(d)); }
-function getVoids() { return JSON.parse(localStorage.getItem('voidRequests') || '[]'); }
-function saveVoids(d) { 
-  localStorage.setItem('voidRequests', JSON.stringify(d)); 
-  if (db) d.forEach(v => db.collection('voidRequests').doc(v.id).set(v));
-}
-function getCountReqs() { return JSON.parse(localStorage.getItem('countRequests') || '[]'); }
-function saveCountReqs(d) { 
-  localStorage.setItem('countRequests', JSON.stringify(d)); 
-  if (db) d.forEach(c => db.collection('countRequests').doc(c.id).set(c));
-}
-function getChats() { return JSON.parse(localStorage.getItem('chats') || '{}'); }
-function saveChats(d) { 
-  localStorage.setItem('chats', JSON.stringify(d)); 
-  if (db) {
-    Object.entries(d).forEach(([key, msgs]) => {
-      msgs.slice(-1).forEach(m => db.collection('chats').add(m));
-    });
-  }
-}
-// ==================================================
-// PAGE NAVIGATION
-// ==================================================
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-  document.getElementById('page-' + id).classList.remove('hidden');
-  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-  event.target.classList.add('active');
-  
-  if (id === 'stores') renderStores();
-  if (id === 'cashiers') { loadCashierStoreOptions(); renderCashiersList(); }
-  if (id === 'products') { loadProductStoreOptions(); renderProductsList(); }
-  if (id === 'broadcast') renderBroadcastHistory();
-  if (id === 'voids') { hideDot('voidDot'); renderVoidRequests(); }
-  if (id === 'count') { hideDot('countDot'); loadCountStoreOptions(); renderCountRequests(); }
-  if (id === 'chat') { hideDot('chatDot'); loadChatCashierOptions(); }
-}
-// ==================================================
-// STORES
-// ==================================================
-function addStore() {
-  const code = document.getElementById('storeCode').value.trim();
-  const name = document.getElementById('storeName').value.trim();
-  const location = document.getElementById('storeLocation').value.trim();
-  
-  if (!code || !name) return alert('Fill in Code and Store Name');
-  
-  const existing = getStores().find(s => s.code === code);
-  if (existing) return alert(`⚠️ Store Code "${code}" is already used! Use different code.`);
-  
-  const stores = getStores();
-  if (stores.length >= 20) return alert('Maximum 20 stores reached');
-  
-  const newStore = {
-    id: genId(),
-    code,
-    name,
-    location: location || '—',
-    createdAt: new Date().toISOString()
-  };
-  
-  stores.push(newStore);
-  saveStores(stores);
-  
-  document.getElementById('storeCode').value = '';
-  document.getElementById('storeName').value = '';
-  document.getElementById('storeLocation').value = '';
-  
-  renderStores();
-  alert('✅ Store added successfully!');
-}
-function renderStores() {
-  const stores = getStores();
-  document.getElementById('storeCount').textContent = stores.length;
-  
-  document.getElementById('storeListBody').innerHTML = stores.map(s => `
-    <tr>
-      <td>${s.code}</td>
-      <td>${s.name}</td>
-      <td>${s.location}</td>
-      <td>
-        <button class="btn btn-danger btn-sm" onclick="deleteStore('${s.id}')">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-function deleteStore(id) {
-  if(confirm('⚠️ Are you sure you want to DELETE this store? This action cannot be undone!')) {
-    const updated = getStores().filter(x => String(x.id) !== String(id));
-    saveStores(updated);
-    renderStores();
-    alert('✅ Store deleted successfully!');
-  }
-}
-// ==================================================
-// CASHIERS
-// ==================================================
-function loadCashierStoreOptions() {
-  const sel = document.getElementById('new-cashier-store');
-  sel.innerHTML = '<option value="">— Assign Store —</option>';
-  getStores().forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
-}
-function addCashier() {
-  const name = document.getElementById('new-cashier-name').value.trim();
-  const uname = document.getElementById('new-cashier-username').value.trim();
-  const pass = document.getElementById('new-cashier-pass').value;
-  const storeId = document.getElementById('new-cashier-store').value;
-  
-  if (!name || !uname || !pass) return alert('Fill all required fields');
-  if (uname === 'admin') return alert('Username "admin" is reserved!');
-  
-  const users = getUsers();
-  if (users.find(u => u.username === uname)) return alert('Username already exists!');
-  
-  users.push({
-    username: uname,
-    password: pass,
-    fullName: name,
-    role: 'cashier',
-    storeId: storeId || null,
-    createdAt: new Date().toISOString()
-  });
-  
-  saveUsers(users);
-  
-  document.getElementById('new-cashier-name').value = '';
-  document.getElementById('new-cashier-username').value = '';
-  document.getElementById('new-cashier-pass').value = '';
-  
-  renderCashiersList();
-  alert('✅ Cashier added successfully!');
-}
-function renderCashiersList() {
-  const users = getUsers().filter(u => u.role === 'cashier');
-  const stores = getStores();
-  document.getElementById('cashiers-list').innerHTML = users.map(u => {
-    const store = stores.find(s => String(s.id) === String(u.storeId));
-    return `
-      <tr>
-        <td>${u.username}</td>
-        <td>${u.fullName}</td>
-        <td>${store ? store.name : '<em style="color:#888">Unassigned</em>'}</td>
-        <td style="color:var(--green)">Active</td>
-        <td>
-          <button class="btn btn-danger btn-sm" onclick="removeCashier('${u.username}')">Delete</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-function removeCashier(username) {
-  if (!confirm('Remove this cashier?')) return;
-  saveUsers(getUsers().filter(u => u.username !== username));
-  renderCashiersList();
-}
-// ==================================================
-// PRODUCTS
-// ==================================================
-function loadProductStoreOptions() {
-  const sel = document.getElementById('prod-store');
-  sel.innerHTML = '<option value="">— Select Store —</option>';
-  getStores().forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
-}
-function addProduct() {
-  const name = document.getElementById('prod-name').value.trim();
-  const barcode = document.getElementById('prod-barcode').value.trim();
-  const price = parseFloat(document.getElementById('prod-price').value);
-  const qty = parseInt(document.getElementById('prod-qty').value);
-  const storeId = document.getElementById('prod-store').value;
-  
-  if (!name || isNaN(price) || isNaN(qty) || !storeId) {
-    return alert('Fill all required fields including Store!');
-  }
-  
-  const prods = getProducts();
-  const newId = prods.length ? Math.max(...prods.map(p => p.id)) + 1 : 1;
-  
-  prods.push({
-    id: newId,
-    name,
-    barcode: barcode || '',
-    price,
-    qty,
-    storeId
-  });
-  
-  saveProducts(prods);
-  
-  document.getElementById('prod-name').value = '';
-  document.getElementById('prod-barcode').value = '';
-  document.getElementById('prod-price').value = '';
-  document.getElementById('prod-qty').value = '';
-  
-  renderProductsList();
-  alert('✅ Product added successfully!');
-}
-function renderProductsList() {
-  const prods = getProducts();
-  const stores = getStores();
-  document.getElementById('products-list').innerHTML = prods.map(p => {
-    const store = stores.find(s => String(s.id) === String(p.storeId));
-    return `
-      <tr>
-        <td>${p.name}</td>
-        <td>${p.barcode || '—'}</td>
-        <td>₱${p.price.toFixed(2)}</td>
-        <td>${p.qty}</td>
-        <td>${store ? store.name : '<em style="color:#888">—</em>'}</td>
-        <td>
-          <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">Delete</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-function deleteProduct(id) {
-  if (!confirm('Delete this product?')) return;
-  saveProducts(getProducts().filter(p => p.id !== id));
-  renderProductsList();
-}
-// ==================================================
-// BROADCAST / ANNOUNCEMENTS
-// ==================================================
-function sendBroadcast() {
-  const msg = document.getElementById('broadcastMsg').value.trim();
-  const expiryMs = parseInt(document.getElementById('broadcastExpiry').value);
-  if (!msg) return alert('Enter message first');
-  
-  const broadcastData = {
-    id: genId(),
-    message: msg,
-    title: 'System Announcement',
-    sentAt: new Date(),
-    expiresAt: new Date(Date.now() + expiryMs)
-  };
-  
-  if (db) {
-    db.collection('system').doc('broadcast').set(broadcastData)
-      .then(() => alert('✅ Announcement sent to all cashiers!'))
-      .catch(e => { console.warn('Firestore failed:', e); alert('Saved locally — will sync when online'); });
-  } else {
-    localStorage.setItem('spBroadcast', JSON.stringify({
-      ...broadcastData,
-      sentAt: broadcastData.sentAt.toISOString(),
-      expiresAt: broadcastData.expiresAt.getTime()
-    }));
-    alert('✅ Announcement saved locally');
-  }
-  
-  document.getElementById('broadcastMsg').value = '';
-  renderBroadcastHistory();
-}
-function getBroadcastHistory() {
-  return JSON.parse(localStorage.getItem('broadcastHistory') || '[]');
-}
-function renderBroadcastHistory() {
-  const current = JSON.parse(localStorage.getItem('spBroadcast') || '{}');
-  const history = getBroadcastHistory();
-  if (current.message && !history.find(h => h.id === current.id)) {
-    history.unshift({
-      ...current,
-      expiresAt: current.expiresAt || Date.now() + 86400000
-    });
-    localStorage.setItem('broadcastHistory', JSON.stringify(history));
-  }
-  
-  const container = document.getElementById('broadcastHistoryList');
-  if (!history.length) {
-    container.innerHTML = '<p style="color:var(--gray);text-align:center;padding:20px;">No announcements sent yet</p>';
-    return;
-  }
-  container.innerHTML = history.map(item => `
-    <div style="padding:12px;border-bottom:1px solid var(--border);">
-      <div style="font-weight:600;${item.expiresAt < Date.now() ? 'opacity:0.5;' : ''}">
-        ${item.expiresAt < Date.now() ? '[Expired] ' : ''}${item.title || 'Announcement'}
+  <!-- Navigation Tabs -->
+  <nav class="bg-white shadow mt-2">
+    <div class="flex flex-wrap">
+      <button class="tab-btn active px-4 py-3 border-b-2 border-indigo-600 text-indigo-600 font-medium" data-tab="users">Users</button>
+      <button class="tab-btn px-4 py-3 border-b-2 border-transparent text-gray-500 hover:text-indigo-600" data-tab="products">Products</button>
+      <button class="tab-btn px-4 py-3 border-b-2 border-transparent text-gray-500 hover:text-indigo-600" data-tab="sales">Sales Reports</button>
+      <button class="tab-btn px-4 py-3 border-b-2 border-transparent text-gray-500 hover:text-indigo-600" data-tab="stores">Stores</button>
+    </div>
+  </nav>
+
+  <main class="p-4">
+    <!-- Users Tab -->
+    <section id="tab-users" class="tab-content">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h2 class="text-lg font-semibold mb-3">Add New User</h2>
+        <form id="add-user-form" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input type="text" id="user-name" placeholder="Full Name" required class="border rounded px-3 py-2">
+          <input type="email" id="user-email" placeholder="Email" required class="border rounded px-3 py-2">
+          <select id="user-role" class="border rounded px-3 py-2">
+            <option value="cashier">Cashier</option>
+            <option value="service_provider">Service Provider</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded py-2">Add User</button>
+        </form>
       </div>
-      <div style="margin:4px 0;">${item.message}</div>
-      <small style="opacity:0.7;">${new Date(item.sentAt).toLocaleString()}</small>
-    </div>
-  `).join('');
-}
-// ==================================================
-// VOID REQUESTS
-// ==================================================
-function renderVoidRequests() {
-  const voids = getVoids();
-  document.getElementById('voidsList').innerHTML = !voids.length
-    ? '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">No requests yet</td></tr>'
-    : voids.map(v => `
-      <tr>
-        <td>${v.cashier || 'Unknown'}</td>
-        <td>${v.wrongTicket}</td>
-        <td>${v.reason}</td>
-        <td class="status-${v.status}">${v.status.toUpperCase()}</td>
-        <td>
-          ${v.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="approveVoid('${v.id}')">✅ Approve</button>
-            <button class="btn btn-danger btn-sm" onclick="rejectVoid('${v.id}')">❌ Reject</button>
-          ` : ''}
-        </td>
-      </tr>
-    `).join('');
-}
-function approveVoid(id) {
-  const voids = getVoids();
-  const idx = voids.findIndex(v => v.id === id);
-  if (idx > -1) {
-    voids[idx].status = 'approved';
-    voids[idx].statusUpdatedAt = new Date().toISOString();
-    saveVoids(voids);
-    alert('✅ Void approved');
-    renderVoidRequests();
-  }
-}
-function rejectVoid(id) {
-  const reason = prompt('Reason for rejection:');
-  if (reason === null) return;
-  const voids = getVoids();
-  const idx = voids.findIndex(v => v.id === id);
-  if (idx > -1) {
-    voids[idx].status = 'rejected';
-    voids[idx].rejectReason = reason || '—';
-    voids[idx].statusUpdatedAt = new Date().toISOString();
-    saveVoids(voids);
-    alert('✅ Void rejected');
-    renderVoidRequests();
-  }
-}
-// ==================================================
-// STOCK COUNT REQUESTS
-// ==================================================
-function loadCountStoreOptions() {
-  const sel = document.getElementById('countStore');
-  sel.innerHTML = '<option value="">— Select Store —</option>';
-  getStores().forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
-}
-function sendCountRequest() {
-  const storeId = document.getElementById('countStore').value;
-  const instruction = document.getElementById('countInstruction').value.trim();
-  if (!storeId) return alert('Select store first');
-  
-  const reqs = getCountReqs();
-  reqs.unshift({
-    id: genId(),
-    storeId,
-    instruction: instruction || 'Please count all items',
-    requestedAt: new Date().toISOString(),
-    submittedAt: null
-  });
-  saveCountReqs(reqs);
-  
-  alert('✅ Request sent to cashier');
-  document.getElementById('countInstruction').value = '';
-  renderCountRequests();
-}
-function renderCountRequests() {
-  const reqs = getCountReqs();
-  const stores = getStores();
-  document.getElementById('countList').innerHTML = !reqs.length
-    ? '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">No requests yet</td></tr>'
-    : reqs.map(r => {
-        const store = stores.find(s => String(s.id) === String(r.storeId));
-        return `
-          <tr>
-            <td>${store ? store.name : 'Unknown Store'}</td>
-            <td>${new Date(r.requestedAt).toLocaleString()}</td>
-            <td>${r.submittedBy || 'Pending'}</td>
-            <td style="color:${r.submittedAt ? 'var(--green)' : 'var(--yellow)'}">
-              ${r.submittedAt ? 'Submitted' : 'Pending'}
-            </td>
-            <td>
-              ${r.submittedAt ? `<button class="btn btn-primary btn-sm">View</button>` : '—'}
-            </td>
-          </tr>
-        `;
-      }).join('');
-}
-// ==================================================
-// CHAT
-// ==================================================
-function loadChatCashierOptions() {
-  const sel = document.getElementById('chatCashier');
-  sel.innerHTML = '<option value="">— Select Cashier —</option>';
-  getUsers().filter(u => u.role === 'cashier').forEach(c => {
-    sel.innerHTML += `<option value="${c.username}">${c.fullName} (@${c.username})</option>`;
-  });
-}
-function switchChat() {
-  activeChatPeer = document.getElementById('chatCashier').value;
-  document.getElementById('chatDisplay').style.display = activeChatPeer ? 'flex' : 'none';
-  renderChatMsgs();
-}
-function renderChatMsgs() {
-  if (!activeChatPeer) return;
-  const key = ['Admin', activeChatPeer].sort().join('_');
-  const msgs = getChats()[key] || [];
-  document.getElementById('chatMessages').innerHTML = msgs.map(m => `
-    <div class="msg ${m.from === 'Admin' ? 'me' : 'other'}">
-      <strong>${m.from === 'Admin' ? 'You' : m.from}</strong><br>
-      ${m.text}
-      <div class="msg-time">${new Date(m.time).toLocaleTimeString()}</div>
-    </div>
-  `).join('');
-  document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-}
-function sendChatMsg() {
-  if (!activeChatPeer) return alert('Select cashier first');
-  const text = document.getElementById('chatText').value.trim();
-  if (!text) return;
-  
-  const key = ['Admin', activeChatPeer].sort().join('_');
-  const chats = getChats();
-  if (!chats[key]) chats[key] = [];
-  chats[key].push({
-    from: 'Admin',
-    to: activeChatPeer,
-    text,
-    time: new Date().toISOString()
-  });
-  saveChats(chats);
-  
-  document.getElementById('chatText').value = '';
-  renderChatMsgs();
-}
-// ==================================================
-// LOGOUT & INIT
-// ==================================================
-function logout() {
-  if (!confirm('Log out?')) return;
-  if (unsubscribeBroadcast) unsubscribeBroadcast();
-  if (unsubscribeVoids) unsubscribeVoids();
-  if (unsubscribeCounts) unsubscribeCounts();
-  if (unsubscribeChat) unsubscribeChat();
-  sessionStorage.clear();
-  window.location.href = '/auth/login.html';
-}
-document.addEventListener('DOMContentLoaded', () => {
-  initFirebase();
-  
-  if (sessionStorage.getItem('userRole') !== 'admin') {
-    window.location.href = '/auth/login.html';
-    return;
-  }
-  
-  renderStores();
-});
-</script>
+      <div class="bg-white rounded shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">User List</h2>
+        <div id="users-list" class="space-y-2">Loading users...</div>
+      </div>
+    </section>
+
+    <!-- Products Tab -->
+    <section id="tab-products" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h2 class="text-lg font-semibold mb-3">Add / Edit Product</h2>
+        <form id="product-form" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <input type="hidden" id="product-id">
+          <input type="text" id="product-name" placeholder="Product Name" required class="border rounded px-3 py-2">
+          <input type="text" id="product-sku" placeholder="SKU" class="border rounded px-3 py-2">
+          <input type="number" id="product-price" placeholder="Price" step="0.01" required class="border rounded px-3 py-2">
+          <input type="number" id="product-stock" placeholder="Stock" class="border rounded px-3 py-2">
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded py-2">Save Product</button>
+        </form>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Product List</h2>
+        <div id="products-list" class="space-y-2">Loading products...</div>
+      </div>
+    </section>
+
+    <!-- Sales Tab -->
+    <section id="tab-sales" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h2 class="text-lg font-semibold mb-3">Sales Overview</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div class="bg-green-50 p-4 rounded border">
+            <p class="text-sm text-gray-500">Today's Sales</p>
+            <p id="sales-today" class="text-xl font-bold text-green-600">₱0.00</p>
+          </div>
+          <div class="bg-blue-50 p-4 rounded border">
+            <p class="text-sm text-gray-500">This Month</p>
+            <p id="sales-month" class="text-xl font-bold text-blue-600">₱0.00</p>
+          </div>
+          <div class="bg-purple-50 p-4 rounded border">
+            <p class="text-sm text-gray-500">Total Transactions</p>
+            <p id="sales-count" class="text-xl font-bold text-purple-600">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Transaction History</h2>
+        <div id="sales-list" class="space-y-2 max-h-[500px] overflow-y-auto">Loading sales...</div>
+      </div>
+    </section>
+
+    <!-- Stores Tab -->
+    <section id="tab-stores" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h2 class="text-lg font-semibold mb-3">Add New Store</h2>
+        <form id="store-form" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <input type="text" id="store-name" placeholder="Store Name" required class="border rounded px-3 py-2">
+          <input type="text" id="store-address" placeholder="Address" class="border rounded px-3 py-2">
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded py-2">Add Store</button>
+        </form>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Store List</h2>
+        <div id="stores-list" class="space-y-2">Loading stores...</div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="admin.js"></script>
 </body>
 </html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Provider — BPOS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="sp.css">
+</head>
+<body class="bg-gray-50">
+  <header class="bg-blue-700 text-white px-6 py-3 flex justify-between items-center">
+    <h1 class="text-xl font-bold">🔧 BPOS — Service Provider Portal</h1>
+    <div class="flex items-center gap-4">
+      <span id="user-name">Welcome</span>
+      <button id="logout-btn" class="bg-red-600 px-3 py-1 rounded hover:bg-red-700">Logout</button>
+    </div>
+  </header>
+
+  <nav class="bg-white shadow flex flex-wrap">
+    <button class="tab-btn active" data-tab="subscriptions">Subscriptions</button>
+    <button class="tab-btn" data-tab="admins">Manage Admins</button>
+    <button class="tab-btn" data-tab="system-pin">System PIN</button>
+    <button class="tab-btn" data-tab="sp-password">Change SP Password</button>
+    <button class="tab-btn" data-tab="chat">Chat</button>
+  </nav>
+
+  <main class="p-4">
+    <!-- Subscriptions Tab -->
+    <section id="tab-subscriptions" class="tab-content">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h3 class="font-semibold mb-3">Extend / Activate Subscription</h3>
+        <form id="sub-form" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <select id="sub-store" class="border rounded px-3 py-2"></select>
+          <select id="sub-plan" class="border rounded px-3 py-2">
+            <option value="weekly">Weekly — ₱199</option>
+            <option value="biweekly">Every 2 Weeks — ₱325</option>
+            <option value="monthly">Monthly — ₱579</option>
+            <option value="trial">Free Trial (7 Days)</option>
+          </select>
+          <button type="submit" class="bg-blue-600 text-white rounded">Apply Plan</button>
+        </form>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Subscription Overview</h3>
+        <div id="subs-list"></div>
+      </div>
+    </section>
+
+    <!-- Admins Tab -->
+    <section id="tab-admins" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h3 class="font-semibold mb-3">Create Admin Account</h3>
+        <form id="add-admin-form" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <input type="text" id="admin-name" placeholder="Full Name" required class="border rounded px-3 py-2">
+          <input type="text" id="admin-pass" placeholder="Password" required class="border rounded px-3 py-2">
+          <button type="submit" class="bg-blue-600 text-white rounded">Create Admin</button>
+        </form>
+      </div>
+      <div class="bg-white rounded shadow p-4 mb-4">
+        <h3 class="font-semibold mb-3">Change Admin Password</h3>
+        <form id="change-admin-pass-form" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <select id="admin-to-change" class="border rounded px-3 py-2"></select>
+          <input type="text" id="new-admin-pass" placeholder="New Password" required class="border rounded px-3 py-2">
+          <button type="submit" class="bg-blue-600 text-white rounded">Update Password</button>
+        </form>
+      </div>
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">All Admin Accounts</h3>
+        <div id="admins-list"></div>
+      </div>
+    </section>
+
+    <!-- System PIN Tab -->
+    <section id="tab-system-pin" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Set / Update System PIN</h3>
+        <form id="pin-form" class="space-y-3">
+          <input type="password" id="new-pin" placeholder="Enter New System PIN" required class="w-full border rounded px-3 py-2">
+          <input type="password" id="confirm-pin" placeholder="Confirm New PIN" required class="w-full border rounded px-3 py-2">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save PIN</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- SP Password Tab -->
+    <section id="tab-sp-password" class="tab-content hidden">
+      <div class="bg-white rounded shadow p-4">
+        <h3 class="font-semibold mb-3">Change Service Provider Password</h3>
+        <form id="sp-pass-form" class="space-y-3">
+          <input type="password" id="current-sp-pass" placeholder="Current Password" required class="w-full border rounded px-3 py-2">
+          <input type="password" id="new-sp-pass" placeholder="New Password" required class="w-full border rounded px-3 py-2">
+          <input type="password" id="confirm-sp-pass" placeholder="Confirm New Password" required class="w-full border rounded px-3 py-2">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Change Password</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Chat Tab -->
+    <section id="tab-chat" class="tab-content hidden">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded shadow p-3">
+          <select id="chat-partner" class="w-full border rounded px-2 py-2 mb-3"></select>
+        </div>
+        <div class="md:col-span-3 bg-white rounded shadow p-4 flex flex-col h-[500px]">
+          <div id="chat-messages" class="flex-1 overflow-y-auto border-b mb-3 p-2"></div>
+          <div class="flex gap-2">
+            <input type="text" id="chat-input" placeholder="Message..." class="flex-1 border rounded px-3 py-2">
+            <button id="send-chat" class="bg-blue-600 text-white px-4 rounded">Send</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>
